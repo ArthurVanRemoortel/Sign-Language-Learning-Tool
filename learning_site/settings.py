@@ -14,10 +14,16 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(".env.dev")
+if os.path.exists('.env.dev'):
+    load_dotenv(".env.dev")
+elif os.path.exists('.env'):
+    load_dotenv(".env")
+else:
+    raise Exception('Did not find any .env files.')
 
 DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-DEBUG_MODE = os.getenv("DEBUG_MODE") == 1
+DEBUG_MODE = os.getenv("DEBUG_MODE").lower() in ('true', '1', 't')
+print("DEBUG_MODE", DEBUG_MODE, type(DEBUG_MODE))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
