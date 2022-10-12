@@ -49,9 +49,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "sass_processor",
-    "compressor",
-    "sign_language_app"
+    # "sass_processor",
+    # "compressor",
+    "static_precompiler",
+    "sign_language_app",
 ]
 
 MIDDLEWARE = [
@@ -131,12 +132,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATICFILES_FINDERS = [
+    # "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "sass_processor.finders.CssFinder",
+    # "sass_processor.finders.CssFinder",
+    # 'compressor.finders.CompressorFinder',
 ]
 STATIC_URL = "static/"
 COMPRESS_ROOT = BASE_DIR / "sign_language_app" / "static"
-SASS_PROCESSOR_ROOT = COMPRESS_ROOT
+STATIC_PRECOMPILER_ROOT = BASE_DIR / "sign_language_app" / "static"
+# SASS_PROCESSOR_ROOT = COMPRESS_ROOT
 
 
 # STATICFILES_DIRS = (
@@ -144,6 +148,9 @@ SASS_PROCESSOR_ROOT = COMPRESS_ROOT
 #     os.path.join(BASE_DIR, 'node_modules', 'd3', 'build'),
 #     os.path.join(BASE_DIR, 'node_modules', 'c3'),
 # )
+COMPRESS_PRECOMPILERS = (
+    ('text/less', 'lessc {infile} {outfile}'),
+)
 
 
 # Default primary key field type

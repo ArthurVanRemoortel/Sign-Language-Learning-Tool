@@ -1,136 +1,115 @@
+{% load compile_static %}
+{% load static %}
+
+{#{% load compress %}#}
+{#{% load sass_tags %}#}
 <!DOCTYPE html>
 <html lang="en">
-{% load sass_tags %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-{#    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.css" integrity="sha512-KXol4x3sVoO+8ZsWPFI/r5KBVB/ssCGB5tsv2nVOKwLg33wTFP3fmnXa47FdSVIshVTgsYk/1734xSk9aFIa4A==" crossorigin="anonymous" referrerpolicy="no-referrer" />#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.js" integrity="sha512-Xo0Jh8MsOn72LGV8kU5LsclG7SUzJsWGhXbWcYs2MAmChkQzwiW/yTQwdJ8w6UA9C6EVG18GHb/TrYpYCjyAQw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
+    {#    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.css" integrity="sha512-KXol4x3sVoO+8ZsWPFI/r5KBVB/ssCGB5tsv2nVOKwLg33wTFP3fmnXa47FdSVIshVTgsYk/1734xSk9aFIa4A==" crossorigin="anonymous" referrerpolicy="no-referrer" />#}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.js" integrity="sha512-Xo0Jh8MsOn72LGV8kU5LsclG7SUzJsWGhXbWcYs2MAmChkQzwiW/yTQwdJ8w6UA9C6EVG18GHb/TrYpYCjyAQw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
 
-    {% load static %}
-    <link href="{% sass_src 'sign_language_app/app.sass' %}" rel="stylesheet" type="text/css" />
+    {#    <link href="{% sass_src 'sign_language_app/app.sass' %}" rel="stylesheet" type="text/css" />#}
     <link rel="stylesheet" type="text/css" href="{% static 'sign_language_app/style.css' %}">
 
+{#    {% compress css %}#}
+{#        <link rel="stylesheet" type="text/less" media="all" href="{% static 'sign_language_app/semantic-ui-less/semantic.less' %}" />#}
+{#    {% endcompress %}#}
+{#    <link rel="stylesheet" href="{{ STATIC_URL}}{% less 'sign_language_app/semantic-ui-less/semantic.less' %}" />#}
+    <link rel="stylesheet" href="{% static 'sign_language_app/semantic-ui-less/semantic.less'|compile %}" />
     <title>{% block title %}{% endblock title %}</title>
 </head>
 
-<body class="body">
-{##}
-{#<nav class="navbar navbar-expand-lg">#}
-{#    <div class="navbar-brand">#}
-{#        <a class="navbar-item " href="{% url 'index' %}">#}
-{#            <p class="title is-3 thin pt-1 is-primary-text-color">Home</p>#}
-{#        </a>#}
-{##}
-{#        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">#}
-{#            <span aria-hidden="true"></span>#}
-{#            <span aria-hidden="true"></span>#}
-{#            <span aria-hidden="true"></span>#}
-{#        </a>#}
-{#    </div>#}
-{##}
-{#    <div id="navbarBasicExample" class="navbar-menu">#}
-{#        <div class="navbar-start">#}
-{##}
-{#            <a class="navbar-item" href="">#}
-{#                Systems#}
-{#            </a>#}
-{##}
-{#            <a class="navbar-item" href="">#}
-{#                Stations#}
-{#            </a>#}
-{##}
-{#            <a class="navbar-item" href="">#}
-{#                Commodities#}
-{#            </a>#}
-{##}
-{#            <a class="navbar-item" href="#">#}
-{#                Trade Routes#}
-{#            </a>#}
-{#            <a class="navbar-item" href="">#}
-{#                Carrier Missions#}
-{#            </a>#}
-{##}
-{##}
-{#        </div>#}
-{#        <div class="navbar-end">#}
-{#            {% if DEBUG_MODE %}#}
-{#                <div class="navbar-item has-dropdown is-hoverable">#}
-{#                    <a class="navbar-link">#}
-{#                        Debug#}
-{#                    </a>#}
-{##}
-{#                    <div class="navbar-dropdown">#}
-{#                        <a class="navbar-item" id="reloadDataButton">#}
-{#                            Reload Data#}
-{#                        </a>#}
-{##}
-{#                        <a class="navbar-item" id="updateLocalButton">#}
-{#                            Update Local (All)#}
-{#                        </a>#}
-{#                        <a class="navbar-item" id="updateLocalNoStationsButton">#}
-{#                            Update Local (Quick)#}
-{#                        </a>#}
-{##}
-{#                        <a class="navbar-item" id="updateLocalListingsButton">#}
-{#                            Update Local (Listings)#}
-{#                        </a>#}
-{#                        <a class="navbar-item" id="updateLocalCacheButton">#}
-{#                            Update Cache#}
-{#                        </a>#}
-{##}
-{#                    </div>#}
-{#                </div>#}
-{#            {% endif %}#}
-{#            <div class="navbar-item">#}
-{#                <div class="buttons">#}
-{#                    {% if current_user %}#}
-{#                        <a class="button is-primary" href="">#}
-{#                            <strong>Profile</strong>#}
-{#                        </a>#}
-{#                        <a class="button is-light" href="">#}
-{#                            Log Out#}
-{#                        </a>#}
-{#                    {% else %}#}
-{#                        <a class="button is-primary" href="">#}
-{#                            <strong>Sign up</strong>#}
-{#                        </a>#}
-{#                        <a class="button is-light" href="">#}
-{#                            Log in#}
-{#                        </a>#}
-{#                    {% endif %}#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{#</nav>#}
-{##}
-{#<div class="page-wrapper">#}
-{#    <div class="container" style="width:100%">#}
-{#        {% block content %}#}
-{#        {% endblock %}#}
-{#    </div>#}
-{##}
-{#    <footer class="footer column is-narrow mt-6">#}
-{#        <div class="content has-text-centered">#}
-{#            <p>#}
-{#                <strong> <a href="https://www.elitedangerous.com/">Elite: Dangerous</a></strong> game tools by <strong><a href="https://github.com/ArthurVanRemoortel">Arthur Van Remoortel <i class="fa-brands fa-github"></i></a></strong>#}
-{#                <span>#}
-{#                The source-code is available on <a href="https://github.com/ArthurVanRemoortel/EDSiteProject"> GitHub <i class="fa-brands fa-github"></i></a>#}
-{#            </span>#}
-{#            </p>#}
-{#        </div>#}
-{#    </footer>#}
-{#</div>#}
+<body>
+<div class="ui fixed inverted menu">
+    <div class="ui container">
+        <a href="#" class="header item">
+            <img class="logo" src="assets/images/logo.png">
+            Project Name
+        </a>
+        <a href="#" class="item">Home</a>
+        <div class="ui simple dropdown item">
+            Dropdown <i class="dropdown icon"></i>
+            <div class="menu">
+                <a class="item" href="#">Link Item</a>
+                <a class="item" href="#">Link Item</a>
+                <div class="divider"></div>
+                <div class="header">Header Item</div>
+                <div class="item">
+                    <i class="dropdown icon"></i>
+                    Sub Menu
+                    <div class="menu">
+                        <a class="item" href="#">Link Item</a>
+                        <a class="item" href="#">Link Item</a>
+                    </div>
+                </div>
+                <a class="item" href="#">Link Item</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {% block content %}
 {% endblock %}
+
+
+<div class="ui inverted vertical footer segment">
+    <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+            <div class="three wide column">
+                <h4 class="ui inverted header">Group 1</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="item">Link One</a>
+                    <a href="#" class="item">Link Two</a>
+                    <a href="#" class="item">Link Three</a>
+                    <a href="#" class="item">Link Four</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Group 2</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="item">Link One</a>
+                    <a href="#" class="item">Link Two</a>
+                    <a href="#" class="item">Link Three</a>
+                    <a href="#" class="item">Link Four</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Group 3</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="item">Link One</a>
+                    <a href="#" class="item">Link Two</a>
+                    <a href="#" class="item">Link Three</a>
+                    <a href="#" class="item">Link Four</a>
+                </div>
+            </div>
+            <div class="seven wide column">
+                <h4 class="ui inverted header">Footer Header</h4>
+                <p>Extra space for a call to action inside the footer that could help re-engage users.</p>
+            </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <img src="assets/images/logo.png" class="ui centered mini image">
+        <div class="ui horizontal inverted small divided link list">
+            <a class="item" href="#">Site Map</a>
+            <a class="item" href="#">Contact Us</a>
+            <a class="item" href="#">Terms and Conditions</a>
+            <a class="item" href="#">Privacy Policy</a>
+        </div>
+    </div>
+</div>
 
 <script>
 </script>
 
 {% block javascript %}
 {% endblock javascript %}
+
+
+
 </body>
 </html>
