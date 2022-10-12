@@ -23,7 +23,6 @@ else:
 
 DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG_MODE = os.getenv("DEBUG_MODE").lower() in ('true', '1', 't')
-print("DEBUG_MODE", DEBUG_MODE, type(DEBUG_MODE))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
