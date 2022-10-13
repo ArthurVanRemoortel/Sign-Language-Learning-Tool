@@ -3,4 +3,5 @@ from django.http import HttpResponse
 
 
 def index(request):
-    return HttpResponse("Index")
+    context = {}
+    return render(request, "sign_language_app/index.html", context)

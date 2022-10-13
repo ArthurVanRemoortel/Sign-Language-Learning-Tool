@@ -2,7 +2,7 @@
 # https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
 FROM python:3.10.5
 
-ARG DJANGO-SITE-ENV
+ARG YOUR_ENV
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 
