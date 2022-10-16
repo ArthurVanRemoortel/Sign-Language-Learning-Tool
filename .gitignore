@@ -2,6 +2,8 @@
 .env.*
 .idea
 .python-version
+ai_data
+*.h5
 
 ### Python template
 # Byte-compiled / optimized / DLL files
