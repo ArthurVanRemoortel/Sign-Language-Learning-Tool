@@ -14,7 +14,7 @@ if __name__ == '__main__':
         Path('./ai_data/vgt-train'),
         Path('./ai_data/vgt-test'),
         Path('./ai_data/vgt-all'),
-        Path('./ai_data/camera_recordings')
+        # Path('./ai_data/camera_recordings')
     ]
 
     for ROOT_DIR in ROOT_DIRS:
