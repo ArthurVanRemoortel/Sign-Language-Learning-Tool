@@ -36,6 +36,6 @@ Follow these steps.
 ## Acquiring data
 Using the notebooks will require some video data to train on. You can provide your own or contact me for the data I have been using. 
 
-## Data preparation.
+## Data preparation
 The `sl_ai/process_videos.py` script can be used to convert raw video footage into something more usable. This script resize the videos and some additional processing.
 

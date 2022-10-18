@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends 'sign_language_app/base.html'%}
+{% block title %}
+    Home
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="padding-top: 2em">
+        <article class="panel is-info">
+            <p class="panel-heading">
+                Video Recording Demo
+            </p>
+            <div class="panel-block columns">
+                <div class="column">
+                    <video class="input_video" hidden></video>
+                    <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+                </div>
+            </div>
+        </article>
+    </div>
+{% endblock %}
+</html>
+
+
+{% block javascript %}
+    <script type="module">
+        const videoElement = document.getElementsByClassName('input_video')[0];
+        const canvasElement = document.getElementsByClassName('output_canvas')[0];
+        const canvasCtx = canvasElement.getContext('2d');
+        const recordingCutoffDelay = 1000
+        const minRecordingSize = 500
+        let mediaRecorder;
+
+
+        let gestureStart = null
+        let gestureEnd = null
+        let videoBlobs = [];
+        var missingHandsTime = null
+
+        function beginRecording() {
+            console.log("Beginning gesture recording...")
+            gestureStart = performance.now()
+            const stream = canvasElement.captureStream(30);
+            mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
+            videoBlobs = []
+            mediaRecorder.addEventListener('dataavailable', function(e) {
+                if (e.data.size > 0) {
+                    videoBlobs.push(e.data);
+                }
+            });
+            mediaRecorder.start(100);
+        }
+
+        function record() {
+            // Record additional such as coordinates.
+        }
+
+        function resetRecording(){
+            gestureStart = null
+            gestureEnd = null
+            missingHandsTime = null
+            videoBlobs = []
+            mediaRecorder.stop();
+        }
+
+        function endRecording() {
+            // TODO: Only end recording if no hands were detected for multiple frames.
+            if (performance.now() - gestureStart < recordingCutoffDelay + minRecordingSize){
+                console.log("This recording was to short. This was probably an accident.")
+                resetRecording()
+                return
+            }
+            gestureEnd = performance.now()
+
+            console.log("Ended gesture recording")
+            setTimeout(() => {
+                const blob = new Blob(videoBlobs, {
+                    type: "video/webm"
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "recording.webm";
+                a.click();
+                URL.revokeObjectURL(url);
+                resetRecording()
+            }, 0);
+
+
+        }
+
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.translate(canvasElement.width, 0);
+            canvasCtx.scale(-1, 1);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            if (results.multiHandLandmarks) {
+                if (results.multiHandLandmarks.length > 0) {
+                    missingHandsTime =  null
+                    if (gestureStart == null)
+                        beginRecording()
+                    for (const landmarks of results.multiHandLandmarks) {
+                        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
+                            {color: '#00FF00', lineWidth: 5});
+                        drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
+                    }
+                } else {
+                    // No hands detected.
+                    if (gestureStart != null) {
+                        if (missingHandsTime == null)
+                            missingHandsTime = performance.now()
+                        if (performance.now() - missingHandsTime >= recordingCutoffDelay)
+                            endRecording()
+                    }
+                }
+
+            }
+            canvasCtx.restore();
+        }
+
+        const hands = new Hands({locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }});
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.8,
+            minTrackingConfidence: 0.8
+        });
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 1280,
+            height: 720
+        });
+        camera.start();
+    </script>
+{% endblock %}
