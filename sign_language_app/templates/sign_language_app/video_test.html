@@ -29,7 +29,7 @@
         const canvasElement = document.getElementsByClassName('output_canvas')[0];
         const canvasCtx = canvasElement.getContext('2d');
         const recordingCutoffDelay = 1000
-        const minRecordingSize = 500
+        const minRecordingSize = 1000
         let mediaRecorder;
 
 
@@ -41,7 +41,7 @@
         function beginRecording() {
             console.log("Beginning gesture recording...")
             gestureStart = performance.now()
-            const stream = canvasElement.captureStream(30);
+            const stream = canvasElement.captureStream(60);
             mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
             videoBlobs = []
             mediaRecorder.addEventListener('dataavailable', function(e) {
@@ -49,7 +49,7 @@
                     videoBlobs.push(e.data);
                 }
             });
-            mediaRecorder.start(100);
+            mediaRecorder.start(200);
         }
 
         function record() {
@@ -76,7 +76,7 @@
             console.log("Ended gesture recording")
             setTimeout(() => {
                 const blob = new Blob(videoBlobs, {
-                    type: "video/webm"
+                    type: "video/mp4"
                 });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");

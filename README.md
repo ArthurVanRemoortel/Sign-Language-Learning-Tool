@@ -1,5 +1,6 @@
 # Sign-Language-Learning-Tool
-Bachelor degree final work: An interactive learning tool for Flemish sign language.
+Bachelor degree final work: An interactive learning tool for Flemish sign language using computer vision and deep learning.
+
 
 ## Run it locally
 The easiest way to run this project is using docker + docker-compose.
