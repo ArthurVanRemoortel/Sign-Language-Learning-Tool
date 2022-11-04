@@ -1,0 +1,23 @@
+{% extends 'sign_language_app/base.html'%}
+
+{% block title %}
+    Register
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="container py-5">
+{#        {% if form.errors %}#}
+{#            {{ form.errors }}#}
+{#        {% endif %}#}
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ form }}
+            <button class="btn btn-primary" type="submit">Register</button>
+        </form>
+        <p class="text-center">If you already have an account, <a href="{% url 'login' %}">login</a> instead.</p>
+    </div>
+
+{% endblock %}

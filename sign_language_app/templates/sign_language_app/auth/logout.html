@@ -1,0 +1,10 @@
+{% extends 'sign_language_app/base.html'%}
+
+{% block title %}
+    Logout
+{% endblock %}
+
+{% block content %}
+  <p>Logged out!</p>
+  <a href="{% url 'login'%}">Click here to login again.</a>
+{% endblock %}
