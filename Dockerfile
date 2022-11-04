@@ -2,13 +2,14 @@
 # https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
 FROM python:3.10.5
 
+WORKDIR /code
+
 ARG YOUR_ENV
 
+#ENV PYTHONDONTWRITEBYTECODE 1
+#ENV PYTHONUNBUFFERED 1
+
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
-
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
 ENV YOUR_ENV=${YOUR_ENV} \
   PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \
@@ -22,7 +23,6 @@ ENV YOUR_ENV=${YOUR_ENV} \
 RUN pip install "poetry==$POETRY_VERSION"
 
 # Copy only requirements to cache them in docker layer
-WORKDIR /code
 COPY poetry.lock pyproject.toml /code/
 
 # Project initialization:

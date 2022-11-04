@@ -3,6 +3,7 @@
 .idea
 .python-version
 ai_data
+data
 *.h5
 
 ### Python template
