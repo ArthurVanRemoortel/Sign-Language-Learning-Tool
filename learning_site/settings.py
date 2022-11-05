@@ -24,6 +24,7 @@ else:
 DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG_MODE = os.getenv("DEBUG_MODE").lower() in ('true', '1', 't')
 
+POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 POSTGRES_DB = os.getenv('POSTGRES_DB')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
@@ -55,8 +56,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+    "rest_framework",
+    "django_filters",
     "sass_processor",
     "compressor",
+
     "sign_language_app"
 ]
 
@@ -100,7 +104,7 @@ DATABASES = {
         'NAME': POSTGRES_DB,
         'USER': POSTGRES_USER,
         'PASSWORD': POSTGRES_PASSWORD,
-        'HOST': 'db',
+        'HOST': POSTGRES_HOST,
         'PORT': 5432,
     }
 }
@@ -157,3 +161,13 @@ SASS_PROCESSOR_ROOT = COMPRESS_ROOT
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 DEBUG_PROPAGATE_EXCEPTIONS = True
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
