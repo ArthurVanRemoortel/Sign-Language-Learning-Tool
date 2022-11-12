@@ -36,6 +36,14 @@
         let gestureStart = null
         let gestureEnd = null
         let videoBlobs = [];
+
+        let left_landmarks = {}
+        let right_landmarks = {}
+        for(let landmark_id = 1; landmark_id <= 21; landmark_id++){
+            left_landmarks[landmark_id] = []
+            right_landmarks[landmark_id] = []
+        }
+
         var missingHandsTime = null
 
         function beginRecording() {
@@ -74,6 +82,30 @@
             gestureEnd = performance.now()
 
             console.log("Ended gesture recording")
+            let csrf_token = '{{ csrf_token }}';
+
+            var data = {
+                left_landmarks: left_landmarks,
+                right_landmarks: right_landmarks
+            };
+
+            $.ajax({
+                url: 'http://localhost:8000/api/test',
+                data: JSON.stringify(data),
+                headers: {'X-CSRFToken': csrf_token},
+                contentType: "application/json",
+                dataType: "json",
+                processData: false,
+                type: 'POST',
+                success: function(data) {
+                    //var obj = JSON.parse(data);
+                    console.log(data);
+                },
+                error: function(err) { console.log(err); },
+                beforeSend: function (xhr) {
+                },
+            });
+
             setTimeout(() => {
                 const blob = new Blob(videoBlobs, {
                     type: "video/mp4"
@@ -90,6 +122,13 @@
 
         }
 
+        const zip = (a, b) => a.map((k, i) => [k, b[i]]);
+
+        function flip_handedness(string){
+            if (string === "Left")
+                return "Right"
+            return "Left"
+        }
 
         function onResults(results) {
             canvasCtx.save();
@@ -102,9 +141,25 @@
                     missingHandsTime =  null
                     if (gestureStart == null)
                         beginRecording()
-                    for (const landmarks of results.multiHandLandmarks) {
+                    const zipped_landmarks = zip(results.multiHandLandmarks, results.multiHandedness);
+                    for (const landmarks_handed of zipped_landmarks) {
+                        {#console.log(landmarks_handed)#}
+                        let landmarks = landmarks_handed[0]
+                        let handedness = flip_handedness(landmarks_handed[1].label)
+                        for(let landmark_id = 1; landmark_id <= landmarks.length; landmark_id++){
+                            if (handedness === 'Left'){
+                                left_landmarks[landmark_id].push(landmarks[landmark_id])
+                                right_landmarks[landmark_id].push(null)
+                            } else if (handedness === "Right"){
+                                right_landmarks[landmark_id].push(landmarks[landmark_id])
+                                left_landmarks[landmark_id].push(null)
+                            }
+                        }
+                        let color = '#00FF00';
+                        if (handedness === "Right")
+                            color = '#518dce';
                         drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
-                            {color: '#00FF00', lineWidth: 5});
+                            {color: color, lineWidth: 5});
                         drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
                     }
                 } else {

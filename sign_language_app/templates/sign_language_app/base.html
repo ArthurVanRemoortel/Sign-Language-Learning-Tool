@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
     {% load static %}
 
@@ -23,7 +24,7 @@
 </head>
 
 <body>
-<nav class="navbar navbar-expand-lg">
+<nav class="navbar navbar-expand-lg mb-5">
     <div class="navbar-brand">
         <a class="navbar-item" href="{% url 'index' %}">
             <img src="{% static 'sign_language_app/images/logo_blank.png'%}" alt="" width="50" height="38">
@@ -38,7 +39,7 @@
 
     <div id="navbarBasicExample" class="navbar-menu">
         <div class="navbar-start">
-            <a class="navbar-item" href="{% url 'index' %}">
+            <a class="navbar-item" href="{% url 'courses_overview' %}">
                 Courses
             </a>
             <a class="navbar-item" href="{% url 'video_test' %}">
