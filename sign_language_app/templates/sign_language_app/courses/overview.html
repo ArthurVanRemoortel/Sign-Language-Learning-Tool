@@ -1,5 +1,5 @@
 {% extends 'sign_language_app/base.html'%}
-
+{% load extras %}
 {% block title %}
     Courses
 {% endblock %}
@@ -38,38 +38,51 @@
                     </ul>
                 </nav>
 
-                {% for i in '012'|make_list %}
+                {% for course in courses %}
                     <div class="card mt-4">
                         <div class="card-content">
                             <p class="title">
-                                Beginner Gestures
+                                {{ course.name }}
                             </p>
                             <p class="subtitle">
-                                The most important words you should know to get started.
+                                {{ course.description }}
                             </p>
                             <div class="columns">
-                                <div class="column">
-                                    <div class="mt-2">
-                                        <button class="button is-primary is-rounded is-fullwidth">Unit 1: Placeholder</button>
+                                {% for col in course.units.all|to_columns:2 %}
+                                    <div class="column">
+                                        {% for unit in col %}
+                                            <div class="mt-2">
+                                                {% if unit in completed_units %}
+                                                    <button class="button is-primary is-rounded is-fullwidth">{{ unit.name }}</button>
+                                                {% elif unit == next_units|get_value:course.id %}
+                                                    <button class="button is-info is-rounded is-fullwidth">{{ unit.name }}</button>
+                                                {% else %}
+                                                    <button class="button is-rounded is-fullwidth">{{ unit.name }}</button>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+{#                                    <div class="mt-2">#}
+{#                                        <button class="button is-primary is-rounded is-fullwidth">Unit 1: Placeholder</button>#}
+{#                                    </div>#}
+{#                                    <div class="mt-2">#}
+{#                                        <button class="button is-primary is-rounded is-fullwidth">Unit 2: Placeholder</button>#}
+{#                                    </div>#}
+{#                                    <div class="mt-2">#}
+{#                                        <button class="button is-primary is-rounded is-fullwidth"> <span></span> Unit 3: Placeholder</button>#}
+{#                                    </div>#}
                                     </div>
-                                    <div class="mt-2">
-                                        <button class="button is-primary is-rounded is-fullwidth">Unit 2: Placeholder</button>
-                                    </div>
-                                    <div class="mt-2">
-                                        <button class="button is-primary is-rounded is-fullwidth"> <span></span> Unit 3: Placeholder</button>
-                                    </div>
-                                </div>
-                                <div class="column">
-                                    <div class="mt-2">
-                                        <button class="button is-info is-rounded is-fullwidth">Unit 4: Placeholder </button>
-                                    </div>
-                                    <div class="mt-2">
-                                        <button class="button is-rounded is-fullwidth">Unit 5: Placeholder</button>
-                                    </div>
-                                    <div class="mt-2">
-                                        <button class="button is-rounded is-fullwidth">Unit 6: Placeholder</button>
-                                    </div>
-                                </div>
+                                {% endfor %}
+                                {#                                <div class="column">#}
+                                {#                                    <div class="mt-2">#}
+                                {#                                        <button class="button is-info is-rounded is-fullwidth">Unit 4: Placeholder </button>#}
+                                {#                                    </div>#}
+                                {#                                    <div class="mt-2">#}
+                                {#                                        <button class="button is-rounded is-fullwidth">Unit 5: Placeholder</button>#}
+                                {#                                    </div>#}
+                                {#                                    <div class="mt-2">#}
+                                {#                                        <button class="button is-rounded is-fullwidth">Unit 6: Placeholder</button>#}
+                                {#                                    </div>#}
+                                {#                                </div>#}
                             </div>
                         </div>
 
