@@ -1,0 +1,103 @@
+# Courses
+- model: sign_language_app.course
+  pk: 1
+  fields:
+    name: Beginner Gestures
+    description: The most important words you should know to get started.
+    is_public: true
+    difficulty: 1
+- model: sign_language_app.course
+  pk: 2
+  fields:
+    name: Advanced Gestures
+    description: More advanced gestures for more experienced users.
+    is_public: true
+    difficulty: 3
+
+# Units
+- model: sign_language_app.unit
+  pk: 1
+  fields:
+    name: 'Unit 1: Introduce yourself'
+    course: 1
+    ordering_number: 1
+- model: sign_language_app.unit
+  pk: 2
+  fields:
+    name: 'Unit 2: Navigation'
+    course: 1
+    ordering_number: 2
+- model: sign_language_app.unit
+  pk: 3
+  fields:
+    name: 'Unit 3: Adjectives'
+    course: 1
+    ordering_number: 3
+- model: sign_language_app.unit
+  pk: 4
+  fields:
+    name: 'Unit 4: Verbs'
+    course: 1
+    ordering_number: 4
+- model: sign_language_app.unit
+  pk: 5
+  fields:
+    name: 'Unit 5: Express dates and times'
+    course: 1
+    ordering_number: 5
+
+- model: sign_language_app.unit
+  pk: 6
+  fields:
+    name: 'Unit 1: Discuss spirituality'
+    course: 2
+    ordering_number: 1
+- model: sign_language_app.unit
+  pk: 7
+  fields:
+    name: 'Unit 2: Discuss politics'
+    course: 2
+    ordering_number: 2
+- model: sign_language_app.unit
+  pk: 8
+  fields:
+    name: 'Unit 3: Give directions'
+    course: 2
+    ordering_number: 3
+- model: sign_language_app.unit
+  pk: 9
+  fields:
+    name: 'Unit 4: Express feelings'
+    course: 2
+    ordering_number: 4
+
+
+# Gestures
+- model: sign_language_app.gesture
+  pk: 1
+  fields:
+    word: United States of America
+- model: sign_language_app.gesture
+  pk: 2
+  fields:
+    word: Belgium
+
+# Unit Attempts
+- model: sign_language_app.unitattempt
+  pk: 1
+  fields:
+    user: 1
+    unit: 1
+    datetime: "2022-11-18T13:20:30+02:00"
+- model: sign_language_app.unitattempt
+  pk: 2
+  fields:
+    user: 1
+    unit: 2
+    datetime: "2022-11-18T13:20:30+02:00"
+- model: sign_language_app.unitattempt
+  pk: 3
+  fields:
+    user: 1
+    unit: 3
+    datetime: "2022-11-18T13:20:30+02:00"
