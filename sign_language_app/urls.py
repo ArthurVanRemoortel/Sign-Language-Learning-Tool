@@ -7,6 +7,8 @@ from django.contrib.auth import views as contrib_auth_views
 urlpatterns = [
     path('', views.index, name='index'),
     path('video_test', views.video_test, name='video_test'),
+    path('courses', views.courses_overview, name='courses_overview'),
+    path('exercise/<int:exercise_id>', views.exercise, name='exercise'),
 ]
 
 urlpatterns += [

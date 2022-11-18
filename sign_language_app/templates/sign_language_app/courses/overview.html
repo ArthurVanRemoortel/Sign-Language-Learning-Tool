@@ -1,0 +1,97 @@
+{% extends 'sign_language_app/base.html'%}
+
+{% block title %}
+    Courses
+{% endblock %}
+
+{% block content %}
+    <div class="container is-max-desktop">
+        <h2 class="title is-2 is-spaced bd-anchor-title">
+            Courses
+        </h2>
+
+
+        <div class="columns">
+            <div class="column">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="content">
+                            Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet fermentum.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-four-fifths">
+
+                <div class="control">
+                    <input class="input" type="text" placeholder="Search">
+                </div>
+
+                <br>
+
+                <nav class="pagination is-rounded is-centered" role="navigation" aria-label="pagination">
+                    <ul class="pagination-list">
+                        <li><a class="pagination-link is-current" aria-label="Goto page 1">1</a></li>
+                        <li><a class="pagination-link" aria-label="Page 2" aria-current="page">2</a></li>
+                        <li><span class="pagination-ellipsis">&hellip;</span></li>
+                        <li><a class="pagination-link" aria-label="Goto page 12">12</a></li>
+                    </ul>
+                </nav>
+
+                {% for i in '012'|make_list %}
+                    <div class="card mt-4">
+                        <div class="card-content">
+                            <p class="title">
+                                Beginner Gestures
+                            </p>
+                            <p class="subtitle">
+                                The most important words you should know to get started.
+                            </p>
+                            <div class="columns">
+                                <div class="column">
+                                    <div class="mt-2">
+                                        <button class="button is-primary is-rounded is-fullwidth">Unit 1: Placeholder</button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="button is-primary is-rounded is-fullwidth">Unit 2: Placeholder</button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="button is-primary is-rounded is-fullwidth"> <span></span> Unit 3: Placeholder</button>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="mt-2">
+                                        <button class="button is-info is-rounded is-fullwidth">Unit 4: Placeholder </button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="button is-rounded is-fullwidth">Unit 5: Placeholder</button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="button is-rounded is-fullwidth">Unit 6: Placeholder</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <footer class="card-footer">
+                            <p class="card-footer-item">
+                              <span>
+                                Details
+                              </span>
+                            </p>
+                            <p class="card-footer-item">
+                              <span>
+                                Resume
+                              </span>
+                            </p>
+                        </footer>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+    </div>
+
+
+{% endblock %}

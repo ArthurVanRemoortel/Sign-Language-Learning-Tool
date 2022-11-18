@@ -3469,7 +3469,7 @@ button.dropdown-item {
   padding: 20px; }
 
 .navbar {
-  background-color: #05668D;
+  background-color: #2fad8c;
   min-height: 3.25rem;
   position: relative;
   z-index: 30; }
@@ -4092,7 +4092,7 @@ a.navbar-item,
   .navbar-link::after {
     display: none; }
   .navbar-menu {
-    background-color: #05668D;
+    background-color: #2fad8c;
     box-shadow: 0 8px 16px rgba(10, 10, 10, 0.1);
     padding: 0.5rem 0; }
     .navbar-menu.is-active {
@@ -7790,12 +7790,13 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
   padding: 3rem 1.5rem 6rem; }
 
 .footer {
-  background-color: #05668D;
+  background-color: #2fad8c;
   color: black; }
 
-.page-wrapper {
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column; }
+.primary-background-color {
+  background-color: #A5BE00; }
+
+.secondary-background-color {
+  background-color: #A5BE00; }
 
 /*# sourceMappingURL=bulma.css.map */

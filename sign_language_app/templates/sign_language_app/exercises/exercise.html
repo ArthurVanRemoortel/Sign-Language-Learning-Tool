@@ -1,73 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
 {% extends 'sign_language_app/base.html'%}
+{% load static %}
+
 {% block title %}
-    Home
+    Exercise
 {% endblock %}
 
 {% block content %}
-    <div class="container" style="padding-top: 2em">
-        <article class="panel is-info">
-            <p class="panel-heading">Video Recording Demo</p>
-            <div class="panel-block columns">
-                <div class="column">
-                    <video class="input_video" hidden></video>
-                    <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+    <div class="container is-max-desktop mt-2">
+        <div class="level">
+            <button class="delete is-large"></button>
+            <progress class="progress is-success ml-5" value="60" max="100">20%</progress>
+        </div>
+        <br>
+        <br>
+        <h1 class="title is-1 has-text-centered">United States of America</h1>
+
+        <div class="level">
+            <div class="level-item has-text-centered">
+                <figure class="image is-64x64 ml-2 mr-2">
+                    <img src="{% static 'sign_language_app/images/body_location.png' %}" class="is-rounded" alt="Body location">
+                </figure>
+                <figure class="image is-64x64 ml-2 mr-2">
+                    <img src="{% static 'sign_language_app/images/hand_shape.png' %}" class="is-rounded" alt="Hand shape">
+                </figure>
+            </div>
+        </div>
+
+{#        <div class="level" id="loadingProgressLevel">#}
+{#            <p class="level-item has-text-centered">#}
+{#                <progress class="progress is-large is-info" max="100" style="width: 50%">60%</progress>#}
+{#            </p>#}
+{#        </div>#}
+
+        <div class="level">
+            <video class="input_video" hidden></video>
+            <canvas class="output_canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px"></canvas>
+        </div>
+
+        <div class="notification is-danger level">
+            <div class="level-left">
+                <div class="level-item">
+                    <img class="mr-4" src="https://bulma.io/images/placeholders/48x48.png" alt="Placeholder image">
+                    <p class="title is-1">Incorrect</p>
                 </div>
             </div>
-        </article>
+        </div>
+        {#        <div class="card primary-background-color is-danger">#}
+        {#            <div class="card-content">#}
+        {#                <div class="content">#}
+        {#                    <p class="title">#}
+        {#                        Incorrect#}
+        {#                    </p>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#            <footer class="card-footer">#}
+        {#                <a href="#" class="card-footer-item ">Report</a>#}
+        {#                <a href="#" class="card-footer-item">Skip</a>#}
+        {#            </footer>#}
+        {#        </div>#}
+
     </div>
 {% endblock %}
-</html>
-
 
 {% block javascript %}
-    <script type="module">
+    <script type="module" async>
         const videoElement = document.getElementsByClassName('input_video')[0];
         const canvasElement = document.getElementsByClassName('output_canvas')[0];
         const canvasCtx = canvasElement.getContext('2d');
         const recordingCutoffDelay = 1000
         const minRecordingSize = 1000
-        let mediaRecorder;
-
 
         let gestureStart = null
         let gestureEnd = null
-        let videoBlobs = [];
 
         let left_landmarks = {}
         let right_landmarks = {}
-        for(let landmark_id = 1; landmark_id <= 21; landmark_id++){
-            left_landmarks[landmark_id] = []
-            right_landmarks[landmark_id] = []
-        }
-
         var missingHandsTime = null
+        resetRecording()
+
 
         function beginRecording() {
             console.log("Beginning gesture recording...")
             gestureStart = performance.now()
-            const stream = canvasElement.captureStream(60);
-            mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
-            videoBlobs = []
-            mediaRecorder.addEventListener('dataavailable', function(e) {
-                if (e.data.size > 0) {
-                    videoBlobs.push(e.data);
-                }
-            });
-            mediaRecorder.start(200);
         }
 
         function record() {
-            // Record additional such as coordinates.
+            // Record additional data such as coordinates.
         }
 
         function resetRecording(){
             gestureStart = null
             gestureEnd = null
             missingHandsTime = null
-            videoBlobs = []
-            mediaRecorder.stop();
+            for(let landmark_id = 1; landmark_id <= 21; landmark_id++){
+                left_landmarks[landmark_id] = []
+                right_landmarks[landmark_id] = []
+            }
         }
 
         function endRecording() {
@@ -81,12 +109,11 @@
 
             console.log("Ended gesture recording")
             let csrf_token = '{{ csrf_token }}';
-
             var data = {
                 left_landmarks: left_landmarks,
                 right_landmarks: right_landmarks
             };
-
+            {#            {% comment %}#}
             $.ajax({
                 url: 'http://localhost:8000/api/test',
                 data: JSON.stringify(data),
@@ -96,28 +123,14 @@
                 processData: false,
                 type: 'POST',
                 success: function(data) {
-                    //var obj = JSON.parse(data);
                     console.log(data);
                 },
                 error: function(err) { console.log(err); },
                 beforeSend: function (xhr) {
                 },
             });
-
-            setTimeout(() => {
-                const blob = new Blob(videoBlobs, {
-                    type: "video/mp4"
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "recording.webm";
-                a.click();
-                URL.revokeObjectURL(url);
-                resetRecording()
-            }, 0);
-
-
+            resetRecording()
+            {#            {% endcomment %}#}
         }
 
         const zip = (a, b) => a.map((k, i) => [k, b[i]]);
@@ -192,6 +205,8 @@
             width: 1280,
             height: 720
         });
-        camera.start();
+        camera.start()
+        {#$("#loadingProgressLevel").remove()#}
+
     </script>
 {% endblock %}
