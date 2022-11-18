@@ -8,6 +8,9 @@ from django.utils.translation import gettext_lazy as _
 class Gesture(models.Model):
     word = models.CharField(max_length=100)
 
+    def __str__(self):
+        return f"{self.word}"
+
 
 class Course(models.Model):
     class Difficulty(models.TextChoices):
@@ -35,6 +38,8 @@ class Course(models.Model):
             if unit.id not in attempts:
                 return unit
 
+    def __str__(self):
+        return f"{self.name}"
 
 
 class Unit(models.Model):
@@ -46,6 +51,9 @@ class Unit(models.Model):
     class Meta:
         ordering = ["ordering_number"]
 
+    def __str__(self):
+        return f"{self.name} ({self.course.name})"
+
 
 class UnitAttempt(models.Model):
     user = models.ForeignKey(
@@ -55,3 +63,6 @@ class UnitAttempt(models.Model):
         Unit, on_delete=models.CASCADE, null=False, related_name="unit_attempts"
     )
     datetime = models.DateTimeField(null=False)
+
+    def __str__(self):
+        return f"{self.unit} by {self.user}"
