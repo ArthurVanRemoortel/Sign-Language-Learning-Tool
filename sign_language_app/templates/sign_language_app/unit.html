@@ -14,12 +14,10 @@
         <br>
         <br>
 
-
-
         <h1 id="gestureLabel" class="title is-1 has-text-centered ml11">
             <span class="text-wrapper">
             <span class="line line1"></span>
-            <span class="letters">Hello Goodbye</span>
+            <span class="letters"></span>
           </span>
         </h1>
 
@@ -110,18 +108,19 @@
 
         unitProgressBar.max = gesture_list.length
         resetRecording()
-        loadGesture()
+        {#loadGesture()#}
         loadCamera()
 
         cancelUnitButton.addEventListener("click", function() { triggerAnim(false); } )
 
         function loadGesture() {
-            updateProgressBar()
             if (current_gesture_i >= gesture_list.length)
                 return
             let gesture = gesture_list[current_gesture_i]
-            current_gesture =  gesture
+            current_gesture = gesture
+            console.log(gesture)
             animateGestureTitle(gesture['word'])
+            updateProgressBar()
         }
 
         function updateProgressBar(){
@@ -129,7 +128,6 @@
         }
 
         function triggerAnim(correct) {
-            console.log('triggerAnim', correct)
             if (correct){
                 $(cameraAreaBox).addClass('feedback-pulse-correct')
             } else {
@@ -170,7 +168,6 @@
 
         function animateGestureTitle(new_word){
             var textWrapper = document.querySelector('.ml11 .letters');
-
             textWrapper.textContent = new_word
             textWrapper.innerHTML = textWrapper.textContent.replace(/([^\x00-\x80]|\w)/g, "<span class='letter'>$&</span>");
             anime.timeline({loop: false})
@@ -312,11 +309,11 @@
                 onFrame: async () => {
                     await hands.send({image: videoElement});
                     if (!cameraLoaded){
-                        console.log("done")
                         cameraLoaded = true
                         $(cameraLoader).remove()
+                        loadGesture()
+                        {#loadGesture()#}
                     }
-
                 },
                 width: 1280,
                 height: 720

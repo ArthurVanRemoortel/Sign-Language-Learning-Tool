@@ -21,5 +21,4 @@ urlpatterns += [
 
 urlpatterns += [
     path('api/test', api_views.test_auth)
-
 ]

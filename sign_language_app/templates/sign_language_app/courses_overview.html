@@ -53,11 +53,11 @@
                                         {% for unit in col %}
                                             <div class="mt-2">
                                                 {% if unit in completed_units %}
-                                                    <button class="button is-primary is-rounded is-fullwidth">{{ unit.name }}</button>
+                                                    <a href="{% url "unit" unit.id %}" class="button is-primary is-rounded is-fullwidth">{{ unit.name }}</a>
                                                 {% elif unit == next_units|get_value:course.id %}
-                                                    <button class="button is-info is-rounded is-fullwidth">{{ unit.name }}</button>
+                                                    <a href="{% url "unit" unit.id %}" class="button is-info is-rounded is-fullwidth">{{ unit.name }}</a>
                                                 {% else %}
-                                                    <button class="button is-rounded is-fullwidth">{{ unit.name }}</button>
+                                                    <a href="{% url "unit" unit.id %}" class="button is-rounded is-fullwidth">{{ unit.name }}</a>
                                                 {% endif %}
                                             </div>
                                         {% endfor %}
