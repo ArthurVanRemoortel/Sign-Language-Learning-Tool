@@ -1,3 +1,5 @@
+import random
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
@@ -16,7 +18,8 @@ def test_auth(request):
     data = request.data
     left = data['left_landmarks']
     right = data['right_landmarks']
-
-    print(f'Left: {len(left["1"])}')
-    print(f'Right: {len(right["1"])}')
-    return JsonResponse({'status': 'OK'}, status=status.HTTP_201_CREATED)
+    print(f"Gesture: {data['gesture_id']}")
+    print(f'Left: {len(left["1"])} frames.')
+    print(f'Right: {len(right["1"])} frames.')
+    is_correct = random.randint(0, 1) == 0
+    return JsonResponse({'status': 'OK', "correct": is_correct}, status=status.HTTP_201_CREATED)

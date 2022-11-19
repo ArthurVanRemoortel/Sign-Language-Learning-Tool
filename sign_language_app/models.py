@@ -9,7 +9,7 @@ class Gesture(models.Model):
     word = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.word}"
+        return f"{self.word} (id={self.id})"
 
 
 class Course(models.Model):
@@ -39,7 +39,7 @@ class Course(models.Model):
                 return unit
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} (id={self.id})"
 
 
 class Unit(models.Model):
@@ -52,7 +52,7 @@ class Unit(models.Model):
         ordering = ["ordering_number"]
 
     def __str__(self):
-        return f"{self.name} ({self.course.name})"
+        return f"{self.name} ({self.course.name}) (id={self.id})"
 
 
 class UnitAttempt(models.Model):

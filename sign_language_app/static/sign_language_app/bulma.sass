@@ -19,13 +19,88 @@
   color: $text-color-dark
 
 .primary-background-color
-    background-color: $primary
+  background-color: $primary
 
 .secondary-background-color
-    background-color: $primary
+  background-color: $secondary
 
+
+.camera-box
+  border-radius: 6px
+  display: block
+//padding: 1.25rem
+
+.camera-canvas
+  display: block
 
 .page-wrapper
   display: flex
   min-height: 100vh
   flex-direction: column
+
+
+.feedback-pulse-incorrect
+  animation-name: pulseAnimIncorrect
+  animation-duration: .3s
+  animation-iteration-count: 1
+  animation-timing-function: ease-in-out
+
+.feedback-pulse-correct
+  animation-name: pulseAnimCorrect
+  animation-duration: .8s
+  animation-iteration-count: 1
+  animation-timing-function: ease-out
+
+
+$camera-loader-size: 150px
+
+.loader-1
+    width : $camera-loader-size
+    height: $camera-loader-size
+    border-radius: 50%
+    display: inline-block
+    position: relative
+    border: 3px solid
+    border-color: $primary $primary transparent
+    animation: rotation 1s linear infinite
+    &:after
+      content: ''
+      position: absolute
+      left: 0
+      right: 0
+      top: 0
+      bottom: 0
+      margin: auto
+      border: 3px solid
+      border-color: transparent $secondary-dark $secondary-dark
+      width:  $camera-loader-size/2
+      height:  $camera-loader-size/2
+      border-radius: 50%
+      animation: rotationBack 0.5s linear infinite
+      transform-origin: center center
+
+
+@-webkit-keyframes pulseAnimIncorrect
+  0%
+    -webkit-box-shadow: 0 0 0 0 rgba(204,10,40, 100)
+    transform: translate(0px, 0) rotate(0deg)
+  33%
+    -webkit-box-shadow: 0 0 0 10px rgba(204,10,40, 100)
+    transform: translate(-5px, 0) rotate(0deg)
+  66%
+    -webkit-box-shadow: 0 0 0 10px rgba(204,169,44, 0)
+    transform: translate(5px, 0) rotate(0deg)
+
+  100%
+    -webkit-box-shadow: 0 0 0 0 rgba(204,169,44, 0)
+    transform: translate(0, 0) rotate(0deg)
+
+@-webkit-keyframes pulseAnimCorrect
+  0%
+    -webkit-box-shadow: 0 0 0 0 green
+
+  50%
+    -webkit-box-shadow: 0 0 0 20px rgba(204,169,44, 0)
+
+  100%
+    -webkit-box-shadow: 0 0 0 0 rgba(204,169,44, 0)

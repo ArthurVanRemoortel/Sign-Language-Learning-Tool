@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.1.1/css/all.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/css-loader/3.3.3/css-loader.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
@@ -42,12 +44,12 @@
             <a class="navbar-item" href="{% url 'courses_overview' %}">
                 Courses
             </a>
-            <a class="navbar-item" href="{% url 'exercise' exercise_id=0 %}">
-                Exercise
+            <a class="navbar-item" href="{% url 'unit' unit_id=1 %}">
+                (DEV) Exercise 1
             </a>
-            <a class="navbar-item" href="{% url 'video_test' %}">
-                DEV: Camera
-            </a>
+            {#            <a class="navbar-item" href="{% url 'video_test' %}">#}
+            {#                DEV: Camera#}
+            {#            </a>#}
         </div>
 
         <div class="navbar-end">

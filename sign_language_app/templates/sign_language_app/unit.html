@@ -8,12 +8,12 @@
 {% block content %}
     <div class="container is-max-desktop mt-2">
         <div class="level">
-            <button class="delete is-large"></button>
-            <progress class="progress is-success ml-5" value="60" max="100">20%</progress>
+            <button class="delete is-large" id="cancelUnitButton"></button>
+            <progress id="unitProgressBar" class="progress is-success ml-5" value="0" max="100"></progress>
         </div>
         <br>
         <br>
-        <h1 class="title is-1 has-text-centered">United States of America</h1>
+        <h1 id="gestureLabel" class="title is-1 has-text-centered"></h1>
 
         <div class="level">
             <div class="level-item has-text-centered">
@@ -26,25 +26,24 @@
             </div>
         </div>
 
-{#        <div class="level" id="loadingProgressLevel">#}
-{#            <p class="level-item has-text-centered">#}
-{#                <progress class="progress is-large is-info" max="100" style="width: 50%">60%</progress>#}
-{#            </p>#}
-{#        </div>#}
-
-        <div class="level">
-            <video class="input_video" hidden></video>
-            <canvas class="output_canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px"></canvas>
-        </div>
-
-        <div class="notification is-danger level">
-            <div class="level-left">
-                <div class="level-item">
-                    <img class="mr-4" src="https://bulma.io/images/placeholders/48x48.png" alt="Placeholder image">
-                    <p class="title is-1">Incorrect</p>
-                </div>
+        <div class="level camera-box" id="cameraAreaBox">
+            <div class="level-item has-text-centered mt-6" id="cameraLoader">
+                <div class="loader-1"></div>
             </div>
+            <video class="input_video" hidden></video>
+            <canvas class="output_canvas camera-canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px">
+
+            </canvas>
         </div>
+
+        {#        <div class="notification is-danger level">#}
+        {#            <div class="level-left">#}
+        {#                <div class="level-item">#}
+        {#                    <img class="mr-4" src="https://bulma.io/images/placeholders/48x48.png" alt="Placeholder image">#}
+        {#                    <p class="title is-1">Incorrect</p>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
         {#        <div class="card primary-background-color is-danger">#}
         {#            <div class="card-content">#}
         {#                <div class="content">#}
@@ -66,6 +65,11 @@
     <script type="module" async>
         const videoElement = document.getElementsByClassName('input_video')[0];
         const canvasElement = document.getElementsByClassName('output_canvas')[0];
+        const cameraAreaBox = document.getElementById('cameraAreaBox');
+        const cameraLoader = document.getElementById('cameraLoader');
+        const unitProgressBar = document.getElementById('unitProgressBar')
+        const gestureLabel = document.getElementById('gestureLabel')
+        const cancelUnitButton = document.getElementById('cancelUnitButton')
         const canvasCtx = canvasElement.getContext('2d');
         const recordingCutoffDelay = 1000
         const minRecordingSize = 1000
@@ -75,17 +79,90 @@
 
         let left_landmarks = {}
         let right_landmarks = {}
-        var missingHandsTime = null
-        resetRecording()
+        let missingHandsTime = null
 
+        let cameraLoaded = false
+
+        let gesture_list = [
+            {
+                "word": "United States of America"
+            },
+            {
+                "word": "Word 2"
+            },
+            {
+                "word": "Word 3"
+            },
+            {
+                "word": "Word 4"
+            },
+        ]
+        let current_gesture_i = 0
+        let current_gesture = null
+
+        unitProgressBar.max = gesture_list.length
+        resetRecording()
+        loadGesture()
+        loadCamera()
+
+        cancelUnitButton.addEventListener("click", function() { triggerAnim(false); } )
+
+        function loadGesture() {
+            updateProgressBar()
+            if (current_gesture_i >= gesture_list.length)
+                return
+            let gesture = gesture_list[current_gesture_i]
+            current_gesture =  gesture
+            gestureLabel.innerText = gesture['word']
+        }
+
+        function updateProgressBar(){
+            unitProgressBar.value = current_gesture_i
+        }
+
+        function triggerAnim(correct) {
+            console.log('triggerAnim', correct)
+            if (correct){
+                $(cameraAreaBox).addClass('feedback-pulse-correct')
+            } else {
+                $(cameraAreaBox).addClass('feedback-pulse-incorrect')
+            }
+        }
+
+        $(cameraAreaBox).on('animationend', function(){
+            $(cameraAreaBox).removeClass('feedback-pulse-correct');
+            $(cameraAreaBox).removeClass('feedback-pulse-incorrect');
+        });
+
+        function veryfiUserInput(data){
+            let csrf_token = '{{ csrf_token }}';
+            $.ajax({
+                url: 'http://localhost:8000/api/test',
+                data: JSON.stringify(data),
+                headers: {'X-CSRFToken': csrf_token},
+                contentType: "application/json",
+                dataType: "json",
+                processData: false,
+                type: 'POST',
+                success: function(data) {
+                    console.log(data)
+                    if (data.correct){
+                        triggerAnim(true)
+                        current_gesture_i += 1
+                        loadGesture()
+                    } else {
+                        triggerAnim(false)
+                    }
+                },
+                error: function(err) { console.log(err); },
+                beforeSend: function (xhr) {
+                },
+            });
+        }
 
         function beginRecording() {
             console.log("Beginning gesture recording...")
             gestureStart = performance.now()
-        }
-
-        function record() {
-            // Record additional data such as coordinates.
         }
 
         function resetRecording(){
@@ -106,31 +183,16 @@
                 return
             }
             gestureEnd = performance.now()
-
             console.log("Ended gesture recording")
-            let csrf_token = '{{ csrf_token }}';
+
             var data = {
                 left_landmarks: left_landmarks,
-                right_landmarks: right_landmarks
+                right_landmarks: right_landmarks,
+                gesture_id: current_gesture
             };
-            {#            {% comment %}#}
-            $.ajax({
-                url: 'http://localhost:8000/api/test',
-                data: JSON.stringify(data),
-                headers: {'X-CSRFToken': csrf_token},
-                contentType: "application/json",
-                dataType: "json",
-                processData: false,
-                type: 'POST',
-                success: function(data) {
-                    console.log(data);
-                },
-                error: function(err) { console.log(err); },
-                beforeSend: function (xhr) {
-                },
-            });
+
+            veryfiUserInput(data)
             resetRecording()
-            {#            {% endcomment %}#}
         }
 
         const zip = (a, b) => a.map((k, i) => [k, b[i]]);
@@ -187,26 +249,34 @@
             canvasCtx.restore();
         }
 
-        const hands = new Hands({locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-            }});
-        hands.setOptions({
-            maxNumHands: 2,
-            modelComplexity: 1,
-            minDetectionConfidence: 0.8,
-            minTrackingConfidence: 0.8
-        });
-        hands.onResults(onResults);
+        function loadCamera(){
+            const hands = new Hands({locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                }});
+            hands.setOptions({
+                maxNumHands: 2,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.8,
+                minTrackingConfidence: 0.8
+            });
+            hands.onResults(onResults);
 
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await hands.send({image: videoElement});
-            },
-            width: 1280,
-            height: 720
-        });
-        camera.start()
-        {#$("#loadingProgressLevel").remove()#}
+
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({image: videoElement});
+                    if (!cameraLoaded){
+                        console.log("done")
+                        cameraLoaded = true
+                        $(cameraLoader).remove()
+                    }
+
+                },
+                width: 1280,
+                height: 720
+            });
+            camera.start()
+        }
 
     </script>
 {% endblock %}
