@@ -21,5 +21,5 @@ def test_auth(request):
     print(f"Gesture: {data['gesture_id']}")
     print(f'Left: {len(left["1"])} frames.')
     print(f'Right: {len(right["1"])} frames.')
-    is_correct = random.randint(0, 1) == 0
+    is_correct = random.randint(0, 2) != 0
     return JsonResponse({'status': 'OK', "correct": is_correct}, status=status.HTTP_201_CREATED)

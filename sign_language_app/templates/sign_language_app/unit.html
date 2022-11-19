@@ -13,7 +13,15 @@
         </div>
         <br>
         <br>
-        <h1 id="gestureLabel" class="title is-1 has-text-centered"></h1>
+
+
+
+        <h1 id="gestureLabel" class="title is-1 has-text-centered ml11">
+            <span class="text-wrapper">
+            <span class="line line1"></span>
+            <span class="letters">Hello Goodbye</span>
+          </span>
+        </h1>
 
         <div class="level">
             <div class="level-item has-text-centered">
@@ -113,7 +121,7 @@
                 return
             let gesture = gesture_list[current_gesture_i]
             current_gesture =  gesture
-            gestureLabel.innerText = gesture['word']
+            animateGestureTitle(gesture['word'])
         }
 
         function updateProgressBar(){
@@ -160,6 +168,42 @@
             });
         }
 
+        function animateGestureTitle(new_word){
+            var textWrapper = document.querySelector('.ml11 .letters');
+
+            textWrapper.textContent = new_word
+            textWrapper.innerHTML = textWrapper.textContent.replace(/([^\x00-\x80]|\w)/g, "<span class='letter'>$&</span>");
+            anime.timeline({loop: false})
+                .add({
+                    targets: '.ml11 .line',
+                    scaleY: [0,1],
+                    opacity: [0.5,1],
+                    easing: "easeOutExpo",
+                    duration: 700
+                })
+                .add({
+                    targets: '.ml11 .line',
+                    translateX: [0, document.querySelector('.ml11 .letters').getBoundingClientRect().width + 10],
+                    easing: "easeOutExpo",
+                    duration: 700,
+                    delay: 100
+                }).add({
+                targets: '.ml11 .letter',
+                opacity: [0,1],
+                easing: "easeOutExpo",
+                duration: 600,
+                offset: '-=775',
+                delay: (el, i) => 34 * (i+1)
+            }).add({
+                targets: '.line',
+                opacity: 0,
+                duration: 1000,
+                easing: "easeOutExpo",
+                delay: 0
+            });
+        }
+
+
         function beginRecording() {
             console.log("Beginning gesture recording...")
             gestureStart = performance.now()
@@ -202,6 +246,8 @@
                 return "Right"
             return "Left"
         }
+
+
 
         function onResults(results) {
             canvasCtx.save();
