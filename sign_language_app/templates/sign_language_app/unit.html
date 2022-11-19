@@ -22,13 +22,8 @@
         </h1>
 
         <div class="level">
-            <div class="level-item has-text-centered">
-                <figure class="image is-64x64 ml-2 mr-2">
-                    <img src="{% static 'sign_language_app/images/body_location.png' %}" class="is-rounded" alt="Body location">
-                </figure>
-                <figure class="image is-64x64 ml-2 mr-2">
-                    <img src="{% static 'sign_language_app/images/hand_shape.png' %}" class="is-rounded" alt="Hand shape">
-                </figure>
+            <div class="level-item has-text-centered" id="hintsSection">
+
             </div>
         </div>
 
@@ -42,30 +37,9 @@
             </canvas>
         </div>
 
-        {#        <div class="notification is-danger level">#}
-        {#            <div class="level-left">#}
-        {#                <div class="level-item">#}
-        {#                    <img class="mr-4" src="https://bulma.io/images/placeholders/48x48.png" alt="Placeholder image">#}
-        {#                    <p class="title is-1">Incorrect</p>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </div>#}
-        {#        <div class="card primary-background-color is-danger">#}
-        {#            <div class="card-content">#}
-        {#                <div class="content">#}
-        {#                    <p class="title">#}
-        {#                        Incorrect#}
-        {#                    </p>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#            <footer class="card-footer">#}
-        {#                <a href="#" class="card-footer-item ">Report</a>#}
-        {#                <a href="#" class="card-footer-item">Skip</a>#}
-        {#            </footer>#}
-        {#        </div>#}
-
     </div>
 {% endblock %}
+
 
 {% block javascript %}
     <script type="module" async>
@@ -76,6 +50,7 @@
         const unitProgressBar = document.getElementById('unitProgressBar')
         const gestureLabel = document.getElementById('gestureLabel')
         const cancelUnitButton = document.getElementById('cancelUnitButton')
+        const hintsSection = document.getElementById('hintsSection')
         const canvasCtx = canvasElement.getContext('2d');
         const recordingCutoffDelay = 1000
         const minRecordingSize = 1000
@@ -244,7 +219,19 @@
             return "Left"
         }
 
+        function startExercise(){
+            $(cameraLoader).remove()
+            var string = `<figure class="image is-64x64 ml-2 mr-2">
+        <img src="{% static 'sign_language_app/images/body_location.png' %}" class="is-rounded" alt="Body location">
+    </figure>
+    <figure class="image is-64x64 ml-2 mr-2">
+        <img src="{% static 'sign_language_app/images/hand_shape.png' %}" class="is-rounded" alt="Hand shape">
+    </figure>`
 
+            $('#hintsSection').append(string)
+            loadGesture()
+
+        }
 
         function onResults(results) {
             canvasCtx.save();
@@ -310,9 +297,7 @@
                     await hands.send({image: videoElement});
                     if (!cameraLoaded){
                         cameraLoaded = true
-                        $(cameraLoader).remove()
-                        loadGesture()
-                        {#loadGesture()#}
+                        startExercise()
                     }
                 },
                 width: 1280,
