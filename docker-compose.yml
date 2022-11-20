@@ -21,4 +21,4 @@ services:
     env_file:
       - .env.docker
     depends_on:
-      - db
+      - "db"
