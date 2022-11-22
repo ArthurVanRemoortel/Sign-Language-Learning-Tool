@@ -9,8 +9,6 @@
         <h2 class="title is-2 is-spaced bd-anchor-title">
             Courses
         </h2>
-
-
         <div class="columns">
             <div class="column">
                 <div class="card">
@@ -22,19 +20,57 @@
                 </div>
             </div>
             <div class="column is-four-fifths">
-
-                <div class="control">
-                    <input class="input" type="text" placeholder="Search">
-                </div>
+                <form action="{% url 'courses_overview' %}" method="post">
+                    {% csrf_token %}
+                    <div class="field has-addons">
+                        <div class="control is-expanded">
+                            <label for="searchInput"></label>
+                            {{ search_form.search_input }}
+                        </div>
+                        <div class="control">
+                            <button class="button is-info">Search</button>
+                        </div>
+                    </div>
+                </form>
 
                 <br>
 
                 <nav class="pagination is-rounded is-centered" role="navigation" aria-label="pagination">
                     <ul class="pagination-list">
-                        <li><a class="pagination-link is-current" aria-label="Goto page 1">1</a></li>
-                        <li><a class="pagination-link" aria-label="Page 2" aria-current="page">2</a></li>
-                        <li><span class="pagination-ellipsis">&hellip;</span></li>
-                        <li><a class="pagination-link" aria-label="Goto page 12">12</a></li>
+                        {% if courses.has_previous %}
+                            <li><a class="pagination-link button is-info is-small" href="?page={{ courses.previous_page_number }}">&laquo;</a></li>
+                        {% else %}
+                            <li><span class="pagination-link button is-info is-small">&laquo;</span></li>
+                        {% endif%}
+
+                        {% for i in courses_paginator %}
+                            {% if courses.number == i %}
+                                <li><a class="pagination-link is-current" href="?page={{ i }}">{{ i }} </a>
+                            {% else %}
+                                {% if i == courses.paginator.ELLIPSIS %}
+                                    ...
+                                {% else %}
+                                    <li><a class="pagination-link" href="?page={{ i }}">{{ i }} </a>  </li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if courses.has_next %}
+                            <li> <a class="pagination-link button is-info is-small" href="?page={{ courses.next_page_number }}">&raquo;</a> </li>
+                        {% else %}
+                            <li><span class="pagination-link button is-info is-small">&raquo;</span></li>
+                        {% endif%}
+
+                        {#                        {% if courses_paginator.has_previous %}#}
+                        {#                            <a href="?page=1">&laquo; first</a>#}
+                        {#                            <a href="?page={{ courses_paginator.previous_page_number }}">previous</a>#}
+                        {#                        {% endif %}#}
+                        {##}
+                        {#                    #}
+                        {#                        <li><a class="pagination-link is-current" aria-label="Goto page 1">1</a></li>#}
+                        {#                        <li><a class="pagination-link" aria-label="Page 2" aria-current="page">2</a></li>#}
+                        {#                        <li><span class="pagination-ellipsis">&hellip;</span></li>#}
+                        {#                        <li><a class="pagination-link" aria-label="Goto page 12">12</a></li>#}
                     </ul>
                 </nav>
 
