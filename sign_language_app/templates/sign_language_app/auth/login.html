@@ -34,7 +34,7 @@
                             <button class="button is-info is-medium is-fullwidth">Login</button>
                             {% if form.errors %}
                                 <div class="has-text-centered">
-                                    <hr class="login-hr">
+                                    <hr class="">
                                     <p>
                                     <span class="icon has-text-danger">
                                       <i class="fas fa-ban"></i>
@@ -44,7 +44,7 @@
                         </form>
                     </div>
                     <p>
-                        <a href="">Sign Up</a> &nbsp;·&nbsp;  <a href="">Forgot Password</a>
+                        <a href="{% url 'register' %}">Sign Up</a> &nbsp;·&nbsp;  <a href="{% url 'register' %}">Forgot Password</a>
                     </p>
                 </div>
             </div>

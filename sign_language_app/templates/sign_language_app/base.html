@@ -68,8 +68,11 @@
                             Log Out
                         </a>
                     {% else %}
-                        <a class="button is-light" href="{% url 'login' %}">
-                            Login
+                        <a class="button is-link" href="{% url 'login' %}">
+                            Log In
+                        </a>
+                        <a class="button is-light" href="{% url 'register' %}">
+                            Sign Up
                         </a>
                     {% endif %}
                 </div>

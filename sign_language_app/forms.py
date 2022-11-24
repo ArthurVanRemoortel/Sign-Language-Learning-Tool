@@ -8,8 +8,46 @@ from django.forms import ModelForm
 
 class NewUserForm(UserCreationForm):
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={"class": "input is-medium", "id": "emailInput"}),
+        widget=forms.EmailInput(attrs={
+            "class": "input",
+            "id": "emailInput",
+            "placeholder": "Email",
+        }),
         required=True
+    )
+
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "class": "input",
+            "id": "usernameInput",
+            "placeholder": "Username"
+        }),
+        required=True,
+    )
+
+    password1 = forms.CharField(
+        label="Password",
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={"class": "input",
+                   "id": "passwordInput",
+                   "placeholder": "Password",
+                   # "autocomplete": "current-password"
+                   }
+        ),
+        required=True,
+    )
+    password2 = forms.CharField(
+        label="Password",
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={"class": "input",
+                   "id": "passwordInput",
+                   "placeholder": "Password Confirmation",
+                   # "autocomplete": "current-password"
+                   }
+        ),
+        required=True,
     )
 
     class Meta:
@@ -26,13 +64,13 @@ class NewUserForm(UserCreationForm):
 
 class LoginForm(forms.Form):
     # email = forms.EmailField(
-    #     widget=forms.EmailInput(attrs={"class": "input is-medium", "id": "emailInput"}),
+    #     widget=forms.EmailInput(attrs={"class": "input", "id": "emailInput"}),
     #     required=True
     # )
 
     username = forms.CharField(
         widget=forms.TextInput(attrs={
-            "class": "input is-medium",
+            "class": "input",
             "id": "usernameInput",
             "placeholder": "Username"
         }),
@@ -45,6 +83,7 @@ class LoginForm(forms.Form):
         widget=forms.PasswordInput(
             attrs={"class": "input",
                    "id": "passwordInput",
+                   "placeholder": "Password",
                    # "autocomplete": "current-password"
                    }
         ),

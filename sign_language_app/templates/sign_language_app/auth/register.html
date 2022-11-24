@@ -1,23 +1,63 @@
 {% extends 'sign_language_app/base.html'%}
+{% load static %}
 
 {% block title %}
     Register
 {% endblock %}
 
-
 {% block content %}
-
-    <div class="container py-5">
-{#        {% if form.errors %}#}
-{#            {{ form.errors }}#}
-{#        {% endif %}#}
-
-        <form method="POST">
-            {% csrf_token %}
-            {{ form }}
-            <button class="btn btn-primary" type="submit">Register</button>
-        </form>
-        <p class="text-center">If you already have an account, <a href="{% url 'login' %}">login</a> instead.</p>
+    <div class="hero">
+        <div class="hero-body">
+            <div class="is-justify-content-center is-align-items-center">
+                <div class="container has-text-centered">
+                    <div class="box">
+                        <div class="column is-8 is-offset-2">
+                            <h3 class="title">Sign Up</h3>
+                            <p class="subtitle">Welcome! Please make an account.</p>
+                        </div>
+                        <hr>
+                        <div class="p-5">
+                            <img src="{% static 'sign_language_app/images/logo_big.png'%}" style="height:300px">
+                        </div>
+                        <form method="post" action="{% url 'register' %}">
+                            {% csrf_token %}
+                            <div class="field">
+                                <div class="control">
+                                    {{ form.username }}
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    {{ form.email }}
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    {{ form.password1 }}
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    {{ form.password2 }}
+                                </div>
+                            </div>
+                            <button class="button is-info is-medium is-fullwidth">Sign Up</button>
+                            {% if form.errors %}
+                                <div class="has-text-centered">
+                                    <hr class="">
+                                    <p>
+                                    <span class="icon has-text-danger">
+                                      <i class="fas fa-ban"></i>
+                                    </span> Something went wrong. Verify your information and try again.</p>
+                                </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                    <p>
+                        <a href="{% url 'register' %}">Log In</a> &nbsp;·&nbsp;  <a href="{% url 'register' %}">Forgot Password</a>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
-
 {% endblock %}
