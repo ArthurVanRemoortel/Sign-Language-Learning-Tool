@@ -3,9 +3,9 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, F
 from django.shortcuts import render
-from django.http import HttpResponse
-from django.core.paginator import Paginator
-
+from django.http import HttpResponse, Http404
+from django.core.paginator import Paginator, EmptyPage
+from django.views.defaults import page_not_found
 from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
 
@@ -17,6 +17,19 @@ def get_user(request):
 def index(request):
     context = {}
     return render(request, "sign_language_app/index.html", context)
+
+
+def error_view(request, exception):
+    if isinstance(exception, Exception):
+        error_message = exception
+    else:
+        error_message = exception
+
+    context = {
+        'request': request,
+        'error_message': error_message
+    }
+    return render(request, "sign_language_app/errors/404.html", context)
 
 
 class JoinedField:
@@ -41,11 +54,16 @@ def courses_overview(request, page=1):
         completed_units = [attempt.unit for attempt in UnitAttempt.objects.filter(user=user)]
         next_units = {course.id: course.get_next_unit(user) for course in courses}
 
-    courses = courses.union(*[courses for _ in range(100)], all=True)  # Hacky way to make the results longer to test pagination.
+    # courses = courses.union(*[courses for _ in range(100)], all=True)  # Hacky way to make the results longer to test pagination.
 
 
     paginator = Paginator(courses, 15)
     page_number = request.GET.get('page', 1)
+    try:
+        courses = paginator.page(page_number)
+    except EmptyPage as e:
+        return error_view(request, exception='That page number is to high.')
+
     courses_paginator = paginator.get_elided_page_range(page_number, on_each_side=2, on_ends=1)
     courses = paginator.get_page(page_number)
 

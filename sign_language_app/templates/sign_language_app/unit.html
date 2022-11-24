@@ -221,12 +221,13 @@
 
         function startExercise(){
             $(cameraLoader).remove()
-            var string = `<figure class="image is-64x64 ml-2 mr-2">
-        <img src="{% static 'sign_language_app/images/body_location.png' %}" class="is-rounded" alt="Body location">
-    </figure>
-    <figure class="image is-64x64 ml-2 mr-2">
-        <img src="{% static 'sign_language_app/images/hand_shape.png' %}" class="is-rounded" alt="Hand shape">
-    </figure>`
+            var string = `
+            <figure class="image is-64x64 ml-2 mr-2">
+                <img src="{% static 'sign_language_app/images/body_location.png' %}" class="is-rounded" alt="Body location">
+            </figure>
+            <figure class="image is-64x64 ml-2 mr-2">
+                <img src="{% static 'sign_language_app/images/hand_shape.png' %}" class="is-rounded" alt="Hand shape">
+            </figure>`
 
             $('#hintsSection').append(string)
             loadGesture()
