@@ -56,7 +56,6 @@ def courses_overview(request, page=1):
 
     # courses = courses.union(*[courses for _ in range(100)], all=True)  # Hacky way to make the results longer to test pagination.
 
-
     paginator = Paginator(courses, 15)
     page_number = request.GET.get('page', 1)
     try:

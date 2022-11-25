@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.auth import authenticate
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import authenticate, password_validation
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
@@ -38,7 +38,7 @@ class NewUserForm(UserCreationForm):
         required=True,
     )
     password2 = forms.CharField(
-        label="Password",
+        label="Password Confirmation",
         strip=False,
         widget=forms.PasswordInput(
             attrs={"class": "input",
@@ -116,8 +116,49 @@ class LoginForm(forms.Form):
         return self.user_cache
 
 
+class NewPasswordAuthenticationForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super(NewPasswordAuthenticationForm, self).__init__(*args, **kwargs)
+
+    new_password1 = forms.CharField(
+        label="New password",
+        widget=forms.PasswordInput(attrs={
+            "autocomplete": "new-password",
+            "class": "input",
+            "placeholder": "New Password"
+        }),
+        strip=False,
+        help_text=password_validation.password_validators_help_text_html()
+    )
+    new_password2 = forms.CharField(
+        label="New password confirmation",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            "autocomplete": "new-password",
+            "class": "input",
+            "placeholder": "Confirm Password"
+        }),
+    )
+
+
+class ResetPasswordAuthenticationForm(PasswordResetForm):
+    def __init__(self, *args, **kwargs):
+        super(ResetPasswordAuthenticationForm, self).__init__(*args, **kwargs)
+
+    email = forms.CharField(
+        label="Email",
+        widget=forms.EmailInput(attrs={
+            "autocomplete": "email",
+            "class": "input",
+            "placeholder": "Email"
+        }),
+        max_length=254
+    )
+
+
 class CoursesForm(forms.Form):
     search_input = forms.CharField(
         widget=forms.TextInput(attrs={"class": "input", "id": "searchInput"}),
         required=False,
     )
+

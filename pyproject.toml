@@ -27,6 +27,7 @@ psycopg2 = "^2.9.5"
 djangorestframework = "^3.14.0"
 django-filter = "^22.1"
 PyYAML = "^6.0"
+aiosmtpd = "^1.4.2"
 
 
 [build-system]
