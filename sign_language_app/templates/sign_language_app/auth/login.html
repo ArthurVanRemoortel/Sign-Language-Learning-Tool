@@ -25,20 +25,29 @@
                                 <div class="control">
                                     {{ form.username }}
                                 </div>
+                                {% for error in form.username.errors %}
+                                    <p class="help is-danger">{{ error }}</p>
+                                {% endfor %}
                             </div>
                             <div class="field">
                                 <div class="control">
                                     {{ form.password }}
                                 </div>
+                                {% for error in form.password.errors %}
+                                    <p class="help is-danger">{{ error }}</p>
+                                {% endfor %}
                             </div>
                             <button class="button is-info is-medium is-fullwidth">Login</button>
-                            {% if form.errors %}
+                            {% if form.non_field_errors %}
                                 <div class="has-text-centered">
                                     <hr class="">
-                                    <p>
-                                    <span class="icon has-text-danger">
-                                      <i class="fas fa-ban"></i>
-                                    </span> Your username and password didn't match. Please try again.</p>
+                                    {% for error in form.non_field_errors %}
+                                        <p>
+                                        <span class="icon has-text-danger">
+                                          <i class="fas fa-ban"></i>
+                                        </span> {{ error }}
+                                        </p>
+                                    {% endfor %}
                                 </div>
                             {% endif %}
                         </form>

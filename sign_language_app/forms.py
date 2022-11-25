@@ -12,6 +12,7 @@ class NewUserForm(UserCreationForm):
             "class": "input",
             "id": "emailInput",
             "placeholder": "Email",
+            "autofocus": True
         }),
         required=True
     )
@@ -32,7 +33,7 @@ class NewUserForm(UserCreationForm):
             attrs={"class": "input",
                    "id": "passwordInput",
                    "placeholder": "Password",
-                   # "autocomplete": "current-password"
+                   "autocomplete": "new-password"
                    }
         ),
         required=True,
@@ -44,7 +45,7 @@ class NewUserForm(UserCreationForm):
             attrs={"class": "input",
                    "id": "passwordInput",
                    "placeholder": "Password Confirmation",
-                   # "autocomplete": "current-password"
+                   "autocomplete": "new-password"
                    }
         ),
         required=True,
@@ -72,7 +73,8 @@ class LoginForm(forms.Form):
         widget=forms.TextInput(attrs={
             "class": "input",
             "id": "usernameInput",
-            "placeholder": "Username"
+            "placeholder": "Username",
+            "autofocus": True
         }),
         required=True,
     )
@@ -125,7 +127,9 @@ class NewPasswordAuthenticationForm(SetPasswordForm):
         widget=forms.PasswordInput(attrs={
             "autocomplete": "new-password",
             "class": "input",
-            "placeholder": "New Password"
+            "placeholder": "New Password",
+            "autofocus": True
+
         }),
         strip=False,
         help_text=password_validation.password_validators_help_text_html()
@@ -150,7 +154,8 @@ class ResetPasswordAuthenticationForm(PasswordResetForm):
         widget=forms.EmailInput(attrs={
             "autocomplete": "email",
             "class": "input",
-            "placeholder": "Email"
+            "placeholder": "Email",
+            "autofocus": True
         }),
         max_length=254
     )
