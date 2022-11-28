@@ -12,12 +12,59 @@
         <div class="columns">
             <div class="column">
                 <div class="card">
-                    <div class="card-content">
-                        <div class="content">
-                            Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet fermentum.
+                    <div class="card-content p-2">
+                        <div class="buttons">
+                            <button class="button is-outlined is-primary is-fullwidth">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-play"></i>
+                                </span>
+                                <span>Continue</span>
+                            </button>
+
+                            <button class="button is-outlined is-primary is-fullwidth">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-bookmark"></i>
+                                </span>
+                                <span>Saved</span>
+                            </button>
+
+                            <button class="button is-outlined is-primary is-fullwidth">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-share-nodes"></i>
+                                </span>
+                                <span>Shared with me</span>
+                            </button>
                         </div>
                     </div>
                 </div>
+
+                <div class="card mt-5">
+                    <div class="card-content p-2">
+                        <div class="buttons text-left">
+                            <button class="button is-outlined is-primary is-fullwidth difficulty-button">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-filter"></i>
+                                </span>
+                                <span>Beginner</span>
+                            </button>
+
+                            <button class="button is-outlined is-primary is-fullwidth difficulty-button">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-filter"></i>
+                                </span>
+                                <span>Intermediate</span>
+                            </button>
+
+                            <button class="button is-outlined is-primary is-fullwidth difficulty-button">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-filter"></i>
+                                </span>
+                                <span>Advanced</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             <div class="column is-four-fifths">
                 <form action="{% url 'courses_overview' %}" method="post">
@@ -46,12 +93,12 @@
                         {% for i in courses_paginator %}
                             {% if courses.number == i %}
                                 <li><a class="pagination-link is-current" href="?page={{ i }}">{{ i }} </a>
-                            {% else %}
-                                {% if i == courses.paginator.ELLIPSIS %}
-                                    ...
-                                {% else %}
-                                    <li><a class="pagination-link" href="?page={{ i }}">{{ i }} </a>  </li>
-                                {% endif %}
+                                    {% else %}
+                                    {% if i == courses.paginator.ELLIPSIS %}
+                                        ...
+                                    {% else %}
+                                        <li><a class="pagination-link" href="?page={{ i }}">{{ i }} </a>  </li>
+                                    {% endif %}
                             {% endif %}
                         {% endfor %}
 
@@ -123,4 +170,34 @@
     </div>
 
 
+{% endblock %}
+
+{% block javascript %}
+    <script type="module">
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+
+        const difficulty_param = urlParams.get('difficulty')
+
+        const difficulty_buttons = document.getElementsByClassName('difficulty-button')
+        for (const button of difficulty_buttons){
+            let diff_string = button.innerText.toLowerCase()
+            button.addEventListener("click", function(){
+                filter_difficulty(diff_string)
+            });
+
+            if (diff_string === difficulty_param)
+                button.classList.remove('is-outlined')
+        }
+
+
+        function filter_difficulty(difficulty){
+            if (difficulty_param === difficulty){
+                console.log('toggle')
+                window.location.href = window.location.href.replace(`?difficulty=${difficulty}`, '')
+            } else {
+                window.location.href = `?difficulty=${difficulty}`
+            }}
+
+    </script>
 {% endblock %}

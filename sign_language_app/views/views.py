@@ -36,9 +36,12 @@ class JoinedField:
     pass
 
 
-def courses_overview(request, page=1):
+def courses_overview(request):
     search_form = CoursesForm(request.POST)
     courses = Course.objects.all()
+    page_number = request.GET.get('page', 1)
+    filter_difficulty = request.GET.get('difficulty', None)
+
     if request.method == "GET":
         ...
     else:
@@ -54,17 +57,20 @@ def courses_overview(request, page=1):
         completed_units = [attempt.unit for attempt in UnitAttempt.objects.filter(user=user)]
         next_units = {course.id: course.get_next_unit(user) for course in courses}
 
-    # courses = courses.union(*[courses for _ in range(100)], all=True)  # Hacky way to make the results longer to test pagination.
+    if filter_difficulty:
+        courses = courses.filter(Q(difficulty=Course.Difficulty[filter_difficulty.upper()]))
+
+
+
+    # courses = courses.union(*[courses for _ in range(50)], all=True)  # Hacky way to make the results longer to test pagination.
 
     paginator = Paginator(courses, 15)
-    page_number = request.GET.get('page', 1)
     try:
         courses = paginator.page(page_number)
     except EmptyPage as e:
         return error_view(request, exception='That page number is to high.')
 
     courses_paginator = paginator.get_elided_page_range(page_number, on_each_side=2, on_ends=1)
-    courses = paginator.get_page(page_number)
 
     context = {
         "courses": courses,

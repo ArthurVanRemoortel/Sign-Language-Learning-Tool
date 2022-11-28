@@ -22,7 +22,7 @@ else:
     raise Exception('Did not find any .env files.')
 
 DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-DEBUG_MODE = os.getenv("DEBUG_MODE").lower() in ('true', '1', 't')
+DEBUG_MODE = os.getenv("DEBUG_MODE", '0').lower() in ('true', '1', 't')
 
 POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 POSTGRES_DB = os.getenv('POSTGRES_DB')
