@@ -40,7 +40,7 @@ def courses_overview(request):
     search_form = CoursesForm(request.POST)
     courses = Course.objects.all()
     page_number = request.GET.get('page', 1)
-    filter_difficulty = request.GET.get('difficulty', None)
+    filters = request.GET.get('filters', None)
 
     if request.method == "GET":
         ...
@@ -53,13 +53,32 @@ def courses_overview(request):
     completed_units = []
     next_units = {}
     user = get_user(request)
+
+    if filters:
+        for filter_query in filters.split(','):
+            if 'difficulty_' in filter_query:
+                courses = courses.filter(Q(difficulty=Course.Difficulty[filter_query.split('_')[-1].upper()]))
+            elif filter_query == "continue":
+                if not user:
+                    courses = Course.objects.none()
+                else:
+                    courses = courses.filter(Q(units__unit_attempts__user=user)).distinct()
+            elif filter_query == "saved":
+                # TODO: Not implemented yet.
+                if not user:
+                    courses = Course.objects.none()
+                else:
+                    courses = Course.objects.none()
+            elif filter_query == "shared_with_me":
+                # TODO: Not implemented yet.
+                if not user:
+                    courses = Course.objects.none()
+                else:
+                    courses = Course.objects.none()
+
     if user:
         completed_units = [attempt.unit for attempt in UnitAttempt.objects.filter(user=user)]
         next_units = {course.id: course.get_next_unit(user) for course in courses}
-
-    if filter_difficulty:
-        courses = courses.filter(Q(difficulty=Course.Difficulty[filter_difficulty.upper()]))
-
 
 
     # courses = courses.union(*[courses for _ in range(50)], all=True)  # Hacky way to make the results longer to test pagination.
@@ -75,6 +94,8 @@ def courses_overview(request):
     context = {
         "courses": courses,
         "search_form": search_form,
+        "page_number": page_number,
+        "filters": filters,
         'courses_paginator': courses_paginator,
         "completed_units": completed_units,
         "next_units": next_units

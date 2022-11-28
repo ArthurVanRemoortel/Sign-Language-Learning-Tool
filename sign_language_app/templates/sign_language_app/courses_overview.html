@@ -14,21 +14,21 @@
                 <div class="card">
                     <div class="card-content p-2">
                         <div class="buttons">
-                            <button class="button is-outlined is-primary is-fullwidth">
+                            <button class="button is-outlined is-primary is-fullwidth filter-button">
                                 <span class="icon is-small">
                                   <i class="fa-solid fa-play"></i>
                                 </span>
                                 <span>Continue</span>
                             </button>
 
-                            <button class="button is-outlined is-primary is-fullwidth">
+                            <button class="button is-outlined is-primary is-fullwidth filter-button">
                                 <span class="icon is-small">
                                   <i class="fa-solid fa-bookmark"></i>
                                 </span>
                                 <span>Saved</span>
                             </button>
 
-                            <button class="button is-outlined is-primary is-fullwidth">
+                            <button class="button is-outlined is-primary is-fullwidth filter-button">
                                 <span class="icon is-small">
                                   <i class="fa-solid fa-share-nodes"></i>
                                 </span>
@@ -41,21 +41,21 @@
                 <div class="card mt-5">
                     <div class="card-content p-2">
                         <div class="buttons text-left">
-                            <button class="button is-outlined is-primary is-fullwidth difficulty-button">
+                            <button class="button is-outlined is-primary is-fullwidth filter-button">
                                 <span class="icon is-small">
                                   <i class="fa-solid fa-filter"></i>
                                 </span>
                                 <span>Beginner</span>
                             </button>
 
-                            <button class="button is-outlined is-primary is-fullwidth difficulty-button">
+                            <button class="button is-outlined is-primary is-fullwidth filter-button">
                                 <span class="icon is-small">
                                   <i class="fa-solid fa-filter"></i>
                                 </span>
                                 <span>Intermediate</span>
                             </button>
 
-                            <button class="button is-outlined is-primary is-fullwidth difficulty-button">
+                            <button class="button is-outlined is-primary is-fullwidth filter-button">
                                 <span class="icon is-small">
                                   <i class="fa-solid fa-filter"></i>
                                 </span>
@@ -85,39 +85,28 @@
                 <nav class="pagination is-rounded is-centered" role="navigation" aria-label="pagination">
                     <ul class="pagination-list">
                         {% if courses.has_previous %}
-                            <li><a class="pagination-link button is-info is-small" href="?page={{ courses.previous_page_number }}">&laquo;</a></li>
+                            <li><a class="pagination-link button is-info is-small" href="?page={{ courses.previous_page_number }}{% if filters%}&filters={{ filters }}{% endif %}">&laquo;</a></li>
                         {% else %}
                             <li><span class="pagination-link button is-info is-small">&laquo;</span></li>
                         {% endif%}
 
                         {% for i in courses_paginator %}
                             {% if courses.number == i %}
-                                <li><a class="pagination-link is-current" href="?page={{ i }}">{{ i }} </a>
+                                <li><a class="pagination-link is-current" href="?page={{ i }}{% if filters%}&filters={{ filters }}{% endif %}">{{ i }} </a>
                                     {% else %}
                                     {% if i == courses.paginator.ELLIPSIS %}
                                         ...
                                     {% else %}
-                                        <li><a class="pagination-link" href="?page={{ i }}">{{ i }} </a>  </li>
+                                        <li><a class="pagination-link" href="?page={{ i }}{% if filters%}&filters={{ filters }}{% endif %}">{{ i }} </a>  </li>
                                     {% endif %}
                             {% endif %}
                         {% endfor %}
 
                         {% if courses.has_next %}
-                            <li> <a class="pagination-link button is-info is-small" href="?page={{ courses.next_page_number }}">&raquo;</a> </li>
+                            <li> <a class="pagination-link button is-info is-small" href="?page={{ courses.next_page_number }}{% if filters%}&filters={{ filters }}{% endif %}">&raquo;</a> </li>
                         {% else %}
                             <li><span class="pagination-link button is-info is-small">&raquo;</span></li>
                         {% endif%}
-
-                        {#                        {% if courses_paginator.has_previous %}#}
-                        {#                            <a href="?page=1">&laquo; first</a>#}
-                        {#                            <a href="?page={{ courses_paginator.previous_page_number }}">previous</a>#}
-                        {#                        {% endif %}#}
-                        {##}
-                        {#                    #}
-                        {#                        <li><a class="pagination-link is-current" aria-label="Goto page 1">1</a></li>#}
-                        {#                        <li><a class="pagination-link" aria-label="Page 2" aria-current="page">2</a></li>#}
-                        {#                        <li><span class="pagination-ellipsis">&hellip;</span></li>#}
-                        {#                        <li><a class="pagination-link" aria-label="Goto page 12">12</a></li>#}
                     </ul>
                 </nav>
 
@@ -165,8 +154,6 @@
                 {% endfor %}
             </div>
         </div>
-
-
     </div>
 
 
@@ -177,27 +164,62 @@
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
 
-        const difficulty_param = urlParams.get('difficulty')
-
-        const difficulty_buttons = document.getElementsByClassName('difficulty-button')
-        for (const button of difficulty_buttons){
-            let diff_string = button.innerText.toLowerCase()
+        const filter_param = urlParams.get('filters')
+        let active_filters = []
+        if (filter_param)
+            active_filters = filter_param.split(',')
+        const filter_buttons = document.getElementsByClassName('filter-button')
+        for (const button of filter_buttons){
+            let button_string = button.innerText.toLowerCase()
             button.addEventListener("click", function(){
-                filter_difficulty(diff_string)
+                filter_courses(with_filter_prefix(button_string))
             });
 
-            if (diff_string === difficulty_param)
-                button.classList.remove('is-outlined')
+            for (const filter_string of active_filters){
+                if (filter_string.includes(button_string))
+                    button.classList.remove('is-outlined')
+            }
         }
 
 
-        function filter_difficulty(difficulty){
-            if (difficulty_param === difficulty){
-                console.log('toggle')
-                window.location.href = window.location.href.replace(`?difficulty=${difficulty}`, '')
-            } else {
-                window.location.href = `?difficulty=${difficulty}`
-            }}
+        function filter_courses(filter){
+            add_filter(filter)
+            window.location.assign(`?filters=${encodeURIComponent(active_filters)}`)
+        }
+
+        function with_filter_prefix(filter){
+            if (filter === 'beginner' || filter === 'intermediate' || filter === 'advanced'){
+                return 'difficulty_' + filter
+            }
+            return filter
+        }
+
+        function are_filters_exclusive(filter1, filter2){
+            let prefix1 = filter1.split('_').at(0)
+            let prefix2 = filter2.split('_').at(0)
+            return prefix1 === prefix2
+        }
+
+        function add_filter(filter){
+            let new_filters = []
+            let can_add_filter = true
+            for (const existing_filter of active_filters){
+                if (filter === existing_filter) {
+                    can_add_filter = false
+                } else if (are_filters_exclusive(filter, existing_filter)){
+
+                } else {
+                    new_filters.push(existing_filter)
+                }
+            }
+            if (can_add_filter)
+                new_filters.push(filter)
+            active_filters = new_filters
+        }
+
+
+
+
 
     </script>
 {% endblock %}
