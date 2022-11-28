@@ -67,8 +67,8 @@
 
             </div>
             <div class="column is-four-fifths">
-                <form action="{% url 'courses_overview' %}" method="post">
-                    {% csrf_token %}
+                <form action="{% url 'courses_overview' %}" method="get">
+{#                    {% csrf_token %}#}
                     <div class="field has-addons">
                         <div class="control is-expanded">
                             <label for="searchInput"></label>
@@ -85,25 +85,25 @@
                 <nav class="pagination is-rounded is-centered" role="navigation" aria-label="pagination">
                     <ul class="pagination-list">
                         {% if courses.has_previous %}
-                            <li><a class="pagination-link button is-info is-small" href="?page={{ courses.previous_page_number }}{% if filters%}&filters={{ filters }}{% endif %}">&laquo;</a></li>
+                            <li><a class="pagination-link button is-info is-small" href="?{% if search_form.search_input.value %}search_input={{ search_form.search_input.value }}{% endif %}{% if filters%}&filters={{ filters }}{% endif %}&page={{ courses.previous_page_number }}">&laquo;</a></li>
                         {% else %}
                             <li><span class="pagination-link button is-info is-small">&laquo;</span></li>
                         {% endif%}
 
                         {% for i in courses_paginator %}
                             {% if courses.number == i %}
-                                <li><a class="pagination-link is-current" href="?page={{ i }}{% if filters%}&filters={{ filters }}{% endif %}">{{ i }} </a>
+                                <li><a class="pagination-link is-current" href="?{% if search_form.search_input.value %}search_input={{ search_form.search_input.value }}{% endif %}{% if filters%}&filters={{ filters }}{% endif %}&page={{ i }}">{{ i }} </a>
                                     {% else %}
                                     {% if i == courses.paginator.ELLIPSIS %}
                                         ...
                                     {% else %}
-                                        <li><a class="pagination-link" href="?page={{ i }}{% if filters%}&filters={{ filters }}{% endif %}">{{ i }} </a>  </li>
+                                        <li><a class="pagination-link" href="?{% if search_form.search_input.value %}search_input={{ search_form.search_input.value }}{% endif %}{% if filters%}&filters={{ filters }}{% endif %}&page={{ i }}">{{ i }} </a>  </li>
                                     {% endif %}
                             {% endif %}
                         {% endfor %}
 
                         {% if courses.has_next %}
-                            <li> <a class="pagination-link button is-info is-small" href="?page={{ courses.next_page_number }}{% if filters%}&filters={{ filters }}{% endif %}">&raquo;</a> </li>
+                            <li> <a class="pagination-link button is-info is-small" href="?{% if search_form.search_input.value %}search_input={{ search_form.search_input.value }}{% endif %}{% if filters%}&filters={{ filters }}{% endif %}&page={{ courses.next_page_number }}">&raquo;</a> </li>
                         {% else %}
                             <li><span class="pagination-link button is-info is-small">&raquo;</span></li>
                         {% endif%}
@@ -181,10 +181,9 @@
             }
         }
 
-
         function filter_courses(filter){
             add_filter(filter)
-            window.location.assign(`?filters=${encodeURIComponent(active_filters)}`)
+            window.location.assign(`?{% if search_form.search_input.value %}search_input={{ search_form.search_input.value }}{% endif %}&filters=${encodeURIComponent(active_filters)}`)
         }
 
         function with_filter_prefix(filter){

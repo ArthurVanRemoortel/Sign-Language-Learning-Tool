@@ -37,18 +37,18 @@ class JoinedField:
 
 
 def courses_overview(request):
-    search_form = CoursesForm(request.POST)
+    search_form = CoursesForm(request.GET)
     courses = Course.objects.all()
     page_number = request.GET.get('page', 1)
     filters = request.GET.get('filters', None)
+    search_string = request.GET.get('search_input', None)
 
-    if request.method == "GET":
-        ...
-    else:
-        if search_form.is_valid():
-            search_input_text = search_form.cleaned_data.get("search_input", None)
-            if search_input_text:
-                courses = courses.filter(Q(name__icontains=search_input_text) | Q(description__icontains=search_input_text) | Q(units__name__icontains=search_input_text)).distinct()
+
+    if search_form.is_valid():
+        search_input_text = search_form.cleaned_data.get("search_input", None)
+        if search_input_text:
+            courses = courses.filter(Q(name__icontains=search_input_text) | Q(description__icontains=search_input_text) | Q(units__name__icontains=search_input_text)).distinct()
+
 
     completed_units = []
     next_units = {}
@@ -81,7 +81,7 @@ def courses_overview(request):
         next_units = {course.id: course.get_next_unit(user) for course in courses}
 
 
-    # courses = courses.union(*[courses for _ in range(50)], all=True)  # Hacky way to make the results longer to test pagination.
+    courses = courses.union(*[courses for _ in range(50)], all=True)  # Hacky way to make the results longer to test pagination.
 
     paginator = Paginator(courses, 15)
     try:
