@@ -8,6 +8,8 @@ from django.core.paginator import Paginator, EmptyPage
 from django.views.defaults import page_not_found
 from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
+from django.core import serializers
+
 
 
 def get_user(request):
@@ -107,7 +109,8 @@ def courses_overview(request):
 def unit_view(request, unit_id):
     unit = get_object_or_404(Unit, pk=unit_id)
     context = {
-        'unit': unit
+        'unit': unit,
+        'gestures': serializers.serialize("json", unit.gestures.all())
     }
     return render(request, "sign_language_app/unit.html", context)
 

@@ -5,8 +5,15 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 
+class GestureLocation(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name} (id={self.id})"
+
 class Gesture(models.Model):
     word = models.CharField(max_length=100)
+    locations = models.ManyToManyField(GestureLocation)
 
     def __str__(self):
         return f"{self.word} (id={self.id})"

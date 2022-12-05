@@ -14,6 +14,7 @@
     is_public: true
     difficulty: 3
 
+
 # Units
 - model: sign_language_app.unit
   pk: 1
@@ -21,66 +22,127 @@
     name: 'Unit 1: Introduce yourself'
     course: 1
     ordering_number: 1
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 2
   fields:
     name: 'Unit 2: Navigation'
     course: 1
     ordering_number: 2
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 3
   fields:
     name: 'Unit 3: Adjectives'
     course: 1
     ordering_number: 3
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 4
   fields:
     name: 'Unit 4: Verbs'
     course: 1
     ordering_number: 4
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 5
   fields:
     name: 'Unit 5: Express dates and times'
     course: 1
     ordering_number: 5
-
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 6
   fields:
     name: 'Unit 1: Discuss spirituality'
     course: 2
     ordering_number: 1
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 7
   fields:
     name: 'Unit 2: Discuss politics'
     course: 2
     ordering_number: 2
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 8
   fields:
     name: 'Unit 3: Give directions'
     course: 2
     ordering_number: 3
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 9
   fields:
     name: 'Unit 4: Express feelings'
     course: 2
     ordering_number: 4
+    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
 
 
 # Gestures
 - model: sign_language_app.gesture
   pk: 1
   fields:
-    word: United States of America
+    word: Verenigde Staten
+    locations: [1]
 - model: sign_language_app.gesture
   pk: 2
   fields:
-    word: Belgium
+    word: België
+    locations: [1, 14]
+- model: sign_language_app.gesture
+  pk: 3
+  fields:
+    word: Hallo
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 4
+  fields:
+    word: Duidelijk
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 5
+  fields:
+    word: Gebaar
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 6
+  fields:
+    word: Geit
+    locations: [15]
+- model: sign_language_app.gesture
+  pk: 7
+  fields:
+    word: Geit
+    locations: [15]
+- model: sign_language_app.gesture
+  pk: 8
+  fields:
+    word: Kameel
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 9
+  fields:
+    word: Muis
+    locations: [8]
+- model: sign_language_app.gesture
+  pk: 10
+  fields:
+    word: Bowlen
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 11
+  fields:
+    word: Fietsen
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 12
+  fields:
+    word: Computer
+    locations: [8]
+
 
 # Unit Attempts
 - model: sign_language_app.unitattempt
@@ -101,3 +163,77 @@
     user: 1
     unit: 3
     datetime: "2022-11-18T13:20:30+02:00"
+
+# GestureLocation
+- model: sign_language_app.GestureLocation
+  pk: 1
+  fields:
+    name: "Neutral space"
+- model: sign_language_app.GestureLocation
+  pk: 2
+  fields:
+    name: "Neck"
+- model: sign_language_app.GestureLocation
+  pk: 3
+  fields:
+    name: "Upper Chest"
+- model: sign_language_app.GestureLocation
+  pk: 4
+  fields:
+    name: "Stomach"
+- model: sign_language_app.GestureLocation
+  pk: 5
+  fields:
+    name: "Shoulder"
+- model: sign_language_app.GestureLocation
+  pk: 6
+  fields:
+    name: "Elbow"
+- model: sign_language_app.GestureLocation
+  pk: 7
+  fields:
+    name: "Hand palm"
+- model: sign_language_app.GestureLocation
+  pk: 8
+  fields:
+    name: "Back of the hand"
+- model: sign_language_app.GestureLocation
+  pk: 9
+  fields:
+    name: "Forearm"
+- model: sign_language_app.GestureLocation
+  pk: 10
+  fields:
+    name: "Upper arm"
+- model: sign_language_app.GestureLocation
+  pk: 11
+  fields:
+    name: "Forehead"
+- model: sign_language_app.GestureLocation
+  pk: 12
+  fields:
+    name: "Eye"
+- model: sign_language_app.GestureLocation
+  pk: 13
+  fields:
+    name: "Nose"
+- model: sign_language_app.GestureLocation
+  pk: 14
+  fields:
+    name: "Mouth"
+- model: sign_language_app.GestureLocation
+  pk: 15
+  fields:
+    name: "Chin"
+- model: sign_language_app.GestureLocation
+  pk: 16
+  fields:
+    name: "Cheek"
+- model: sign_language_app.GestureLocation
+  pk: 17
+  fields:
+    name: "Ear"
+- model: sign_language_app.GestureLocation
+  pk: 18
+  fields:
+    name: "Wrist"

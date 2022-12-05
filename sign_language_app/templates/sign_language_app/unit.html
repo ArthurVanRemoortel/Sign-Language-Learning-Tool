@@ -42,7 +42,11 @@
 
 
 {% block javascript %}
-    <script type="module" async>
+    <script defer
+    data-gestures="{{ gestures }}"
+    >
+        const data = document.currentScript.dataset;
+        const gestures = JSON.parse(data.gestures);
         const videoElement = document.getElementsByClassName('input_video')[0];
         const canvasElement = document.getElementsByClassName('output_canvas')[0];
         const cameraAreaBox = document.getElementById('cameraAreaBox');
@@ -64,24 +68,10 @@
 
         let cameraLoaded = false
 
-        let gesture_list = [
-            {
-                "word": "United States of America"
-            },
-            {
-                "word": "Word 2"
-            },
-            {
-                "word": "Word 3"
-            },
-            {
-                "word": "Word 4"
-            },
-        ]
         let current_gesture_i = 0
         let current_gesture = null
 
-        unitProgressBar.max = gesture_list.length
+        unitProgressBar.max = gestures.length
         resetRecording()
         {#loadGesture()#}
         loadCamera()
@@ -89,12 +79,21 @@
         cancelUnitButton.addEventListener("click", function() { triggerAnim(false); } )
 
         function loadGesture() {
-            if (current_gesture_i >= gesture_list.length)
+            if (current_gesture_i >= gestures.length)
                 return
-            let gesture = gesture_list[current_gesture_i]
-            current_gesture = gesture
-            console.log(gesture)
-            animateGestureTitle(gesture['word'])
+            current_gesture = gestures[current_gesture_i]
+            hintsSection.innerHTML = ''
+
+            for (const location_id of current_gesture.fields.locations ){
+                let image_path = '{% static 'sign_language_app/images/gesture_locations/1.png' %}'
+                image_path = image_path.replace('1.png', `${location_id}.png`)
+                let location_figure = `
+                <figure class="image is-64x64 ml-2 mr-2 hint-image">
+                    <img src=${image_path} class="is-rounded" alt="Body location">
+                </figure>`
+                $('#hintsSection').append(location_figure)
+            }
+            animateGestureTitle()
             updateProgressBar()
         }
 
@@ -141,9 +140,9 @@
             });
         }
 
-        function animateGestureTitle(new_word){
+        function animateGestureTitle(){
             var textWrapper = document.querySelector('.ml11 .letters');
-            textWrapper.textContent = new_word
+            textWrapper.textContent = current_gesture.fields.word
             textWrapper.innerHTML = textWrapper.textContent.replace(/([^\x00-\x80]|\w)/g, "<span class='letter'>$&</span>");
             anime.timeline({loop: false})
                 .add({
@@ -206,7 +205,6 @@
                 right_landmarks: right_landmarks,
                 gesture_id: current_gesture
             };
-
             veryfiUserInput(data)
             resetRecording()
         }
@@ -221,17 +219,7 @@
 
         function startExercise(){
             $(cameraLoader).remove()
-            var string = `
-            <figure class="image is-64x64 ml-2 mr-2">
-                <img src="{% static 'sign_language_app/images/body_location.png' %}" class="is-rounded" alt="Body location">
-            </figure>
-            <figure class="image is-64x64 ml-2 mr-2">
-                <img src="{% static 'sign_language_app/images/hand_shape.png' %}" class="is-rounded" alt="Hand shape">
-            </figure>`
-
-            $('#hintsSection').append(string)
             loadGesture()
-
         }
 
         function onResults(results) {
