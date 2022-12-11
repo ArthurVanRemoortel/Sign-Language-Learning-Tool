@@ -11,9 +11,12 @@ class GestureLocation(models.Model):
     def __str__(self):
         return f"{self.name} (id={self.id})"
 
+
 class Gesture(models.Model):
     word = models.CharField(max_length=100)
     locations = models.ManyToManyField(GestureLocation)
+    left_hand = models.BooleanField(default=True)
+    right_hand = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.word} (id={self.id})"

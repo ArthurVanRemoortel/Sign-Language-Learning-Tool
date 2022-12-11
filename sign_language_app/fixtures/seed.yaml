@@ -86,63 +86,86 @@
   pk: 1
   fields:
     word: Verenigde Staten
+    left_hand: true
+    right_hand: true
     locations: [1]
 - model: sign_language_app.gesture
   pk: 2
   fields:
     word: België
+    left_hand: false
+    right_hand: true
     locations: [1, 14]
 - model: sign_language_app.gesture
   pk: 3
   fields:
     word: Hallo
+    left_hand: false
+    right_hand: true
     locations: [1]
 - model: sign_language_app.gesture
   pk: 4
   fields:
     word: Duidelijk
+    left_hand: true
+    right_hand: true
     locations: [1]
 - model: sign_language_app.gesture
   pk: 5
   fields:
     word: Gebaar
+    left_hand: true
+    right_hand: true
     locations: [1]
 - model: sign_language_app.gesture
   pk: 6
   fields:
     word: Geit
+    left_hand: false
+    right_hand: true
     locations: [15]
 - model: sign_language_app.gesture
   pk: 7
   fields:
-    word: Geit
-    locations: [15]
+    word: Kameel
+    left_hand: true
+    right_hand: false
+    locations: [1]
 - model: sign_language_app.gesture
   pk: 8
   fields:
-    word: Kameel
-    locations: [1]
+    word: Muis
+    left_hand: true
+    right_hand: true
+    locations: [8]
 - model: sign_language_app.gesture
   pk: 9
   fields:
-    word: Muis
-    locations: [8]
+    word: Bowlen
+    left_hand: false
+    right_hand: true
+    locations: [1]
 - model: sign_language_app.gesture
   pk: 10
   fields:
-    word: Bowlen
+    word: Fietsen
+    left_hand: true
+    right_hand: true
     locations: [1]
 - model: sign_language_app.gesture
   pk: 11
   fields:
-    word: Fietsen
-    locations: [1]
+    word: Computer
+    left_hand: true
+    right_hand: true
+    locations: [8]
 - model: sign_language_app.gesture
   pk: 12
   fields:
-    word: Computer
-    locations: [8]
-
+    word: Tennis
+    left_hand: false
+    right_hand: true
+    locations: [15]
 
 # Unit Attempts
 - model: sign_language_app.unitattempt

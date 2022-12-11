@@ -113,9 +113,3 @@ def unit_view(request, unit_id):
         'gestures': serializers.serialize("json", unit.gestures.all())
     }
     return render(request, "sign_language_app/unit.html", context)
-
-
-@login_required
-def video_test(request):
-    context = {}
-    return render(request, "sign_language_app/video_test.html", context)
