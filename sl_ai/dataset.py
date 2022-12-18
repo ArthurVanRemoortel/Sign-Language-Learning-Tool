@@ -13,7 +13,6 @@ import skvideo.io
 from mediapipe.framework.formats.classification_pb2 import ClassificationList
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
-
 from sl_ai.config import MAX_VIDEO_FRAMES
 
 # DATASET_LOCATION = Path('sl_ai/ai_data/vgt-all')
@@ -232,13 +231,14 @@ def preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_hei
 class GestureDataset:
     def __init__(
             self,
-            dataset_location: Path
     ):
-        self.dataset_location: Path = dataset_location
-        self.gestures: List[GestureData] = []
+        self.gestures: List[GestureData] = []  # No data if loaded from csv file.
 
         self.x_data = None
         self.y_data = None
+
+    def summary(self):
+        print(f"Dataset contain {len(np.unique(self.y_data))} gestures.")
 
     def load_from_csv(self, csv_path: Path):
         if not csv_path.exists():
@@ -251,13 +251,14 @@ class GestureDataset:
             lines = data_file.readlines()
             for landmark_line in lines:
                 landmark_line = landmark_line.split(',')
+                # TODO: Add handedness to each row.
                 gesture_name, gesture_number, video_number, hand_number, landmark_id, *history = landmark_line
                 gesture_number = int(gesture_number)
                 video_number = int(video_number)
                 hand_number = int(hand_number)
                 landmark_id = int(landmark_id)
 
-                if gesture_name not in ["belgië", "verenigde staten", "hallo"]:  # Currently only these gestures have enough data.
+                if csv_path.name == "gestures_dataset.csv" and gesture_name not in ["belgië", "verenigde staten", "hallo"]:  # Currently only these gestures have enough data. TODO: Remove this later.
                     continue
 
                 if landmark_id != 0:
@@ -267,7 +268,8 @@ class GestureDataset:
                     last_gesture_number = gesture_number
                     gesture_id += 1
 
-                print(f"{gesture_name}({gesture_number} -> {gesture_id})", video_number, hand_number, landmark_id)
+                print(f"{gesture_name}({gesture_number} -> {gesture_id})")
+
                 history = np.array(history, dtype='float32')
                 if hand_number == 0:
                     Y_dataset.append(gesture_id)
@@ -278,13 +280,26 @@ class GestureDataset:
         self.y_data = np.array(Y_dataset)
         self.x_data = np.array(X_dataset)
 
-    def analyze_videos(self, csv_out_path: Optional[Path] = None):
+    def append_dataset(self, other_dataset: 'GestureDataset'):
+        if len(other_dataset.y_data) == 0:
+            return
+        gesture_id_base = np.amax(self.y_data) + 1
+        new_y_data = other_dataset.y_data + gesture_id_base
+        new_x_data = other_dataset.x_data
+        self.y_data = np.concatenate([self.y_data, new_y_data])
+        self.x_data = np.concatenate([self.x_data, new_x_data])
+
+
+
+
+    def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=False):
         """
         Use mediapipe to detect hand landmarks in every training video and save this data in a usable format.
         TODO: Could use some serious refactoring.
         TODO: Use multiprocessing.
         """
-        if csv_out_path and csv_out_path.exists():
+        print(f"Analysing video {sum([len(g.reference_videos) for g in self.gestures])} files.")
+        if csv_out_path and overwrite and csv_out_path.exists():
             os.remove(csv_out_path)
 
         mp_hands = mp.solutions.hands
@@ -367,17 +382,28 @@ class GestureDataset:
                         log_csv(csv_out_path, gesture_name=gesture.name, gesture_number=gesture_i, video_number=video_i, hand_number=1, landmark_id=landmark_id,
                                 point_history_list=values)
 
-    def scan_videos(self, handedness_data):
+    def scan_videos(self, dataset_location: Path, handedness_data):
         self.gestures.clear()
-        for gesture_folder in os.listdir(self.dataset_location):
+        for gesture_folder in os.listdir(dataset_location):
             gesture_name = gesture_folder.split('_')[0]
-            gesture_path = self.dataset_location / str(gesture_folder)
+            gesture_path = dataset_location / str(gesture_folder)
             left_hand, right_hand = handedness_data[gesture_name]
             gesture = GestureData(name=gesture_name, left_hand=left_hand, right_hand=right_hand)
             for video_name in os.listdir(gesture_path):
                 gesture.add_video(gesture_path / str(video_name))
             self.gestures.append(gesture)
         print(f'Loaded {len(self.gestures)} gestures')
+
+    def add_django_gesture(self, django_gesture: 'Gesture'):
+        gesture_data = GestureData(name=django_gesture.word, left_hand=django_gesture.left_hand, right_hand=django_gesture.right_hand)
+        gesture_path = Path('sl_ai/ai_data/vgt-uploaded')
+        if django_gesture.creator:
+            gesture_path = gesture_path / str(django_gesture.creator.id)
+        gesture_path = gesture_path / django_gesture.handed_string
+        for video_name in os.listdir(gesture_path):
+            gesture_data.add_video(gesture_path / str(video_name))
+        self.gestures.append(gesture_data)
+
 
     def __len__(self):
         return len(np.unique(self.y_data))
@@ -387,11 +413,26 @@ if __name__ == '__main__':
     CSV_OUT_PATH = Path('gestures_dataset.csv')
     DATASET_LOCATION = Path('ai_data/vgt-all')
 
-    dataset = GestureDataset(Path('ai_data/vgt-all'))
+    UPLOADED_CSV_OUT_PATH = Path('gestures_dataset.csv')
+    UPLOADED_DATASET_LOCATION = Path('ai_data/vgt-all')
+
+    # dataset = GestureDataset()
+    # handedness_data = {}
+    # for gesture_folder in os.listdir(DATASET_LOCATION):
+    #     gesture_name, handedness_string = gesture_folder.split('_')
+    #     handedness_data[gesture_name] = (handedness_string[0] == '1', handedness_string[1] == '1')
+    #
+    # dataset.scan_videos(dataset_location=DATASET_LOCATION, handedness_data=handedness_data)
+    # # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
+    # dataset.load_from_csv(CSV_OUT_PATH)
+
+
+    dataset = GestureDataset()
     handedness_data = {}
-    for gesture_folder in os.listdir(DATASET_LOCATION):
+    for gesture_folder in os.listdir(UPLOADED_DATASET_LOCATION):
         gesture_name, handedness_string = gesture_folder.split('_')
         handedness_data[gesture_name] = (handedness_string[0] == '1', handedness_string[1] == '1')
-    dataset.scan_videos(handedness_data=handedness_data)
-    # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH)
-    dataset.load_from_csv(CSV_OUT_PATH)
+
+    dataset.scan_videos(dataset_location=UPLOADED_DATASET_LOCATION, handedness_data=handedness_data)
+    # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
+    dataset.load_from_csv(UPLOADED_CSV_OUT_PATH)

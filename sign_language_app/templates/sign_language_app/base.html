@@ -58,7 +58,7 @@
             <div class="navbar-item">
                 <div class="buttons">
                     {% if user.is_authenticated %}
-                        <a class="button is-primary" href="#">
+                        <a class="button is-primary" href="{% url 'profile' %}">
                             <strong>Profile</strong>
                         </a>
                         <a class="button is-light" href="{% url 'logout' %}">
@@ -79,7 +79,31 @@
 </nav>
 
 <div class="page-wrapper">
+
     <div class="container" style="width:100%">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <article class="message is-small
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR%}is-danger
+                    {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS%}is-success
+                    {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING%}is-warning
+                    {% else %}is-info
+                    {% endif %}">
+                    <div class="message-header">
+                        <p>Error</p>
+                        <button class="delete is-small" aria-label="delete"></button>
+                    </div>
+                    <div class="message-body">
+                        {{ message }}
+                    </div>
+                </article>
+
+{#                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>#}
+            {% endfor %}
+        </ul>
+    {% endif %}
+
         {% block content %}
         {% endblock %}
     </div>

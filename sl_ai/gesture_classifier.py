@@ -1,4 +1,6 @@
 import os
+from typing import Optional
+
 import numpy as np
 from pathlib import Path
 
@@ -13,9 +15,6 @@ from sklearn.model_selection import train_test_split
 from sl_ai.dataset import GestureDataset, fill_holes, make_coordinates_list_fixed_length, pre_process_point_history
 from sl_ai.config import MAX_VIDEO_FRAMES
 
-MODEL_SAVE_PATH = Path('model.h5')
-
-
 class GestureClassifier:
     def __init__(
             self, gesture_dataset: GestureDataset
@@ -28,6 +27,12 @@ class GestureClassifier:
         self.x_test = None
         self.y_train = None
         self.y_test = None
+
+    def load_dataset(self, new_dataset: GestureDataset):
+        self.gesture_dataset = new_dataset
+
+    def append_dataset(self, new_dataset: GestureDataset):
+        self.gesture_dataset.append_dataset(new_dataset)
 
     def make_model(self):
         # TODO: Experiment with tensorflow optimisers.
@@ -45,13 +50,21 @@ class GestureClassifier:
             metrics=['accuracy']
         )
 
-    def train(self, save=True, train_size=0.5):
+    def train(self, save_path: Optional[Path] = None, train_size=0.5):
         if len(self.gesture_dataset) == 0:
             raise Exception('Tried to train but the dataset is empty.')
-        if not self.model:
-            self.make_model()
-        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.gesture_dataset.x_data, self.gesture_dataset.y_data, train_size=train_size, random_state=42)
-        x_validate, self.x_test, y_validate, self.y_test = train_test_split(self.x_test, self.y_test, test_size=0.5, random_state=42)
+        print(f"Training model:")
+        self.gesture_dataset.summary()
+
+        # if not self.model:
+        self.make_model()
+
+        # TODO: Make sure all categories are represented.
+        self.x_train, x_test, self.y_train, y_test = train_test_split(self.gesture_dataset.x_data, self.gesture_dataset.y_data, train_size=train_size, random_state=42)
+        x_validate, x_test, y_validate, y_test = train_test_split(x_test, y_test, test_size=0.5, random_state=42)
+        self.x_test = x_test
+        self.y_test = y_test
+
         # cp_callback = tf.keras.callbacks.ModelCheckpoint(MODEL_SAVE_PATH, verbose=1, save_weights_only=True, save_best_only=True)
         es_callback = tf.keras.callbacks.EarlyStopping(patience=20, verbose=1)
         self.train_history = self.model.fit(
@@ -65,13 +78,13 @@ class GestureClassifier:
         [loss, acc] = self.model.evaluate(self.x_test, self.y_test, verbose=1)
         print("Accuracy:" + str(acc))
 
-        if save:
-            self.save_model()
+        if save_path:
+            self.save_model(save_path)
 
-    def save_model(self):
+    def save_model(self, save_path):
         if not self.model:
             raise Exception('Cannot save model that has not been created yet')
-        self.model.save(MODEL_SAVE_PATH)
+        self.model.save(save_path)
 
     def load_saved_model(self, model_path: Path):
         if not model_path.exists():
@@ -146,10 +159,9 @@ if __name__ == '__main__':
     CSV_OUT_PATH = Path('gestures_dataset.csv')
     DATASET_LOCATION = Path('ai_data/vgt-all')
 
-    gesture_dataset: GestureDataset = GestureDataset(Path('ai_data/vgt-all'))
+    gesture_dataset: GestureDataset = GestureDataset()
     gesture_dataset.load_from_csv(CSV_OUT_PATH)
 
     classifier: GestureClassifier = GestureClassifier(gesture_dataset=gesture_dataset)
-    classifier.train()
-    # classifier.load_saved_model(MODEL_SAVE_PATH)
+    classifier.train(save_path=Path("model.h5"))
     classifier.summary()

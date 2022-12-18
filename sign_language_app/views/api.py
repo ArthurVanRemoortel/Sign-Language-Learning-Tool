@@ -3,16 +3,19 @@ import random
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from pprint import pprint
-from sign_language_app.classifier import classifier
+from sign_language_app.classifier import gesture_classifier
+from sign_language_app.models import Gesture
 from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list
 
 FRAME_WIDTH = 720
@@ -25,11 +28,13 @@ FRAME_HEIGHT = 480
 def test_auth(request):
     data = request.data
     hand_frames = data['hand_frames']
-
+    # gesture_id = data['gesture_id']
+    print(f"Gesture ID: {data['gesture_id']['pk']}")
+    print(f'Frames: {len(hand_frames)}')
+    gesture = get_object_or_404(Gesture, pk=int(data['gesture_id']['pk']))
     # print(left)
 
-    print(f"Gesture: {data['gesture_id']}")
-    print(f'Left: {len(hand_frames)} frames.')
+
 
     left_landmarks = {i: [] for i in range(0, 21)}
     right_landmarks = {i: [] for i in range(0, 21)}
@@ -37,7 +42,7 @@ def test_auth(request):
     # TODO: Refactor this.
     for frame in hand_frames:
         left, right = frame
-        if left:
+        if left:# and gesture.left_hand:
             landmark_list_left = calculate_landmark_list(FRAME_WIDTH, FRAME_HEIGHT, left)
             for landmark_id, landmark in enumerate(landmark_list_left):
                 left_landmarks[landmark_id].append(landmark)
@@ -45,7 +50,7 @@ def test_auth(request):
             for landmark_id in left_landmarks.keys():
                 left_landmarks[landmark_id].append([-1, -1])
 
-        if right:
+        if right:# and gesture.right_hand:
             landmark_list_right = calculate_landmark_list(FRAME_WIDTH, FRAME_HEIGHT, right)
             for landmark_id, landmark in enumerate(landmark_list_right):
                 right_landmarks[landmark_id].append(landmark)
@@ -53,11 +58,18 @@ def test_auth(request):
             for landmark_id in right_landmarks.keys():
                 right_landmarks[landmark_id].append([-1, -1])
 
+    if left_landmarks == right_landmarks:
+        is_correct = 0
+        print("WARNING: Nothing was detected.")
+    else:
+        # TODO: Verify if the js and python coordinate systems are the same.
+        preprocess_landmarks(left_landmarks, right_landmarks, FRAME_WIDTH, FRAME_HEIGHT)
+        result = gesture_classifier.predict(left_landmarks, right_landmarks)
+        classes_x = np.argmax(result, axis=1)
+        print(classes_x)
+        prediction_percents = (result*100)
+        frame = pd.DataFrame(prediction_percents.astype(np.uint8))
+        print(frame)
 
-    preprocess_landmarks(left_landmarks, right_landmarks, FRAME_WIDTH, FRAME_HEIGHT)
-    result = classifier.predict(left_landmarks, right_landmarks)
-    classes_x = np.argmax(result, axis=1)
-    print(classes_x)
-
-    is_correct = random.randint(0, 1) == 1
+        is_correct = random.randint(0, 1) == 1
     return JsonResponse({'status': 'OK', "correct": is_correct}, status=status.HTTP_201_CREATED)

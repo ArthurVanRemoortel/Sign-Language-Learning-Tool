@@ -4,15 +4,24 @@ from pathlib import Path
 from sl_ai.dataset import GestureDataset
 from sl_ai.gesture_classifier import GestureClassifier
 
-gesture_dataset: GestureDataset = GestureDataset(Path('sl_ai/ai_data/vgt-all'))
+gesture_dataset: GestureDataset = GestureDataset()
 gesture_dataset.load_from_csv(Path('sl_ai/gestures_dataset.csv'))
 
-# TODO: Handedness should be retrieved from the django database.
-# handedness_data = {}
-# for gesture_folder in os.listdir(gesture_dataset.dataset_location):
-#     gesture_name, handedness_string = gesture_folder.split('_')
-#     handedness_data[gesture_name] = (handedness_string[0] == '1', handedness_string[1] == '1')
+uploaded_dataset: GestureDataset = GestureDataset()
+uploaded_dataset.load_from_csv(Path('sl_ai/uploaded_gestures_dataset.csv'))
 
-classifier: GestureClassifier = GestureClassifier(gesture_dataset=gesture_dataset)
-classifier.load_saved_model(model_path=Path('sl_ai/model.h5'))
-classifier.summary()
+gesture_dataset.append_dataset(uploaded_dataset)
+gesture_dataset.summary()
+
+gesture_classifier: GestureClassifier = GestureClassifier(gesture_dataset=gesture_dataset)
+
+model_path = Path('sl_ai/model.h5')
+if model_path.exists():
+    gesture_classifier.load_saved_model(model_path=model_path)
+else:
+    print('No model file found. Training a new model.')
+    gesture_classifier.train(save_path=model_path)
+
+gesture_classifier.summary()
+
+# classifier = None

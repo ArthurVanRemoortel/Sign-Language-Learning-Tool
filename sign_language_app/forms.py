@@ -1,3 +1,7 @@
+import os
+import time
+from pathlib import Path
+
 from django import forms
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
@@ -167,3 +171,31 @@ class CoursesForm(forms.Form):
         required=False,
     )
 
+
+
+class UploadGestureForm(forms.Form):
+    word = forms.CharField(
+        widget=forms.TextInput(attrs={"class": "input", "id": "wordInput"}),
+        required=True,
+    )
+    left_hand = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"id": "leftHandInput"}),
+        required=False
+    )
+    right_hand = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"id": "rightHandInput"}),
+        required=False
+    )
+    videos = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'id': 'videosInput', 'class': 'file-input'}))
+
+    def handle_uploaded_files(self, request, user):
+        # TODO: Check for max file size
+        word = self.cleaned_data['word']
+        left_hand = self.cleaned_data['left_hand']
+        right_hand = self.cleaned_data['right_hand']
+        root_path = Path('sl_ai/ai_data/vgt-uploaded') / str(user.id) / f"{word}_{1 if left_hand else 0}{1 if right_hand else 0}"
+        root_path.mkdir(parents=True, exist_ok=True)
+        for file in request.FILES.getlist('videos'):
+            with open(root_path / file.name, 'wb+') as destination:
+                for chunk in file.chunks():
+                    destination.write(chunk)

@@ -13,13 +13,30 @@ class GestureLocation(models.Model):
 
 
 class Gesture(models.Model):
+    class Status(models.TextChoices):
+        PENDING = '0', _('Pending')
+        TRAINING = '1', _('Training')
+        COMPLETE = '2', _('Complete')
+
     word = models.CharField(max_length=100)
     locations = models.ManyToManyField(GestureLocation)
     left_hand = models.BooleanField(default=True)
     right_hand = models.BooleanField(default=True)
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, related_name="gestures"
+    )
+    status = models.CharField(
+        max_length=1,
+        choices=Status.choices,
+        default=Status.COMPLETE,
+    )
 
     def __str__(self):
         return f"{self.word} (id={self.id})"
+
+    @property
+    def handed_string(self):
+        return f"{self.word}_{1 if self.left_hand else 0}{1 if self.right_hand else 0}"
 
 
 class Course(models.Model):

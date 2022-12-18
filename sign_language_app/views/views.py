@@ -43,8 +43,6 @@ def courses_overview(request):
     courses = Course.objects.all()
     page_number = request.GET.get('page', 1)
     filters = request.GET.get('filters', None)
-    search_string = request.GET.get('search_input', None)
-
 
     if search_form.is_valid():
         search_input_text = search_form.cleaned_data.get("search_input", None)
@@ -113,3 +111,4 @@ def unit_view(request, unit_id):
         'gestures': serializers.serialize("json", unit.gestures.all())
     }
     return render(request, "sign_language_app/unit.html", context)
+

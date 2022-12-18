@@ -1,0 +1,164 @@
+{% extends 'sign_language_app/profile/profile_base.html'%}
+{% load extras %}
+{% block title %}
+    Manage Gestures
+{% endblock %}
+
+{% block profile_content %}
+    <div class="container">
+        <h2 class="title">
+            Manage Gestures
+        </h2>
+
+        <div class="buttons">
+            <button class="button is-link js-modal-trigger" data-target="gesture-modal">Add Gesture</button>
+        </div>
+
+        <table class="table is-fullwidth">
+            <thead>
+            <tr>
+                <th><abbr title="Gesture">Gesture</abbr></th>
+                <th><abbr title="Creator">Creator</abbr></th>
+                <th><abbr title="Status">Status</abbr></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for gesture in gestures %}
+                <tr>
+                    <th>{{ gesture.word }}</th>
+                    <th>{% if gesture.creator %}{{ gesture.creator }}{% endif %}</th>
+                    <th>{{ gesture.get_status_display }}</th>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal" id="gesture-modal">
+        <div class="modal-background"></div>
+        <form action="{% url 'create_gesture' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Add Gesture</p>
+                    <button class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="tabs is-fullwidth">
+                        <ul>
+                            <li class="tab is-active">
+                                <a>
+                                    <span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                                    <span>Upload</span>
+                                </a>
+                            </li>
+                            <li class="tab">
+                                <a>
+                                    <span class="icon"><i class="fa-solid fa-video"></i></span>
+                                    <span>Record</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="field has-addons">
+                            <div class="control is-expanded">
+                                <label for="wordInput" class="label">Word</label>
+                                {{ upload_gesture_form.word }}
+                            </div>
+                        </div>
+                        <div class="field has-addons">
+                            <div class="control">
+                                <label for="wordInput" class="label">Left Hand</label>
+                                {{ upload_gesture_form.left_hand }}
+                                <label for="wordInput" class="label">Right Hand</label>
+                                {{ upload_gesture_form.right_hand }}
+                            </div>
+                        </div>
+                        <div class="field has-addons" id="videoUploadField">
+                            <div class="file is-medium has-name">
+                                <label class="file-label">
+                                    {{ upload_gesture_form.videos }}
+                                    <span class="file-cta">
+                                      <span class="file-icon">
+                                        <i class="fas fa-upload"></i>
+                                      </span>
+                                      <span class="file-label">
+                                        Select videos...
+                                      </span>
+                                    </span>
+                                    <span class="file-name">
+                                      0 Files
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button type="submit" class="button is-success">Save</button>
+                    <button class="button">Cancel</button>
+                </footer>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            // Functions to open and close a modal
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+
+            // Add a click event on buttons to open a specific modal
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                    openModal($target);
+                });
+            });
+
+            // Add a click event on various child elements to close the parent modal
+            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button:not(.is-success)') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Add a keyboard event to close all modals
+            document.addEventListener('keydown', (event) => {
+                const e = event || window.event;
+
+                if (e.keyCode === 27) { // Escape key
+                    closeAllModals();
+                }
+            });
+        });
+    </script>
+
+    <script>
+        const fileInput = document.querySelector('#videoUploadField input[type=file]');
+        fileInput.onchange = () => {
+            if (fileInput.files.length > 0) {
+                const fileName = document.querySelector('#videoUploadField .file-name');
+                fileName.textContent = `${fileInput.files.length} files`;
+            }
+        }
+    </script>
+{% endblock %}
