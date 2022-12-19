@@ -5,6 +5,7 @@
 ai_data
 data
 *.h5
+redis_data
 
 ### Python template
 # Byte-compiled / optimized / DLL files

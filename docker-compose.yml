@@ -10,6 +10,15 @@ services:
     ports:
       - "5432:5432"
 
+  redis:
+    image: redis/redis-stack-server
+    #    command: redis-server --appendonly yes
+    #    command: redis-server --protected-mode no CONFIG SET protected-mode no
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/
+
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000 --insecure
@@ -22,3 +31,6 @@ services:
       - .env.docker
     depends_on:
       - "db"
+
+volumes:
+  redis_data:

@@ -1,3 +1,5 @@
+import os
+import random
 import threading
 import time
 from pathlib import Path
@@ -9,6 +11,9 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule
 from sign_language_app.classifier import gesture_classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import GestureDataset
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 IS_TRAINING = False
 
@@ -53,27 +58,37 @@ def retrain_model():
         print("No new gestures.")
 
 
+@shared_task
+def retrain_model_task():
+    logger.info("retrain_model_task just ran.")
+    os.mkdir(Path(r"C:/Users/Arthur/Desktop/EhB/22-23/Final Work/Sign-Language-Learning-Tool") / str(random.randint(0, 1000)))
+    return "done"
 
-@shared_task(name="test")
-def retrain_model_task(self):
-    print(f"background task: test {self}")
+
+@shared_task
+def retrain_model_task2():
+    logger.info("retrain_model_task2 just ran.")
+    os.mkdir(Path(r"C:/Users/Arthur/Desktop/EhB/22-23/Final Work/Sign-Language-Learning-Tool") / (str(random.randint(0, 1000)) + "_2"))
+    return "done"
 
 
 def setup_training_task():
-    schedule, created = IntervalSchedule.objects.get_or_create(
-        every=1,
-        period=IntervalSchedule.SECONDS,
-    )
-
-    try:
-        task = PeriodicTask.objects.get(
-            task="test",
-        )
-    except PeriodicTask.DoesNotExist:
-        task = PeriodicTask(
-            name="Model Training Task",
-            task="test",
-            interval=schedule,
-        )
-        task.save()
+    pass
+    # task_name = 'learning_site.background_tasks.retrain_model_task'
+    # schedule, created = IntervalSchedule.objects.get_or_create(
+    #     every=1,
+    #     period=IntervalSchedule.SECONDS,
+    # )
+    #
+    # try:
+    #     task = PeriodicTask.objects.get(
+    #         task=task_name,
+    #     )
+    # except PeriodicTask.DoesNotExist:
+    #     task = PeriodicTask(
+    #         name="Model Training Task",
+    #         task=task_name,
+    #         interval=schedule,
+    #     )
+    #     task.save()
 #

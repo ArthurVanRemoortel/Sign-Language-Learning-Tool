@@ -9,5 +9,6 @@ class SignLanguageAppConfig(AppConfig):
     def ready(self):
         if 'runserver' not in sys.argv:
             return True
-        # import sign_language_app.background_tasks
-        # sign_language_app.background_tasks.setup_training_task()
+        import sign_language_app.background_tasks
+        print('Project is ready...')
+        sign_language_app.background_tasks.setup_training_task()

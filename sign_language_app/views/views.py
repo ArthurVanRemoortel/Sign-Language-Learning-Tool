@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.core.paginator import Paginator, EmptyPage
 from django.views.defaults import page_not_found
+
 from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
 from django.core import serializers
