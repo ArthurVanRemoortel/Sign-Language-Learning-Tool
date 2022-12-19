@@ -4,14 +4,12 @@
   fields:
     name: Beginner Gestures
     description: The most important words you should know to get started.
-    is_public: true
     difficulty: 1
 - model: sign_language_app.course
   pk: 2
   fields:
     name: Advanced Gestures
     description: More advanced gestures for more experienced users.
-    is_public: true
     difficulty: 3
 
 

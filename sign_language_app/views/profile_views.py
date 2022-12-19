@@ -4,8 +4,8 @@ from django.db.models import Q
 from django.shortcuts import render, redirect
 
 from sign_language_app.background_tasks import retrain_model
-from sign_language_app.forms import UploadGestureForm
-from sign_language_app.models import Gesture
+from sign_language_app.forms import UploadGestureForm, NewCourseForm
+from sign_language_app.models import Gesture, Course
 from sign_language_app.views.views import get_user
 
 
@@ -35,16 +35,48 @@ def manage_students(request):
     context = {
         'current_section': 'manage_students'
     }
-    return render(request, "sign_language_app/profile/manage_students.html", context)
+    return render(request, "sign_language_app/profile/classroom/manage_students.html", context)
 
 
 @login_required
 def manage_courses(request):
     user = get_user(request)
     context = {
-        'current_section': 'manage_courses'
+        'current_section': 'manage_courses',
+        'courses': Course.objects.filter(Q(creator=user)).all()
     }
-    return render(request, "sign_language_app/profile/manage_courses.html", context)
+    return render(request, "sign_language_app/profile/classroom/courses/manage_courses.html", context)
+
+
+@login_required
+def new_course_view(request):
+    user = get_user(request)
+    if request.method == "POST":
+        form = NewCourseForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data.get('title')
+            description = form.cleaned_data.get('description')
+            visibility = form.cleaned_data.get('visibility')
+            difficulty = form.cleaned_data.get('difficulty')
+            new_course = Course(
+                name=title,
+                description=description,
+                visibility=visibility,
+                difficulty=difficulty,
+                creator=user
+            )
+            new_course.save()
+        else:
+            messages.error(request, 'The form was not valid. Please try again and make sure to fill in all the necessary information')
+        return redirect('manage_courses')
+    else:
+        form = NewCourseForm()
+
+    context = {
+        'current_section': 'manage_courses',
+        'form': form,
+    }
+    return render(request, "sign_language_app/profile/classroom/courses/new_course.html", context)
 
 
 @login_required
@@ -56,7 +88,7 @@ def manage_gestures(request):
         'upload_gesture_form': upload_gesture_form,
         'gestures': Gesture.objects.filter(Q(creator=user)).all()
     }
-    return render(request, "sign_language_app/profile/manage_gestures.html", context)
+    return render(request, "sign_language_app/profile/classroom/manage_gestures.html", context)
 
 
 @login_required
@@ -80,7 +112,6 @@ def create_gesture(request):
             form.handle_uploaded_files(request, user=user)
             new_gesture = Gesture(word=gesture_word, left_hand=left_hand, right_hand=right_hand, creator=user, status=Gesture.Status.PENDING)
             new_gesture.save()
-
         else:
             messages.error(request, 'The form was not valid. Please try again and make sure to fill in all the necessary information')
     return redirect('manage_gestures')

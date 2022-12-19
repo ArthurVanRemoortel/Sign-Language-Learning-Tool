@@ -1,0 +1,44 @@
+{% extends 'sign_language_app/profile/profile_base.html' %}
+{% load extras %}
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block profile_content %}
+    <div class="container">
+        <h2 class="title">
+            Manage Courses
+        </h2>
+
+        <div class="buttons">
+            <a href="{% url 'new_course' %}" class="button is-link">Add Course</a>
+        </div>
+
+        <table class="table is-fullwidth">
+            <thead>
+            <tr>
+                <th><abbr title="Gesture">Course</abbr></th>
+                <th><abbr title="Status">Visibility</abbr></th>
+                <th><abbr title="Status">Difficulty</abbr></th>
+                <th style="width:30%"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for course in courses %}
+                <tr>
+                    <td>{{ course.name }}</td>
+                    <td>{{ course.get_visibility_display }}</td>
+                    <td>{{ course.get_difficulty_display }}</td>
+                    <td>
+                        <div class="buttons">
+                            <button class="button is-info is-small">Placeholder</button>
+                            <button class="button is-danger is-small">Placeholder</button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

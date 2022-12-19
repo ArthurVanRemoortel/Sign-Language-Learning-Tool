@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 
+from sign_language_app.models import Course
+
 
 class NewUserForm(UserCreationForm):
     email = forms.EmailField(
@@ -199,3 +201,31 @@ class UploadGestureForm(forms.Form):
             with open(root_path / file.name, 'wb+') as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
+
+
+class NewCourseForm(forms.Form):
+    title = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "class": "input",
+            "id": "titleInput",
+        }),
+        required=True,
+    )
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "class": "textarea",
+            "id": "descriptionInput",
+            'rows': 6, 'cols': 40,
+            "placeholder": "Please explain to the uses what this course is about."
+        }),
+        required=True,
+    )
+    visibility = forms.ChoiceField(
+        required=False,
+        choices=Course.Visibility.choices,
+    )
+
+    difficulty = forms.ChoiceField(
+        required=False,
+        choices=Course.Difficulty.choices,
+    )

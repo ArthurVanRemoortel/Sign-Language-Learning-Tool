@@ -45,14 +45,27 @@ class Course(models.Model):
         INTERMEDIATE = '2', _('Intermediate')
         ADVANCED = '3', _('Advanced')
 
+    class Visibility(models.TextChoices):
+        PRIVATE = '1', _('Private')
+        STUDENTS = '2', _('Students')
+        PUBLIC = '3', _('Public')
+
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=200)
-    is_public = models.BooleanField(default=True)
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, related_name="courses"
+    )
 
     difficulty = models.CharField(
         max_length=2,
         choices=Difficulty.choices,
         default=Difficulty.BEGINNER,
+    )
+
+    visibility = models.CharField(
+        max_length=2,
+        choices=Visibility.choices,
+        default=Visibility.PUBLIC
     )
 
     def get_difficulty(self) -> Difficulty:

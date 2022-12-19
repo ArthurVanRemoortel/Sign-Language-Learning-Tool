@@ -23,6 +23,7 @@ urlpatterns += [
     path('feedback', profile_views.feedback, name='feedback'),
     path('create_gesture', profile_views.create_gesture, name='create_gesture'),
     path('manage_courses', profile_views.manage_courses, name='classroom'),
+    path('manage_courses/new_course', profile_views.new_course_view, name='new_course'),
 ]
 
 # Authentication patterns
