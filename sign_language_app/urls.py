@@ -22,6 +22,7 @@ urlpatterns += [
     path('manage_gestures', profile_views.manage_gestures, name='manage_gestures'),
     path('feedback', profile_views.feedback, name='feedback'),
     path('create_gesture', profile_views.create_gesture, name='create_gesture'),
+    path('manage_courses', profile_views.manage_courses, name='classroom'),
 ]
 
 # Authentication patterns

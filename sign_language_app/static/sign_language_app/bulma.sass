@@ -22,7 +22,18 @@
   background-color: $primary
 
 .secondary-background-color
-  background-color: $secondary
+  background-color: $secondary-dark
+
+.is-secondary
+  background-color: $secondary-dark
+
+.is-primary-dark
+  background-color: $primary-dark
+  border-color: transparent
+  color: #fff
+  &:hover
+    background-color: adjust-color($primary-dark, $lightness: -5%)
+    color: #fff
 
 
 .camera-box

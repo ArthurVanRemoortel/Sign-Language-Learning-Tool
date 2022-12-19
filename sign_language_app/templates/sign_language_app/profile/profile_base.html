@@ -26,8 +26,8 @@
                     <li>
                         <a class="">Manage</a>
                         <ul>
-                            <li><a href="{% url 'manage_students' %}" class="{% if current_section == 'manage_students' %} is-active {% endif %}">Students</a></li>
                             <li><a href="{% url 'manage_courses' %}" class="{% if current_section == 'manage_courses' %} is-active {% endif %}">Courses</a></li>
+                            <li><a href="{% url 'manage_students' %}" class="{% if current_section == 'manage_students' %} is-active {% endif %}">Students</a></li>
                             <li><a href="{% url 'manage_gestures' %}" class="{% if current_section == 'manage_gestures' %} is-active {% endif %}">Gestures</a></li>
                         </ul>
                     </li>

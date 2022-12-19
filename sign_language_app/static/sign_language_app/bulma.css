@@ -7797,7 +7797,18 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
   background-color: #A5BE00; }
 
 .secondary-background-color {
-  background-color: #1cc9c7; }
+  background-color: #1C9973; }
+
+.is-secondary {
+  background-color: #1C9973; }
+
+.is-primary-dark {
+  background-color: #679436;
+  border-color: transparent;
+  color: #fff; }
+  .is-primary-dark:hover {
+    background-color: #5a812f;
+    color: #fff; }
 
 .camera-box {
   border-radius: 6px;

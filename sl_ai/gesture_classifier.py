@@ -60,7 +60,7 @@ class GestureClassifier:
         self.make_model()
 
         # TODO: Make sure all categories are represented.
-        self.x_train, x_test, self.y_train, y_test = train_test_split(self.gesture_dataset.x_data, self.gesture_dataset.y_data, train_size=train_size, random_state=42)
+        self.x_train, x_test, self.y_train, y_test = train_test_split(self.gesture_dataset.x_data, self.gesture_dataset.y_data, train_size=train_size, random_state=42, stratify=self.gesture_dataset.y_data)
         x_validate, x_test, y_validate, y_test = train_test_split(x_test, y_test, test_size=0.5, random_state=42)
         self.x_test = x_test
         self.y_test = y_test

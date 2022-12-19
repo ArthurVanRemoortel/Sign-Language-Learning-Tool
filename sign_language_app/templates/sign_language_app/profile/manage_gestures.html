@@ -18,16 +18,23 @@
             <thead>
             <tr>
                 <th><abbr title="Gesture">Gesture</abbr></th>
-                <th><abbr title="Creator">Creator</abbr></th>
+                {#                <th><abbr title="Status">Creator</abbr></th>#}
                 <th><abbr title="Status">Status</abbr></th>
+                <th style="width:30%"></th>
             </tr>
             </thead>
             <tbody>
             {% for gesture in gestures %}
                 <tr>
-                    <th>{{ gesture.word }}</th>
-                    <th>{% if gesture.creator %}{{ gesture.creator }}{% endif %}</th>
-                    <th>{{ gesture.get_status_display }}</th>
+                    <td>{{ gesture.word }}</td>
+                    {#                    <th>{% if gesture.creator %}{{ gesture.creator }}{% endif %}</th>#}
+                    <td>{{ gesture.get_status_display }}</td>
+                    <td>
+                        <div class="buttons">
+                            <button class="button is-info is-small">Placeholder</button>
+                            <button class="button is-danger is-small">Placeholder</button>
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

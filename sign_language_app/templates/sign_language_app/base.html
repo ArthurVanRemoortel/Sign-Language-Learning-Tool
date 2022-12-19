@@ -58,6 +58,9 @@
             <div class="navbar-item">
                 <div class="buttons">
                     {% if user.is_authenticated %}
+                        <a class="button is-warning" href="{% url 'classroom' %}">
+                            <strong>Classroom</strong>
+                        </a>
                         <a class="button is-primary" href="{% url 'profile' %}">
                             <strong>Profile</strong>
                         </a>
