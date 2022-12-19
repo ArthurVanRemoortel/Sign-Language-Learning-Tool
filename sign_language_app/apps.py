@@ -11,4 +11,5 @@ class SignLanguageAppConfig(AppConfig):
             return True
         import sign_language_app.background_tasks
         print('Project is ready...')
-        sign_language_app.background_tasks.setup_training_task()
+        # sign_language_app.background_tasks.setup_training_task()
+        sign_language_app.background_tasks.start_scheduler()

@@ -51,7 +51,6 @@ def manage_courses(request):
 def manage_gestures(request):
     user = get_user(request)
     upload_gesture_form = UploadGestureForm(request.GET)
-    # retrain_model()
     context = {
         'current_section': 'manage_gestures',
         'upload_gesture_form': upload_gesture_form,
@@ -82,7 +81,6 @@ def create_gesture(request):
             new_gesture = Gesture(word=gesture_word, left_hand=left_hand, right_hand=right_hand, creator=user, status=Gesture.Status.PENDING)
             new_gesture.save()
 
-            retrain_model()
         else:
             messages.error(request, 'The form was not valid. Please try again and make sure to fill in all the necessary information')
     return redirect('manage_gestures')

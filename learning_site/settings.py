@@ -61,12 +61,7 @@ INSTALLED_APPS = [
     "django_filters",
     "sass_processor",
     "compressor",
-
-    "django_celery_beat",
-    "django_celery_results",
-
     "sign_language_app",
-
 ]
 
 MIDDLEWARE = [
@@ -178,9 +173,3 @@ REST_FRAMEWORK = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERY_TASK_TRACK_STARTED = True
-CELERY_RESULT_BACKEND = 'django-db'
-CELERY_CACHE_BACKEND = 'django-cache'
-
-print('LOADED SETTINGS')

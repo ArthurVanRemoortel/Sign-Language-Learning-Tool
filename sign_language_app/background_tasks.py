@@ -4,16 +4,12 @@ import threading
 import time
 from pathlib import Path
 
-from celery import shared_task
+import schedule
 from django.db.models import Q
-from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 from sign_language_app.classifier import gesture_classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import GestureDataset
-from celery.utils.log import get_task_logger
-
-logger = get_task_logger(__name__)
 
 IS_TRAINING = False
 
@@ -22,7 +18,6 @@ def retrain_thread(new_gestures):
     global IS_TRAINING
     IS_TRAINING = True
     print("Starting training...")
-    print(new_gestures)
     csv_out_path = Path('sl_ai/uploaded_gestures_dataset.csv')
     model_path = Path('sl_ai/model.h5')
 
@@ -34,12 +29,12 @@ def retrain_thread(new_gestures):
 
     # TODO: Should return the data. Writing to csv should be be separate function.
     new_dataset.analyze_videos(csv_out_path=csv_out_path)
+    new_dataset.load_from_csv(csv_out_path)
 
     for gesture in new_gestures:
         gesture.status = Gesture.Status.COMPLETE
         gesture.save()
 
-    new_dataset.load_from_csv(csv_out_path)
 
     gesture_classifier.append_dataset(new_dataset)
     gesture_classifier.train(save_path=model_path)
@@ -48,47 +43,40 @@ def retrain_thread(new_gestures):
 
 def retrain_model():
     global IS_TRAINING
-    new_gestures = Gesture.objects.filter(Q(status=Gesture.Status.PENDING) | Q(status=Gesture.Status.TRAINING)).all()
+    print("Checking for new gestures...")
     if IS_TRAINING:
         print("Already retraining. Please wait.")
         return
+    new_gestures = Gesture.objects.filter(Q(status=Gesture.Status.PENDING)).all()
     if new_gestures:
         threading.Thread(target=retrain_thread, daemon=False, args=(new_gestures, )).start()
     else:
         print("No new gestures.")
 
 
-@shared_task
-def retrain_model_task():
-    logger.info("retrain_model_task just ran.")
-    os.mkdir(Path(r"C:/Users/Arthur/Desktop/EhB/22-23/Final Work/Sign-Language-Learning-Tool") / str(random.randint(0, 1000)))
-    return "done"
 
 
-@shared_task
-def retrain_model_task2():
-    logger.info("retrain_model_task2 just ran.")
-    os.mkdir(Path(r"C:/Users/Arthur/Desktop/EhB/22-23/Final Work/Sign-Language-Learning-Tool") / (str(random.randint(0, 1000)) + "_2"))
-    return "done"
+def run_continuously(self, interval=1):
+    # https://stackoverflow.com/a/60244694/5165250
+    cease_continuous_run = threading.Event()
+
+    class ScheduleThread(threading.Thread):
+
+        @classmethod
+        def run(cls):
+            while not cease_continuous_run.is_set():
+                self.run_pending()
+                time.sleep(interval)
+
+    continuous_thread = ScheduleThread(daemon=True)
+    continuous_thread.start()
+    return cease_continuous_run
 
 
-def setup_training_task():
-    pass
-    # task_name = 'learning_site.background_tasks.retrain_model_task'
-    # schedule, created = IntervalSchedule.objects.get_or_create(
-    #     every=1,
-    #     period=IntervalSchedule.SECONDS,
-    # )
-    #
-    # try:
-    #     task = PeriodicTask.objects.get(
-    #         task=task_name,
-    #     )
-    # except PeriodicTask.DoesNotExist:
-    #     task = PeriodicTask(
-    #         name="Model Training Task",
-    #         task=task_name,
-    #         interval=schedule,
-    #     )
-    #     task.save()
-#
+def start_scheduler():
+    print("Starting the scheduler")
+    schedule.Scheduler.run_continuously = run_continuously
+
+    scheduler = schedule.Scheduler()
+    scheduler.every(60).seconds.do(retrain_model)
+    scheduler.run_continuously()
