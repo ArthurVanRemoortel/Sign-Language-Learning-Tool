@@ -49,6 +49,9 @@ class Course(models.Model):
     description = models.TextField(max_length=200)
     is_public = models.BooleanField(default=True)
 
+    class Meta:
+        ordering = ["-id"]
+
     difficulty = models.CharField(
         max_length=2,
         choices=Difficulty.choices,
