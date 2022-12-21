@@ -14,7 +14,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from pprint import pprint
-from sign_language_app.classifier import gesture_classifier
+from sign_language_app.classifier import Classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list
 
@@ -64,7 +64,7 @@ def test_auth(request):
     else:
         # TODO: Verify if the js and python coordinate systems are the same.
         preprocess_landmarks(left_landmarks, right_landmarks, FRAME_WIDTH, FRAME_HEIGHT)
-        result = gesture_classifier.predict(left_landmarks, right_landmarks)
+        result = Classifier().gesture_classifier.predict(left_landmarks, right_landmarks)
         classes_x = np.argmax(result, axis=1)
         print(classes_x)
         prediction_percents = (result*100)

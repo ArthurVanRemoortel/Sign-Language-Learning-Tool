@@ -5,7 +5,6 @@ import numpy as np
 from pathlib import Path
 
 import pandas as pd
-import tensorflow as tf
 import seaborn as sns
 from keras.saving.save import load_model
 from matplotlib import pyplot as plt
@@ -14,6 +13,8 @@ from sklearn.model_selection import train_test_split
 
 from sl_ai.dataset import GestureDataset, fill_holes, make_coordinates_list_fixed_length, pre_process_point_history
 from sl_ai.config import MAX_VIDEO_FRAMES
+import tensorflow as tf
+
 
 class GestureClassifier:
     def __init__(
@@ -71,7 +72,7 @@ class GestureClassifier:
             self.x_train,
             self.y_train,
             epochs=1000,
-            batch_size=1,
+            batch_size=32,
             validation_data=(x_validate, y_validate),
             callbacks=[es_callback]
         )
