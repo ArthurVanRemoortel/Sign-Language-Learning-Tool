@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     {% load static %}
-
+    {% load extras %}
 
     <link href="{% sass_src 'sign_language_app/bulma.sass' %}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="{% static 'sign_language_app/style.css' %}">
@@ -61,9 +61,11 @@
             <div class="navbar-item">
                 <div class="buttons">
                     {% if user.is_authenticated %}
-                        <a class="button is-warning" href="{% url 'classroom' %}">
-                            <strong>Classroom</strong>
-                        </a>
+                        {% if user|check_teacher_or_admin %}
+                            <a class="button is-warning" href="{% url 'classroom' %}">
+                                <strong>Classroom</strong>
+                            </a>
+                        {% endif %}
                         <a class="button is-primary" href="{% url 'profile' %}">
                             <strong>Profile</strong>
                         </a>

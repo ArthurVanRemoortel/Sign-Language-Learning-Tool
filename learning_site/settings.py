@@ -28,6 +28,7 @@ POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 POSTGRES_DB = os.getenv('POSTGRES_DB')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+BACKGROUND_TRAINING_TIME = int(os.getenv('BACKGROUND_TRAINING_TIME'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,6 +62,8 @@ INSTALLED_APPS = [
     "django_filters",
     "sass_processor",
     "compressor",
+    "rolepermissions",
+
     "sign_language_app",
 ]
 
@@ -173,3 +176,6 @@ REST_FRAMEWORK = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+ROLEPERMISSIONS_MODULE = 'learning_site.roles'
+ROLEPERMISSIONS_REGISTER_ADMIN = True

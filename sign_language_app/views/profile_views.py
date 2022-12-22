@@ -1,21 +1,25 @@
 from pprint import pprint
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import json
 
-from sign_language_app.background_tasks import retrain_model
+from rolepermissions.checkers import has_role
+from rolepermissions.roles import get_user_roles
+
+from learning_site.roles import Teacher
 from sign_language_app.forms import UploadGestureForm, NewCourseForm
 from sign_language_app.models import Gesture, Course, Unit
-from sign_language_app.views.views import get_user
+from sign_language_app.utils import teacher_or_admin_required, is_teacher_or_admin, get_user
 
 
 @login_required
 def profile_overview(request):
     user = get_user(request)
+    print(is_teacher_or_admin(user))
     context = {
         'current_section': 'overview'
     }
@@ -34,6 +38,7 @@ def profile_settings(request):
 
 
 @login_required
+@teacher_or_admin_required
 def manage_students(request):
     user = get_user(request)
     context = {
@@ -43,6 +48,7 @@ def manage_students(request):
 
 
 @login_required
+@teacher_or_admin_required
 def manage_courses_view(request):
     user = get_user(request)
     context = {
@@ -53,6 +59,7 @@ def manage_courses_view(request):
 
 
 @login_required
+@teacher_or_admin_required
 def new_course_view(request):
     user = get_user(request)
     if request.method == "POST":
@@ -113,6 +120,7 @@ def new_course_view(request):
 
 
 @login_required
+@teacher_or_admin_required
 def manage_gestures(request):
     user = get_user(request)
     upload_gesture_form = UploadGestureForm(request.GET)
@@ -125,6 +133,7 @@ def manage_gestures(request):
 
 
 @login_required
+@teacher_or_admin_required
 def create_gesture(request):
     user = get_user(request)
     if request.method == 'POST':

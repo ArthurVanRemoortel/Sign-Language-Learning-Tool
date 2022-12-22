@@ -1,5 +1,6 @@
 {% extends 'sign_language_app/base.html'%}
 {% load extras %}
+
 {% block title %}
     Profile
 {% endblock %}
@@ -7,9 +8,9 @@
 {% block content %}
     <div class="container mt-4">
         <div class="columns">
-{#        <h2 class="title">#}
-{#            Profile#}
-{#        </h2>#}
+            {#        <h2 class="title">#}
+            {#            Profile#}
+            {#        </h2>#}
 
             <aside class="menu column is-one-fifth">
                 <p class="menu-label">
@@ -19,21 +20,22 @@
                     <li><a href="{% url 'profile' %}" class="{% if current_section == 'overview' %} is-active {% endif %}">Overview</a></li>
                     <li><a href="{% url 'profile_settings' %}" class="{% if current_section == 'settings' %} is-active {% endif %}">Settings</a></li>
                 </ul>
-                <p class="menu-label">
-                    Classroom
-                </p>
-                <ul class="menu-list">
-                    <li>
-                        <a class="">Manage</a>
-                        <ul>
-                            <li><a href="{% url 'manage_courses' %}" class="{% if current_section == 'manage_courses' %} is-active {% endif %}">Courses</a></li>
-                            <li><a href="{% url 'manage_students' %}" class="{% if current_section == 'manage_students' %} is-active {% endif %}">Students</a></li>
-                            <li><a href="{% url 'manage_gestures' %}" class="{% if current_section == 'manage_gestures' %} is-active {% endif %}">Gestures</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="{% url 'feedback' %}" class="{% if current_section == 'feedback' %} is-active {% endif %}">Feedback</a></li>
-                </ul>
-
+                {% if user|check_teacher_or_admin %}
+                    <p class="menu-label">
+                        Classroom
+                    </p>
+                    <ul class="menu-list">
+                        <li>
+                            <a class="">Manage</a>
+                            <ul>
+                                <li><a href="{% url 'manage_courses' %}" class="{% if current_section == 'manage_courses' %} is-active {% endif %}">Courses</a></li>
+                                <li><a href="{% url 'manage_students' %}" class="{% if current_section == 'manage_students' %} is-active {% endif %}">Students</a></li>
+                                <li><a href="{% url 'manage_gestures' %}" class="{% if current_section == 'manage_gestures' %} is-active {% endif %}">Gestures</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="{% url 'feedback' %}" class="{% if current_section == 'feedback' %} is-active {% endif %}">Feedback</a></li>
+                    </ul>
+                {% endif %}
             </aside>
             <div class="column ml-6">
                 {% block profile_content %}

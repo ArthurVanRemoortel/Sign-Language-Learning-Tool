@@ -1,4 +1,7 @@
 from django import template
+from django.contrib.auth.models import User
+
+from sign_language_app.utils import is_teacher_or_admin
 
 register = template.Library()
 
@@ -52,3 +55,8 @@ def sort(iterable, attr):
 @register.filter
 def get_value(dictionary, key):
     return dictionary.get(key, None)
+
+
+@register.filter
+def check_teacher_or_admin(user: User):
+    return is_teacher_or_admin(user)

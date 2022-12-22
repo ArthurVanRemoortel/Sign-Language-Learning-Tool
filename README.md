@@ -40,3 +40,7 @@ Using the notebooks will require some video data to train on. You can provide yo
 ## Data preparation
 The `sl_ai/process_videos.py` script can be used to convert raw video footage into something more usable. This script resize the videos and some additional processing.
 
+## Commands
+- `python manage.py sync_roles`
+- `python manage.py loaddad`
+- `python manage.py loaddata sign_language_app/fixtures/seed.yaml`

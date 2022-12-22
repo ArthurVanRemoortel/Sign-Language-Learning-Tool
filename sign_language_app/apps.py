@@ -1,5 +1,9 @@
 import sys
+import threading
+
 from django.apps import AppConfig
+
+from learning_site.settings import BACKGROUND_TRAINING_TIME
 
 
 class SignLanguageAppConfig(AppConfig):
@@ -11,7 +15,11 @@ class SignLanguageAppConfig(AppConfig):
             return True
         import sign_language_app.background_tasks
         from sign_language_app.classifier import Classifier
-        print('Project is ready...')
-        # sign_language_app.background_tasks.setup_training_task()
-        sign_language_app.background_tasks.start_scheduler()
-        Classifier()
+
+        # TODO: Clean this up. Load the classifier in a background thread to make startup faster.
+        def t():
+            Classifier()
+        threading.Thread(target=t).start()
+
+        if BACKGROUND_TRAINING_TIME != -1:
+            sign_language_app.background_tasks.start_scheduler()

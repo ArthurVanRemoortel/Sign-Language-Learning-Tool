@@ -166,6 +166,14 @@ rcssmin = "1.1.0"
 rjsmin = "1.2.0"
 
 [[package]]
+name = "django-discover-runner"
+version = "1.0"
+description = "A Django test runner based on unittest2's test discovery."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "django-filter"
 version = "22.1"
 description = "Django-filter is a reusable Django application for allowing users to filter querysets dynamically."
@@ -175,6 +183,19 @@ python-versions = ">=3.7"
 
 [package.dependencies]
 Django = ">=3.2"
+
+[[package]]
+name = "django-role-permissions"
+version = "3.1.1"
+description = "A django app for role based permissions."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+Django = ">=1.5"
+django-discover-runner = "*"
+six = "*"
 
 [[package]]
 name = "django-sass-processor"
@@ -1058,7 +1079,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "ac0eab4fe09efa0bfb8e733402dca74422adbb5de720144b2612d39a0bed14ff"
+content-hash = "68021f6f69601e5a3ac4661533a03f54786f72c34e3433499fa3c8654a3d8280"
 
 [metadata.files]
 absl-py = [
@@ -1188,9 +1209,16 @@ django-compressor = [
     {file = "django_compressor-4.1-py2.py3-none-any.whl", hash = "sha256:61f313852b4c8d4ef2534cda3d2366f45ca3e399b3cbe10590e516cc6b45542d"},
     {file = "django_compressor-4.1.tar.gz", hash = "sha256:8ece621d2a98f6c6635480cb8b3701db890a99f793f95ca20cb00abc194d331d"},
 ]
+django-discover-runner = [
+    {file = "django-discover-runner-1.0.tar.gz", hash = "sha256:0ba91fe722c256bcbfdeb36fac7eac0f27e5bfda55d98c4c1cf9ab62b5b084fe"},
+    {file = "django_discover_runner-1.0-py2.py3-none-any.whl", hash = "sha256:e05b6da06310ecc857b8950007f45b8968dd5f0b8b718a1095cf466c705fd807"},
+]
 django-filter = [
     {file = "django-filter-22.1.tar.gz", hash = "sha256:ed473b76e84f7e83b2511bb2050c3efb36d135207d0128dfe3ae4b36e3594ba5"},
     {file = "django_filter-22.1-py3-none-any.whl", hash = "sha256:ed429e34760127e3520a67f415bec4c905d4649fbe45d0d6da37e6ff5e0287eb"},
+]
+django-role-permissions = [
+    {file = "django-role-permissions-3.1.1.tar.gz", hash = "sha256:4e3c11d6f2f6c0c241f7fbfaef1950add834706b598c8303f7b74fc494971035"},
 ]
 django-sass-processor = [
     {file = "django-sass-processor-1.2.1.tar.gz", hash = "sha256:6f5ebcb3acbec8578285c8c7e9729e363cd5636f2d479a3f030dc53aaeb59571"},

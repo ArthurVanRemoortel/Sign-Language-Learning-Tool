@@ -7,6 +7,7 @@ from pathlib import Path
 import schedule
 from django.db.models import Q
 
+from learning_site.settings import BACKGROUND_TRAINING_TIME
 from sign_language_app.classifier import Classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import GestureDataset
@@ -76,7 +77,6 @@ def run_continuously(self, interval=1):
 def start_scheduler():
     print("Starting the scheduler")
     schedule.Scheduler.run_continuously = run_continuously
-
     scheduler = schedule.Scheduler()
     scheduler.every(60).seconds.do(retrain_model)
     scheduler.run_continuously()
