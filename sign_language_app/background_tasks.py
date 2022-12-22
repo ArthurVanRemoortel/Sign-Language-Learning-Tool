@@ -23,10 +23,6 @@ def retrain_thread(new_gestures):
     model_path = Path('sl_ai/model.h5')
 
     new_dataset = GestureDataset()
-    for gesture in new_gestures:
-        gesture.status = Gesture.Status.TRAINING
-        gesture.save()
-        new_dataset.add_django_gesture(gesture)
 
     # TODO: Should return the data. Writing to csv should be be separate function.
     new_dataset.analyze_videos(csv_out_path=csv_out_path)
@@ -39,6 +35,12 @@ def retrain_thread(new_gestures):
     # TODO: Add methods to Classifier()
     Classifier().gesture_classifier.append_dataset(new_dataset)
     Classifier().gesture_classifier.train(save_path=model_path)
+
+    for gesture in new_gestures:
+        gesture.status = Gesture.Status.TRAINING
+        gesture.save()
+        new_dataset.add_django_gesture(gesture)
+
     IS_TRAINING = False
 
 

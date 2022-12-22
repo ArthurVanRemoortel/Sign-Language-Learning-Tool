@@ -16,14 +16,20 @@ def get_user(request):
 
 
 def is_teacher(user: User):
+    if not user:
+        return False
     return has_role(user, Teacher)
 
 
 def is_admin(user: User):
+    if not user:
+        return False
     return user.is_superuser
 
 
 def is_teacher_or_admin(user: User):
+    if not user:
+        return False
     return is_admin(user) or is_teacher(user)
 
 

@@ -46,5 +46,6 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    path('api/test', api_views.test_auth)
+    path('api/test', api_views.test_auth),
+    path('api/retrain_model', api_views.trigger_retrain_model)
 ]

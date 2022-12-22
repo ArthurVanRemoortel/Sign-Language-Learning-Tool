@@ -19,10 +19,23 @@ from pprint import pprint
 from sign_language_app import serializers
 from sign_language_app.classifier import Classifier
 from sign_language_app.models import Gesture
+from sign_language_app.utils import get_user, is_admin
 from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list
+from sign_language_app.background_tasks import retrain_model
 
 FRAME_WIDTH = 720
 FRAME_HEIGHT = 480
+
+
+@api_view(['GET', 'POST', 'OPTIONS'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def trigger_retrain_model(request):
+    user = get_user(request)
+    if is_admin(user):
+        retrain_model()
+        return JsonResponse({'status': 'OK'}, status=status.HTTP_201_CREATED)
+    return JsonResponse({'status': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(['POST', 'OPTIONS'])
@@ -36,8 +49,6 @@ def test_auth(request):
     print(f'Frames: {len(hand_frames)}')
     gesture = get_object_or_404(Gesture, pk=int(data['gesture_id']['pk']))
     # print(left)
-
-
 
     left_landmarks = {i: [] for i in range(0, 21)}
     right_landmarks = {i: [] for i in range(0, 21)}
