@@ -1,0 +1,275 @@
+{% extends 'sign_language_app/profile/profile_base.html' %}
+{% load extras %}
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block profile_content %}
+    <div class="container">
+        <h2 class="title">
+            Create a Course
+        </h2>
+
+        <form method="post" action="{% url 'new_course' %}" id="courseForm">
+            {% csrf_token %}
+            <div class="field">
+                <label class="label">Title</label>
+                <div class="control">
+                    {{ form.title }}
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <div class="field">
+                        <label class="label">Visibility</label>
+                        <div class="select is-fullwidth">
+                            {{ form.visibility }}
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="field">
+                        <label class="label">Level</label>
+                        <div class="select is-fullwidth">
+                            {{ form.difficulty }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Description</label>
+                <div class="control">
+                    {{ form.description }}
+                </div>
+            </div>
+            <br>
+            <h3 class="title is-3">
+                Add Units
+            </h3>
+
+            <table class="table is-fullwidth is-bordered" id="unitTable">
+                <tbody>
+                </tbody>
+            </table>
+            <div class="field">
+                <label for="unitTitleInput" class="label">Unit Title</label>
+                <div class="control">
+                    <input class="input" type="text" placeholder="Unit title" id="unitTitleInput">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="unitTitleInput" class="label">Unit Gestures</label>
+                <div class="field is-grouped is-grouped-multiline" id="selectedGestureView">
+
+                </div>
+                <div class="control">
+                    <input class="input" type="text" placeholder="Gesture Name" id="gesturesInput">
+                </div>
+            </div>
+
+            <br>
+            <div class="buttons">
+                <button type="button" onclick="addUnit()" class="button is-info is-small">Add Unit</button>
+            </div>
+            <hr>
+            <div class="field is-grouped">
+                <div class="control">
+                    <button type="submit" class="button is-success">Save</button>
+                </div>
+                <div class="control">
+                    <a href="{% url 'manage_courses' %}" class="button is-info is-light">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal" id="unit-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Add Gesture</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+
+            </section>
+            <footer class="modal-card-foot">
+                <button type="submit" name="submit" id="submitFormButton" class="button is-success">Save</button>
+                <button class="button">Cancel</button>
+            </footer>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="module">
+        {#TODO: Duplicate code. #}
+        document.addEventListener('DOMContentLoaded', () => {
+            // Functions to open and close a modal
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+
+            // Add a click event on buttons to open a specific modal
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                    openModal($target);
+                });
+            });
+
+            // Add a click event on various child elements to close the parent modal
+            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button:not(.is-success)') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Add a keyboard event to close all modals
+            document.addEventListener('keydown', (event) => {
+                const e = event || window.event;
+
+                if (e.keyCode === 27) { // Escape key
+                    closeAllModals();
+                }
+            });
+        });
+    </script>
+
+    <script>
+        let units_data  = []
+        let selected_gesture_ids = [];
+
+        function addUnit() {
+            // TODO: Move this after $(document).ready. Use eventListener to bind it to a button.
+            let titleInput = $("#unitTitleInput")
+            let unitTable = $("#unitTable")
+            const $selectedGestureView = $('#selectedGestureView');
+            let value = titleInput.val()
+            if (value){
+                units_data.push({
+                    title: value,
+                    gesture_ids: selected_gesture_ids
+                })
+                unitTable.append(`<tr>
+                    <th>${units_data.length}</th>
+                    <td>${value}</td>
+                    <td>${selected_gesture_ids.length} gestures</td>
+                </tr>`)
+
+                titleInput.val("")
+                $selectedGestureView.empty()
+                selected_gesture_ids = []
+            }
+        }
+
+        $(document).ready(function(){
+            let csrf_token = '{{ csrf_token }}';
+            const $gesturesInput = $('#gesturesInput');
+            const $selectedGestureView = $('#selectedGestureView');
+
+            function formatGestureSelection (gesture) {
+                if (!gesture.id) {
+                    return null;
+                }
+                return gesture.text
+            }
+
+            function formatGesture (state) {
+                if (state.loading) return "Searching gestures...";
+                return state.word;
+            }
+
+
+            function gestureDataFunction (data, params) {
+                var results = $.map(data ,function (obj) {
+                    obj.text = obj.word;
+                    return obj;
+                });
+                return {
+                    results: results,
+                };
+            }
+
+            function gestureProcessResults (data, params) {
+                const results = $.map(data , function (obj) {
+                    obj.text = obj.word;
+                    return obj;
+                });
+                return {
+                    results: results
+                };
+            }
+
+            function removeSelectedGesture(element, gesture_id){
+                selected_gesture_ids.splice(selected_gesture_ids.findIndex(id => id === gesture_id), 1)
+                $(element).remove()
+            }
+
+            function onGestureSelect(e) {
+                const selectedGesture = e.params.data
+                let element = $('<div class="control"></div>')
+                let addons = $('<div class="tags has-addons"></div>')
+                addons.append($(`<p class="tag is-link">${selectedGesture.word}</p>`))
+                let button = $('<a class="tag is-delete"></a>')
+                addons.last().append(button)
+                element.append(addons)
+                button.click(function(){
+                    removeSelectedGesture(element, selectedGesture.id)
+                });
+                $selectedGestureView.append(element)
+                selected_gesture_ids.push(selectedGesture.id)
+            }
+
+            makeSelect2(
+                $gesturesInput,
+                "{% url "api-gestures-list" %}",
+                gestureProcessResults,
+                gestureDataFunction,
+                formatGesture,
+                formatGestureSelection,
+                "Gesture name"
+            )
+            $gesturesInput.on("select2:select", onGestureSelect);
+
+            $("#courseForm").submit(function(e){
+                e.preventDefault();
+                let $form = $(this);
+                let postData = $($form).serializeArray()
+                postData.push({name: 'units', value: units_data});
+                let data = JSON.stringify(postData)
+                $.ajax({
+                    url: $form.action,
+                    type: "POST",
+                    data: data,
+                    dataType: 'json',
+                    headers: {'X-CSRFToken': csrf_token},
+                    success: function (data) {
+                        window.location.assign("{% url 'manage_courses' %}")
+                    },
+                    error: function (data) {
+                        console.log('ERROR')
+                        {#TODO: Display error#}
+                        console.log(data.responseJSON);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

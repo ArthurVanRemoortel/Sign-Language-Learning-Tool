@@ -17,6 +17,9 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     {% load static %}
 
 
@@ -85,27 +88,27 @@
 
     <div class="container" style="width:100%">
         {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <article class="message is-small
+            <ul class="messages">
+                {% for message in messages %}
+                    <article class="message is-small
                     {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR%}is-danger
                     {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS%}is-success
                     {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING%}is-warning
                     {% else %}is-info
                     {% endif %}">
-                    <div class="message-header">
-                        <p>Error</p>
-                        <button class="delete is-small" aria-label="delete"></button>
-                    </div>
-                    <div class="message-body">
-                        {{ message }}
-                    </div>
-                </article>
+                        <div class="message-header">
+                            <p>Error</p>
+                            <button class="delete is-small" aria-label="delete"></button>
+                        </div>
+                        <div class="message-body">
+                            {{ message }}
+                        </div>
+                    </article>
 
-{#                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>#}
-            {% endfor %}
-        </ul>
-    {% endif %}
+                    {#                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>#}
+                {% endfor %}
+            </ul>
+        {% endif %}
 
         {% block content %}
         {% endblock %}

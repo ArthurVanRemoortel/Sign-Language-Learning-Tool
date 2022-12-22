@@ -1,11 +1,15 @@
+from pprint import pprint
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
+import json
 
 from sign_language_app.background_tasks import retrain_model
 from sign_language_app.forms import UploadGestureForm, NewCourseForm
-from sign_language_app.models import Gesture, Course
+from sign_language_app.models import Gesture, Course, Unit
 from sign_language_app.views.views import get_user
 
 
@@ -39,7 +43,7 @@ def manage_students(request):
 
 
 @login_required
-def manage_courses(request):
+def manage_courses_view(request):
     user = get_user(request)
     context = {
         'current_section': 'manage_courses',
@@ -52,12 +56,32 @@ def manage_courses(request):
 def new_course_view(request):
     user = get_user(request)
     if request.method == "POST":
-        form = NewCourseForm(request.POST)
-        if form.is_valid():
-            title = form.cleaned_data.get('title')
-            description = form.cleaned_data.get('description')
-            visibility = form.cleaned_data.get('visibility')
-            difficulty = form.cleaned_data.get('difficulty')
+        data_from_post = json.load(request)
+        title = None
+        description = None
+        visibility = None
+        difficulty = None
+        new_units = []
+        for entry in data_from_post:
+            name = entry.get('name')
+            value = entry.get('value')
+            if name == 'title':
+                title = value
+            elif name == 'description':
+                description = value
+            elif name == 'visibility':
+                visibility = value
+            elif name == 'difficulty':
+                difficulty = value
+            elif name == 'units':
+                for i, unit in enumerate(value):
+                    unit_name = unit['title']
+                    gesture_ids = unit['gesture_ids']
+                    gestures = Gesture.objects.filter(Q(id__in=gesture_ids))
+                    unit = Unit(name=unit_name, ordering_number=i)
+                    new_units.append((unit, gestures))
+
+        if title and description and visibility and difficulty and new_units:
             new_course = Course(
                 name=title,
                 description=description,
@@ -66,9 +90,18 @@ def new_course_view(request):
                 creator=user
             )
             new_course.save()
+            for i, (unit, gestures) in enumerate(new_units):
+                unit.course = new_course
+                unit.save()
+                unit.gestures.set(gestures)
+            return JsonResponse({})
         else:
-            messages.error(request, 'The form was not valid. Please try again and make sure to fill in all the necessary information')
-        return redirect('manage_courses')
+            # messages.error(request, 'The form was not valid. Please try again and make sure to fill in all the necessary information')
+            response = JsonResponse({"error": "Some data was missing. Make sure you will in all the field."})
+            response.status_code = 403
+            return response
+
+
     else:
         form = NewCourseForm()
 

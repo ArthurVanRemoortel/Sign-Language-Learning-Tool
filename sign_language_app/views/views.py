@@ -82,7 +82,7 @@ def courses_overview(request):
         next_units = {course.id: course.get_next_unit(user) for course in courses}
 
 
-    courses = courses.union(*[courses for _ in range(50)], all=True)  # Hacky way to make the results longer to test pagination.
+    # courses = courses.union(*[courses for _ in range(50)], all=True)  # Hacky way to make the results longer to test pagination.
 
     paginator = Paginator(courses, 15)
     try:

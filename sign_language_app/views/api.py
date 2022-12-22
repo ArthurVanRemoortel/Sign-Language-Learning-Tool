@@ -4,9 +4,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status
+from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -14,6 +15,8 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from pprint import pprint
+
+from sign_language_app import serializers
 from sign_language_app.classifier import gesture_classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list
@@ -73,3 +76,16 @@ def test_auth(request):
 
         is_correct = random.randint(0, 1) == 1
     return JsonResponse({'status': 'OK', "correct": is_correct}, status=status.HTTP_201_CREATED)
+
+
+
+class GestureViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.GestureSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = Gesture.objects
+        word_like = self.request.query_params.get("name_like")
+        if word_like:
+            qs = qs.filter(Q(word__icontains=word_like))
+        return qs.all()

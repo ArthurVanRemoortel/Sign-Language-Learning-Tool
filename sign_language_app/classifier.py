@@ -24,4 +24,4 @@ else:
 
 gesture_classifier.summary()
 
-# classifier = None
+# gesture_classifier = None

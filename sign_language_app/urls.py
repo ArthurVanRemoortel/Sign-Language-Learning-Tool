@@ -1,4 +1,5 @@
 from django.urls import path, include
+from rest_framework import routers
 from .views import views
 from .views import profile_views
 from .views import auth as auth_views
@@ -6,8 +7,14 @@ from .views import api as api_views
 from django.contrib.auth import views as contrib_auth_views
 from sign_language_app import forms
 
+API_PREFIX = "api/"
+
+router = routers.DefaultRouter()
+router.register("gestures", api_views.GestureViewSet, basename="api-gestures")
+
 # general patters
 urlpatterns = [
+    path(API_PREFIX, include(router.urls)),
     path('', views.index, name='index'),
     path('courses', views.courses_overview, name='courses_overview'),
     path('unit/<int:unit_id>', views.unit_view, name='unit'),
@@ -18,11 +25,11 @@ urlpatterns += [
     path('profile', profile_views.profile_overview, name='profile'),
     path('profile_settings', profile_views.profile_settings, name='profile_settings'),
     path('manage_students', profile_views.manage_students, name='manage_students'),
-    path('manage_courses', profile_views.manage_courses, name='manage_courses'),
+    path('manage_courses', profile_views.manage_courses_view, name='manage_courses'),
     path('manage_gestures', profile_views.manage_gestures, name='manage_gestures'),
     path('feedback', profile_views.feedback, name='feedback'),
     path('create_gesture', profile_views.create_gesture, name='create_gesture'),
-    path('manage_courses', profile_views.manage_courses, name='classroom'),
+    path('manage_courses', profile_views.manage_courses_view, name='classroom'),
     path('manage_courses/new_course', profile_views.new_course_view, name='new_course'),
 ]
 

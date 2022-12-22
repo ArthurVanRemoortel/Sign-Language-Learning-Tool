@@ -7,7 +7,7 @@ from pathlib import Path
 import schedule
 from django.db.models import Q
 
-from sign_language_app.classifier import gesture_classifier
+# from sign_language_app.classifier import gesture_classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import GestureDataset
 
