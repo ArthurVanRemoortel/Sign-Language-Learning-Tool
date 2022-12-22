@@ -80,5 +80,5 @@ def start_scheduler():
     print("Starting the scheduler")
     schedule.Scheduler.run_continuously = run_continuously
     scheduler = schedule.Scheduler()
-    scheduler.every(60).seconds.do(retrain_model)
+    scheduler.every(BACKGROUND_TRAINING_TIME).seconds.do(retrain_model)
     scheduler.run_continuously()
