@@ -7,7 +7,7 @@ from pathlib import Path
 import schedule
 from django.db.models import Q
 
-# from sign_language_app.classifier import gesture_classifier
+from sign_language_app.classifier import Classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import GestureDataset
 
@@ -35,9 +35,9 @@ def retrain_thread(new_gestures):
         gesture.status = Gesture.Status.COMPLETE
         gesture.save()
 
-
-    gesture_classifier.append_dataset(new_dataset)
-    gesture_classifier.train(save_path=model_path)
+    # TODO: Add methods to Classifier()
+    Classifier().gesture_classifier.append_dataset(new_dataset)
+    Classifier().gesture_classifier.train(save_path=model_path)
     IS_TRAINING = False
 
 

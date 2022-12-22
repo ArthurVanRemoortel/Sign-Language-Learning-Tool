@@ -18,6 +18,7 @@ from pprint import pprint
 
 from sign_language_app import serializers
 from sign_language_app.classifier import gesture_classifier
+from sign_language_app.classifier import Classifier
 from sign_language_app.models import Gesture
 from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list
 

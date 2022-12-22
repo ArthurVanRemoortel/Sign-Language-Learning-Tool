@@ -56,6 +56,9 @@ class Course(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, related_name="courses"
     )
 
+    class Meta:
+        ordering = ["-id"]
+
     difficulty = models.CharField(
         max_length=2,
         choices=Difficulty.choices,
