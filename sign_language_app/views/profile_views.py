@@ -62,6 +62,8 @@ def manage_courses_view(request):
 @teacher_or_admin_required
 def new_course_view(request):
     user = get_user(request)
+    upload_gesture_form = UploadGestureForm(request.GET)
+
     if request.method == "POST":
         data_from_post = json.load(request)
         title = None
@@ -115,6 +117,7 @@ def new_course_view(request):
     context = {
         'current_section': 'manage_courses',
         'form': form,
+        'upload_gesture_form': upload_gesture_form,
     }
     return render(request, "sign_language_app/profile/classroom/courses/new_course.html", context)
 
@@ -137,7 +140,6 @@ def manage_gestures(request):
 def create_gesture(request):
     user = get_user(request)
     if request.method == 'POST':
-        # for video_file in request.FILES.getlist('mkv'):
         form = UploadGestureForm(request.POST, request.FILES)
         if form.is_valid():
             gesture_word = form.cleaned_data.get('word')

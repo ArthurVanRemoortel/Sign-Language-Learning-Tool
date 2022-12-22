@@ -5,6 +5,8 @@
 {% endblock %}
 
 {% block profile_content %}
+    {% include 'sign_language_app/snippets/create_gesture_popup.html' %}
+
     <div class="container">
         <h2 class="title">
             Create a Course
@@ -45,7 +47,7 @@
             </div>
             <br>
             <h3 class="title is-3">
-                Save Unit
+                Course Units
             </h3>
 
             <table class="table is-fullwidth is-bordered" id="unitTable">
@@ -71,7 +73,8 @@
 
             <br>
             <div class="buttons">
-                <button type="button" onclick="addUnit()" class="button is-info is-small">Add Unit</button>
+                <button type="button" onclick="addUnit()" class="button is-success is-small">Save Unit</button>
+                <button type="button" class="button js-modal-trigger is-small is-link" data-target="gesture-modal">Add Gesture</button>
             </div>
             <hr>
             <div class="field is-grouped">
@@ -83,23 +86,6 @@
                 </div>
             </div>
         </form>
-    </div>
-
-    <div class="modal" id="unit-modal">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-            <header class="modal-card-head">
-                <p class="modal-card-title">Add Gesture</p>
-                <button class="delete" aria-label="close"></button>
-            </header>
-            <section class="modal-card-body">
-
-            </section>
-            <footer class="modal-card-foot">
-                <button type="submit" name="submit" id="submitFormButton" class="button is-success">Save</button>
-                <button class="button">Cancel</button>
-            </footer>
-        </div>
     </div>
 
 {% endblock %}
@@ -254,6 +240,7 @@
                 let postData = $($form).serializeArray()
                 postData.push({name: 'units', value: units_data});
                 let data = JSON.stringify(postData)
+
                 $.ajax({
                     url: $form.action,
                     type: "POST",
