@@ -229,3 +229,14 @@ class NewCourseForm(forms.Form):
         required=False,
         choices=Course.Difficulty.choices,
     )
+
+
+class TeacherCodeForm(forms.Form):
+    teacher_code = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "class": "input",
+            "id": "teacherCodeInput",
+            "placeholder": "Teacher Code",
+        }),
+        required=True,
+    )

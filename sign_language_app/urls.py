@@ -24,13 +24,18 @@ urlpatterns = [
 urlpatterns += [
     path('profile', profile_views.profile_overview, name='profile'),
     path('profile_settings', profile_views.profile_settings, name='profile_settings'),
-    path('manage_students', profile_views.manage_students, name='manage_students'),
+    path('manage_students', profile_views.manage_students_view, name='manage_students'),
     path('manage_courses', profile_views.manage_courses_view, name='manage_courses'),
     path('manage_gestures', profile_views.manage_gestures, name='manage_gestures'),
+    path('manage_teachers', profile_views.manage_teachers_view, name='manage_teachers'),
     path('feedback', profile_views.feedback, name='feedback'),
     path('create_gesture', profile_views.create_gesture, name='create_gesture'),
     path('manage_courses', profile_views.manage_courses_view, name='classroom'),
     path('manage_courses/new_course', profile_views.new_course_view, name='new_course'),
+    path('api/regenerate_teacher_code', profile_views.regenerate_teacher_code, name='regenerate_teacher_code'),
+
+    path('api/remove_student_from_classroom/<int:student_id>', profile_views.remove_student_from_classroom, name='remove_student_from_classroom'),
+    path('api/remove_teacher/<int:teacher_id>', profile_views.remove_teacher, name='remove_teacher'),
 ]
 
 # Authentication patterns
@@ -47,5 +52,5 @@ urlpatterns += [
 
 urlpatterns += [
     path('api/test', api_views.test_auth),
-    path('api/retrain_model', api_views.trigger_retrain_model)
+    path('api/retrain_model', api_views.trigger_retrain_model),
 ]

@@ -1,0 +1,67 @@
+{% extends 'sign_language_app/profile/profile_base.html' %}
+{% load extras %}
+{% block title %}
+    Manage Teachers
+{% endblock %}
+
+{% block profile_content %}
+
+    <div class="container">
+        <div class="block">
+            <h2 class="title">
+                Manage Teachers
+            </h2>
+            <p>
+                You can add a teacher code here to gain access to that teacher's school courses.
+            </p>
+        </div>
+        <div class="block">
+            <form method="post" action="{% url 'manage_teachers' %}">
+                {% csrf_token %}
+                <div class="field has-addons">
+                    <p class="control">
+                        {{ teacher_code_form.teacher_code }}
+                    </p>
+                    <p class="control">
+                        <button class="button is-success" type="submit">
+                            Submit
+                        </button>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <div class="block">
+            <h2 class="title is-3">
+                Your Teachers
+            </h2>
+            <table class="table is-fullwidth">
+                <thead>
+                <tr>
+                    <th><abbr title="Teacher Name">Teacher Name</abbr></th>
+                    <th style="width:30%"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for teacher in teachers %}
+                    <tr>
+                        <td>{{ teacher.username }}</td>
+                        <td>
+                            <div class="buttons">
+                                <form action="{% url "remove_teacher" teacher.id %}">
+                                    <button class="button is-danger is-small" type="submit">Remove</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+{% endblock javascript %}

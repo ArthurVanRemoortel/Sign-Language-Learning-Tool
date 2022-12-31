@@ -7,7 +7,6 @@ from django.contrib import messages
 def register_account(request):
 	if request.method == "POST":
 		form = NewUserForm(request.POST)
-		print(form.errors)
 		if form.is_valid():
 			user = form.save()
 			login(request, user)
@@ -29,14 +28,8 @@ def login_account(request):
 			if user is not None:
 				login(request, user)
 				return redirect("index")
-			else:
-				print('user is none')
-		print('not valid:')
-		print(form.data)
-		print(form.errors.as_data())
 		return render(request=request, template_name="sign_language_app/auth/login.html", context={"form": form})
 
 	else:
-		# messages.error(request, "Registration failed.")
 		form = LoginForm()
 		return render(request=request, template_name="sign_language_app/auth/login.html", context={"form": form})

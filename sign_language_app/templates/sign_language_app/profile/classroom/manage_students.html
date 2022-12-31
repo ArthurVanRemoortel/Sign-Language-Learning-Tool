@@ -1,8 +1,57 @@
 {% extends 'sign_language_app/profile/profile_base.html' %}
 {% load extras %}
 {% block title %}
-    Settings
+    Manage Students
 {% endblock %}
 
 {% block profile_content %}
+
+    <div class="container">
+        <div class="block">
+            <h2 class="title">
+                Manage Students
+            </h2>
+            <p>
+                Add or remove your students. You can add a student by sharing your teacher code with them and let them add the code to the profile.
+                Your students will immediately gain access to all your courses your created.
+            </p>
+        </div>
+        <div class="block">
+            <p class="subtitle is-5 mb-0">Your teacher code: <span class="tag is-success">{{ teacher.teacher_code.get.code }}</span></p>
+            <p>You can generate a new code using the button below. The old code will no longer work.</p>
+            <div class="buttons mt-1">
+                <form action={% url 'regenerate_teacher_code' %}>
+                    <button class="button is-small is-link" type="submit">Regenerate Code</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="block">
+            <h2 class="title is-3">
+                Your Students
+            </h2>
+            <table class="table is-fullwidth">
+                <thead>
+                <tr>
+                    <th><abbr title="Gesture">Name</abbr></th>
+                    <th style="width:30%"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td>{{ student.username }}</td>
+                        <td>
+                            <form action="{% url "remove_student_from_classroom" student.id %}">
+                                <button class="button is-danger is-small" type="submit">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
 {% endblock %}

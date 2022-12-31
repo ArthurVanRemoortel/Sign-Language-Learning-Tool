@@ -20,10 +20,10 @@
                     <li><a href="{% url 'profile' %}" class="{% if current_section == 'overview' %} is-active {% endif %}">Overview</a></li>
                     <li><a href="{% url 'profile_settings' %}" class="{% if current_section == 'settings' %} is-active {% endif %}">Settings</a></li>
                 </ul>
+                <p class="menu-label">
+                    Classroom
+                </p>
                 {% if user|check_teacher_or_admin %}
-                    <p class="menu-label">
-                        Classroom
-                    </p>
                     <ul class="menu-list">
                         <li>
                             <a class="">Manage</a>
@@ -34,6 +34,10 @@
                             </ul>
                         </li>
                         <li><a href="{% url 'feedback' %}" class="{% if current_section == 'feedback' %} is-active {% endif %}">Feedback</a></li>
+                    </ul>
+                {% else %}
+                    <ul class="menu-list">
+                        <li><a href="{% url 'manage_teachers' %}" class="{% if current_section == 'manage_teachers' %} is-active {% endif %}">Teachers</a></li>
                     </ul>
                 {% endif %}
             </aside>

@@ -106,8 +106,6 @@
                             {{ message }}
                         </div>
                     </article>
-
-                    {#                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>#}
                 {% endfor %}
             </ul>
         {% endif %}
@@ -129,7 +127,15 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        (document.querySelectorAll('.message .delete') || []).forEach(($delete) => {
+            const $message = $delete.parentNode.parentNode;
 
+            $delete.addEventListener('click', () => {
+                $message.parentNode.removeChild($message);
+            });
+        });
+    });
 </script>
 
 {% block javascript %}

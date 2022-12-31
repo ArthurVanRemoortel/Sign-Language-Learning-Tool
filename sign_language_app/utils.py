@@ -1,3 +1,5 @@
+import random
+import string
 from functools import wraps
 
 from django.contrib.auth.decorators import user_passes_test
@@ -9,6 +11,7 @@ from rolepermissions.decorators import has_role_decorator
 from rolepermissions.utils import user_is_authenticated
 
 from learning_site.roles import Teacher
+from sign_language_app.models import TeacherCode
 
 
 def get_user(request):
@@ -41,5 +44,11 @@ def teacher_or_admin_required(function):
         if is_teacher_or_admin(user=user):
             return function(request, *args, **kwargs)
         raise PermissionDenied()
-
     return wrap
+
+
+def generate_teacher_code():
+    code = None
+    while code is None or TeacherCode.objects.filter(code=code).exists():
+        code = ''.join(random.sample(string.ascii_uppercase, 5))
+    return code

@@ -32,13 +32,13 @@ def error_view(request, exception):
     return render(request, "sign_language_app/errors/404.html", context)
 
 
-class JoinedField:
-    pass
-
-
 def courses_overview(request):
     search_form = CoursesForm(request.GET)
-    courses = Course.objects.all()
+    user = get_user(request)
+
+    courses = Course.get_accessible_by_user(user=user)
+
+
     page_number = request.GET.get('page', 1)
     filters = request.GET.get('filters', None)
 
@@ -47,10 +47,8 @@ def courses_overview(request):
         if search_input_text:
             courses = courses.filter(Q(name__icontains=search_input_text) | Q(description__icontains=search_input_text) | Q(units__name__icontains=search_input_text)).distinct()
 
-
     completed_units = []
     next_units = {}
-    user = get_user(request)
 
     if filters:
         for filter_query in filters.split(','):
@@ -67,7 +65,7 @@ def courses_overview(request):
                     courses = Course.objects.none()
                 else:
                     courses = Course.objects.none()
-            elif filter_query == "shared_with_me":
+            elif filter_query == "school":
                 # TODO: Not implemented yet.
                 if not user:
                     courses = Course.objects.none()
