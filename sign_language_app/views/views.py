@@ -1,6 +1,5 @@
 from pprint import pprint
 
-from django.contrib.auth import get_user
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, F
@@ -12,6 +11,8 @@ from django.views.defaults import page_not_found
 from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
 from django.core import serializers
+
+from sign_language_app.utils import get_user
 
 
 def index(request):
