@@ -39,6 +39,7 @@
                 <thead>
                 <tr>
                     <th><abbr title="Teacher Name">Teacher Name</abbr></th>
+                    <th><abbr title="Number of Courses"># Courses</abbr></th>
                     <th style="width:30%"></th>
                 </tr>
                 </thead>
@@ -46,6 +47,7 @@
                 {% for teacher in teachers %}
                     <tr>
                         <td>{{ teacher.username }}</td>
+                        <td>{{ teacher.courses.all.count }}</td>
                         <td>
                             <div class="buttons">
                                 <form action="{% url "remove_teacher" teacher.id %}">
