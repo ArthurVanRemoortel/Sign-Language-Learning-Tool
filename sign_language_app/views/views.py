@@ -69,11 +69,10 @@ def courses_overview(request):
                 else:
                     courses = Course.objects.none()
             elif filter_query == "school":
-                # TODO: Not implemented yet.
                 if not user:
                     courses = Course.objects.none()
                 else:
-                    courses = Course.objects.none()
+                    courses = StudentsAccess.get_school_courses(student=user)
 
     if user:
         completed_units = [attempt.unit for attempt in UnitAttempt.objects.filter(user=user)]

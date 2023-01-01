@@ -104,9 +104,7 @@ class Course(models.Model):
         if not user:
             return public_courses
         user_courses = Course.objects.filter(creator=user)
-
-        teachers = StudentsAccess.get_teachers(user)
-        teacher_courses = Course.objects.filter(Q(creator__in=teachers))
+        teacher_courses = StudentsAccess.get_school_courses(student=user)
         return user_courses | teacher_courses | public_courses
 
     def __str__(self):
@@ -168,3 +166,11 @@ class StudentsAccess(models.Model):
             return User.objects.none()
         student_ids = StudentsAccess.objects.filter(teacher=teacher).values_list('student', flat=True)
         return User.objects.filter(Q(id__in=student_ids))
+
+    @classmethod
+    def get_school_courses(cls, student: User) -> QuerySet[Course]:
+        if not student:
+            return User.objects.none()
+        teachers = StudentsAccess.get_teachers(student)
+        teacher_courses = Course.objects.filter(Q(creator__in=teachers))
+        return teacher_courses
