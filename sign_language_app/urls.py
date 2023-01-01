@@ -32,10 +32,10 @@ urlpatterns += [
     path('create_gesture', profile_views.create_gesture, name='create_gesture'),
     path('manage_courses', profile_views.manage_courses_view, name='classroom'),
     path('manage_courses/new_course', profile_views.new_course_view, name='new_course'),
-    path('api/regenerate_teacher_code', profile_views.regenerate_teacher_code, name='regenerate_teacher_code'),
 
-    path('api/remove_student_from_classroom/<int:student_id>', profile_views.remove_student_from_classroom, name='remove_student_from_classroom'),
-    path('api/remove_teacher/<int:teacher_id>', profile_views.remove_teacher, name='remove_teacher'),
+    path('manage_students/regenerate_teacher_code', profile_views.regenerate_teacher_code, name='regenerate_teacher_code'),
+    path('manage_students/<int:student_id>/remove', profile_views.remove_student_from_classroom, name='remove_student_from_classroom'),
+    path('manage_teacher/<int:teacher_id>/remove_teacher', profile_views.remove_teacher, name='remove_teacher'),
 ]
 
 # Authentication patterns
