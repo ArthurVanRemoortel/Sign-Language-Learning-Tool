@@ -18,7 +18,7 @@ This project has been developed and tested using python 3.10, but any version >=
 3. Install dependencies:
    - Using pip: `> pip install requirements.txt`
    - Using [Poetry](https://python-poetry.org/): `> poetry install`
-4. Set up a MySQL or MariaDB database named `learning-site`. Other databases might work depending on the django ORM compatibility.
+4. Set up a PostgreSQL database named `learning-site`. Other databases might work depending on the django ORM compatibility.
 5. Set up environment variables.
    1. `> cp env.example .env`
    2. Open the `.env` file and fill in your credentials. Tip: You can use [djecrety.ir](https://djecrety.ir/) to generate a `DJANGO_SECRET_KEY`.
@@ -30,17 +30,13 @@ This project has been developed and tested using python 3.10, but any version >=
 # Running the AI notebooks
 I have included the notebooks that I have been using to develop the AI component of the system to use them.
 Follow these steps. 
-1. Complete step 1, 2, 3 of the [manual installation section.](#Manually)
+1. Complete steps 1, 2, 3 of the [manual installation section.](#Manually)
 2. `> pip install jupyter`
 3. Some scripts will also require `ffmpeg` to be installed on your system.
 
 ## Acquiring data
 Using the notebooks will require some video data to train on. You can provide your own or contact me for the data I have been using. 
 
-## Data preparation
-The `sl_ai/process_videos.py` script can be used to convert raw video footage into something more usable. This script resize the videos and some additional processing.
-
 ## Commands
-- `python manage.py sync_roles`
-- `python manage.py loaddad`
-- `python manage.py loaddata sign_language_app/fixtures/seed.yaml`
+- `python manage.py sync_roles` Creates/Sync user roles.
+- `python manage.py loaddata sign_language_app/fixtures/seed.yaml` Seeds the database with some test data.
