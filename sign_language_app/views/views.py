@@ -1,16 +1,18 @@
+import json
 from pprint import pprint
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, F
 from django.shortcuts import render
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.core.paginator import Paginator, EmptyPage
 from django.views.defaults import page_not_found
 
+from sign_language_app import serializers
 from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
-from django.core import serializers
+from django.core import serializers as django_serializers
 
 from sign_language_app.utils import get_user
 
@@ -105,7 +107,15 @@ def unit_view(request, unit_id):
     unit = get_object_or_404(Unit, pk=unit_id)
     context = {
         'unit': unit,
-        'gestures': serializers.serialize("json", unit.gestures.all())
+        # 'gestures': django_serializers.serialize("json", unit.gestures.all()),
+        'gestures': json.dumps(serializers.GestureSerializer(unit.gestures.all(), many=True).data)
     }
+    pprint(context)
     return render(request, "sign_language_app/unit.html", context)
 
+
+# def get_gesture_reference_video(request, gesture_id):
+#     user = get_user(request)
+#     gesture: Gesture = get_object_or_404(Gesture, pk=gesture_id)
+#     reference_video_path = gesture.reference_video
+#     return JsonResponse({'reference_video_path': reference_video_path})

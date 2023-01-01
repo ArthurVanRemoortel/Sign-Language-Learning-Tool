@@ -7824,13 +7824,13 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 
 .feedback-pulse-incorrect {
   animation-name: pulseAnimIncorrect;
-  animation-duration: .3s;
+  animation-duration: .5s;
   animation-iteration-count: 1;
   animation-timing-function: ease-in-out; }
 
 .feedback-pulse-correct {
   animation-name: pulseAnimCorrect;
-  animation-duration: .8s;
+  animation-duration: 1.2s;
   animation-iteration-count: 1;
   animation-timing-function: ease-out; }
 
@@ -7864,20 +7864,20 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
     -webkit-box-shadow: 0 0 0 0 #cc0a28;
     transform: translate(0px, 0) rotate(0deg); }
   33% {
-    -webkit-box-shadow: 0 0 0 10px #cc0a28;
-    transform: translate(-5px, 0) rotate(0deg); }
+    -webkit-box-shadow: 0 0 0 15px #cc0a28;
+    transform: translate(-15px, 0) rotate(0deg); }
   66% {
-    -webkit-box-shadow: 0 0 0 10px rgba(204, 169, 44, 0);
-    transform: translate(5px, 0) rotate(0deg); }
+    -webkit-box-shadow: 0 0 0 15px #cc0a28;
+    transform: translate(15px, 0) rotate(0deg); }
   100% {
-    -webkit-box-shadow: 0 0 0 0 rgba(204, 169, 44, 0);
+    -webkit-box-shadow: 0 0 0 0 #cc0a28;
     transform: translate(0, 0) rotate(0deg); } }
 
 @-webkit-keyframes pulseAnimCorrect {
   0% {
     -webkit-box-shadow: 0 0 0 0 green; }
   50% {
-    -webkit-box-shadow: 0 0 0 20px rgba(204, 169, 44, 0); }
+    -webkit-box-shadow: 0 0 0 30px rgba(204, 169, 44, 0); }
   100% {
     -webkit-box-shadow: 0 0 0 0 rgba(204, 169, 44, 0); } }
 

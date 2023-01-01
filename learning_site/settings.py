@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 
+from django.template.context_processors import media
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -90,6 +91,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -179,3 +181,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ROLEPERMISSIONS_MODULE = 'learning_site.roles'
 ROLEPERMISSIONS_REGISTER_ADMIN = True
+
+MEDIA_ROOT = Path(os.path.join(BASE_DIR, 'sl_ai/ai_data'))
+MEDIA_URL = '/media/'
+Path(MEDIA_ROOT).mkdir(parents=True, exist_ok=True)

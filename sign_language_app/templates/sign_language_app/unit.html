@@ -9,8 +9,13 @@
     <div class="container is-max-desktop mt-2">
         <div class="level">
             <button class="delete is-large" id="cancelUnitButton"></button>
-            <progress id="unitProgressBar" class="progress is-success ml-5" value="0" max="100"></progress>
+            <progress id="unitProgressBar" class="progress is-success ml-5 mb-0 mr-5 is-large" value="0" max="100"></progress>
+            <div class="icon-text">
+                  <span class="icon has-text-danger" id="livesArea">
+                  </span>
+            </div>
         </div>
+
         <br>
         <br>
 
@@ -22,7 +27,7 @@
         </h1>
 
         <div class="level">
-            <div class="level-item has-text-centered" id="hintsSection">
+            <div class="level-item has-text-centered" id="hintsSection" style="height: 64px;">
 
             </div>
         </div>
@@ -32,10 +37,20 @@
                 <div class="loader-1"></div>
             </div>
             <video class="input_video" hidden></video>
-            <canvas class="output_canvas camera-canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px">
-
-            </canvas>
+            <canvas class="output_canvas camera-canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px"></canvas>
+            <video preload="preload" id="solutionVideo" hidden style="height: 0;">
+                <source src="" type="video/mp4"></source>
+            </video>
         </div>
+
+
+        {#        {% if user.is_superuser %}#}
+        {#            <div class="level">#}
+        {#                <button class="button is-danger">Simulate Incorrect</button>#}
+        {#                <button class="button is-success">Simulate Correct</button>#}
+        {#            </div>#}
+        {#        {% else %}#}
+        {#        {% endif %}#}
 
     </div>
 {% endblock %}
@@ -43,28 +58,32 @@
 
 {% block javascript %}
     <script defer
-    data-gestures="{{ gestures }}"
+            data-gestures="{{ gestures }}"
     >
         const data = document.currentScript.dataset;
         const gestures = JSON.parse(data.gestures);
         const videoElement = document.getElementsByClassName('input_video')[0];
         const canvasElement = document.getElementsByClassName('output_canvas')[0];
+        const solutionVideo = document.getElementById('solutionVideo');
+
         const cameraAreaBox = document.getElementById('cameraAreaBox');
         const cameraLoader = document.getElementById('cameraLoader');
         const unitProgressBar = document.getElementById('unitProgressBar')
         const gestureLabel = document.getElementById('gestureLabel')
         const cancelUnitButton = document.getElementById('cancelUnitButton')
+        {#const simulateCorrectButton = document.getElementById('simulateCorrectButton')#}
+        {#const simulateIncorrectButton = document.getElementById('simulateIncorrectButton')#}
         const hintsSection = document.getElementById('hintsSection')
+        const livesArea = document.getElementById('livesArea')
         const canvasCtx = canvasElement.getContext('2d');
-        const recordingCutoffDelay = 1000
+
+        const recordingCutoffDelay = 0 // Ignores n milliseconds of recording.
         const minRecordingSize = 1000
 
         let gestureStart = null
         let gestureEnd = null
 
         let hand_frames = []
-        {#let left_frames = []#}
-        {#let right_frames = []#}
 
         let missingHandsTime = null
 
@@ -72,20 +91,27 @@
 
         let current_gesture_i = 0
         let current_gesture = null
+        let is_displaying_solution = false
+        let lives_remaining = 3
+        let gesture_attempts_remaining = 3
 
         unitProgressBar.max = gestures.length
         resetRecording()
+        drawHearts()
         loadCamera()
-
-        cancelUnitButton.addEventListener("click", function() { triggerAnim(false); } )
 
         function loadGesture() {
             if (current_gesture_i >= gestures.length)
                 return
             current_gesture = gestures[current_gesture_i]
-            hintsSection.innerHTML = ''
+            gesture_attempts_remaining = 3
+            animateGestureTitle()
+            updateProgressBar()
+        }
 
-            for (const location_id of current_gesture.fields.locations ){
+        function showHints(){
+            hintsSection.innerHTML = ''
+            for (const location_id of current_gesture.locations ){
                 let image_path = '{% static 'sign_language_app/images/gesture_locations/1.png' %}'.replace('1.png', `${location_id}.png`)
                 let location_figure = `
                 <figure class="image is-64x64 ml-2 mr-2 hint-image">
@@ -93,8 +119,6 @@
                 </figure>`
                 $('#hintsSection').append(location_figure)
             }
-            animateGestureTitle()
-            updateProgressBar()
         }
 
         function updateProgressBar(){
@@ -104,15 +128,31 @@
         function triggerAnim(correct) {
             if (correct){
                 $(cameraAreaBox).addClass('feedback-pulse-correct')
+                current_gesture_i += 1
             } else {
                 $(cameraAreaBox).addClass('feedback-pulse-incorrect')
+                gesture_attempts_remaining -= 1
+                if (gesture_attempts_remaining <= 0){
+                    lives_remaining -= 1
+                    current_gesture_i += 1
+                    showSolution()
+                } else if (gesture_attempts_remaining === 1){
+                    showHints()
+                }
+                if (lives_remaining <= 0){
+
+                }
             }
         }
-
         $(cameraAreaBox).on('animationend', function(){
             $(cameraAreaBox).removeClass('feedback-pulse-correct');
             $(cameraAreaBox).removeClass('feedback-pulse-incorrect');
         });
+        solutionVideo.addEventListener('ended', function(){
+            solutionEnded()
+        }, false);
+
+
 
         function veryfiUserInput(data){
             let csrf_token = '{{ csrf_token }}';
@@ -127,8 +167,6 @@
                 success: function(data) {
                     if (data.correct){
                         triggerAnim(true)
-                        current_gesture_i += 1
-                        loadGesture()
                     } else {
                         triggerAnim(false)
                     }
@@ -140,8 +178,8 @@
         }
 
         function animateGestureTitle(){
-            var textWrapper = document.querySelector('.ml11 .letters');
-            textWrapper.textContent = current_gesture.fields.word
+            let textWrapper = document.querySelector('.ml11 .letters');
+            textWrapper.textContent = current_gesture.word
             textWrapper.innerHTML = textWrapper.textContent.replace(/([^\x00-\x80]|\w)/g, "<span class='letter'>$&</span>");
             anime.timeline({loop: false})
                 .add({
@@ -174,7 +212,6 @@
         }
 
         function beginRecording() {
-            console.log("Beginning gesture recording...")
             gestureStart = performance.now()
         }
 
@@ -197,7 +234,7 @@
 
             let data = {
                 hand_frames: hand_frames,
-                gesture_id: current_gesture
+                gesture: current_gesture
             };
             veryfiUserInput(data)
             resetRecording()
@@ -214,6 +251,42 @@
         function startExercise(){
             $(cameraLoader).remove()
             loadGesture()
+        }
+
+        function updateCanvas() {
+            canvasCtx.drawImage(solutionVideo, 0, 0, canvasElement.width, canvasElement.height);
+            if (is_displaying_solution)
+                window.requestAnimationFrame(updateCanvas);
+        }
+
+        function showSolution(){
+            setTimeout(function (){
+                console.log(current_gesture)
+                solutionVideo.src = '{{ MEDIA_URL }}' + current_gesture.reference_video
+                is_displaying_solution = true
+                solutionVideo.play()
+                requestAnimationFrame(updateCanvas);
+            }, 1000)
+        }
+
+        function solutionEnded(e){
+            is_displaying_solution = false
+            loadGesture()
+            drawHearts()
+        }
+
+        function drawHearts(){
+            livesArea.innerHTML = ''
+            for(let i = 1; i <= 3; i++) {
+                let heart_icon = null
+                if (i <= lives_remaining) {
+                    heart_icon = `<i class="fas fa-heart is-medium ml-1"></i>`
+                } else {
+                    heart_icon = `<i class="far fa-heart is-medium ml-1"></i>`
+                }
+                livesArea.innerHTML += heart_icon
+            }
+
         }
 
         function onResults(results) {
@@ -238,8 +311,6 @@
                         } else if (handedness === "Right"){
                             found_right_hand = landmarks
                         }
-
-
                         let color = '#00FF00';
                         if (handedness === "Right")
                             color = '#518dce'
@@ -276,7 +347,10 @@
                 minDetectionConfidence: 0.8,
                 minTrackingConfidence: 0.8
             });
-            hands.onResults(onResults);
+            hands.onResults(function (results) {
+                if (!is_displaying_solution)
+                    onResults(results)
+            });
 
 
             const camera = new Camera(videoElement, {

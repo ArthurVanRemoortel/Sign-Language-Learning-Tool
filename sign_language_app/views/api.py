@@ -45,9 +45,9 @@ def test_auth(request):
     data = request.data
     hand_frames = data['hand_frames']
     # gesture_id = data['gesture_id']
-    print(f"Gesture ID: {data['gesture_id']['pk']}")
+    print(f"Gesture ID: {data['gesture']['id']}")
     print(f'Frames: {len(hand_frames)}')
-    gesture = get_object_or_404(Gesture, pk=int(data['gesture_id']['pk']))
+    gesture = get_object_or_404(Gesture, pk=int(data['gesture']['id']))
     # print(left)
 
     left_landmarks = {i: [] for i in range(0, 21)}
@@ -86,7 +86,7 @@ def test_auth(request):
         print(frame)
 
         is_correct = random.randint(0, 1) == 1
-    return JsonResponse({'status': 'OK', "correct": is_correct}, status=status.HTTP_201_CREATED)
+    return JsonResponse({'status': 'OK', "correct": 0}, status=status.HTTP_201_CREATED)
 
 
 

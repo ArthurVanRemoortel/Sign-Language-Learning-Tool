@@ -35,7 +35,7 @@ urlpatterns += [
 
     path('manage_students/regenerate_teacher_code', profile_views.regenerate_teacher_code, name='regenerate_teacher_code'),
     path('manage_students/<int:student_id>/remove', profile_views.remove_student_from_classroom, name='remove_student_from_classroom'),
-    path('manage_teacher/<int:teacher_id>/remove_teacher', profile_views.remove_teacher, name='remove_teacher'),
+    path('manage_teachers/<int:teacher_id>/remove_teacher', profile_views.remove_teacher, name='remove_teacher'),
 ]
 
 # Authentication patterns

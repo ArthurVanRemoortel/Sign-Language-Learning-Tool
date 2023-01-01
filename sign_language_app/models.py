@@ -1,3 +1,5 @@
+import os
+import random
 from typing import List
 
 from django.conf import settings
@@ -5,6 +7,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q, QuerySet
 from django.utils.translation import gettext_lazy as _
+
+from learning_site.settings import MEDIA_ROOT
 
 
 class GestureLocation(models.Model):
@@ -42,6 +46,16 @@ class Gesture(models.Model):
          Example: "Hello_01" where 0 indicates that the left hand is not used and 1 that the right hand is used.
          """
         return f"{self.word}_{1 if self.left_hand else 0}{1 if self.right_hand else 0}"
+
+    @property
+    def reference_video(self):
+        if self.creator:
+            videos_location = f'vgt-uploaded/{str(self.creator.id)}/{self.handed_string}'
+        else:
+            videos_location = f'vgt-all/{self.handed_string}'
+
+        video_file = random.choice(os.listdir(MEDIA_ROOT / videos_location))
+        return f'{videos_location}/{video_file}'
 
 
 class Course(models.Model):
