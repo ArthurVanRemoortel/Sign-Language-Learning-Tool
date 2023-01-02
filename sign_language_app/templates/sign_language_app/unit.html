@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    Exercise
+    Exercise {{ unit.name }}
 {% endblock %}
 
 {% block content %}
@@ -77,7 +77,7 @@
         const livesArea = document.getElementById('livesArea')
         const canvasCtx = canvasElement.getContext('2d');
 
-        const recordingCutoffDelay = 0 // Ignores n milliseconds of recording.
+        const recordingCutoffDelay = 500 // Only end recording if no hands were recorded for 500 milliseconds.
         const minRecordingSize = 1000
 
         let gestureStart = null
@@ -223,7 +223,6 @@
         }
 
         function endRecording() {
-            // TODO: Only end recording if no hands were detected for multiple frames.
             if (performance.now() - gestureStart < recordingCutoffDelay + minRecordingSize){
                 console.log("This recording was to short. This was probably an accident.")
                 resetRecording()
