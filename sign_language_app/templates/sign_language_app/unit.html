@@ -105,13 +105,17 @@
                 return
             current_gesture = gestures[current_gesture_i]
             gesture_attempts_remaining = 3
-            clearHints()
+            clearHinds()
             animateGestureTitle()
             updateProgressBar()
         }
 
+        function clearHinds(){
+            hintsSection.innerHTML = ''
+        }
+
         function showHints(){
-            clearHints()
+            clearHinds()
             for (const location_id of current_gesture.locations ){
                 let image_path = '{% static 'sign_language_app/images/gesture_locations/1.png' %}'.replace('1.png', `${location_id}.png`)
                 let location_figure = `
@@ -120,10 +124,6 @@
                 </figure>`
                 $('#hintsSection').append(location_figure)
             }
-        }
-
-        function clearHints(){
-            hintsSection.innerHTML = ''
         }
 
         function updateProgressBar(){
@@ -234,6 +234,7 @@
                 return
             }
             gestureEnd = performance.now()
+            console.log("Ended gesture recording")
 
             let data = {
                 hand_frames: hand_frames,
