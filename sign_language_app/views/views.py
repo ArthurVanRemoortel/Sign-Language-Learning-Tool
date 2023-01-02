@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, F
 from django.shortcuts import render
-from django.http import HttpResponse, Http404, JsonResponse
+from django.http import HttpResponse, Http404, JsonResponse, HttpResponseNotFound
 from django.core.paginator import Paginator, EmptyPage
 from django.views.defaults import page_not_found
 
@@ -15,24 +15,12 @@ from sign_language_app.models import *
 from django.core import serializers as django_serializers
 
 from sign_language_app.utils import get_user
+from sign_language_app.views.error_views import error_view
 
 
 def index(request):
     context = {}
     return render(request, "sign_language_app/index.html", context)
-
-
-def error_view(request, exception):
-    if isinstance(exception, Exception):
-        error_message = exception
-    else:
-        error_message = exception
-
-    context = {
-        'request': request,
-        'error_message': error_message
-    }
-    return render(request, "sign_language_app/errors/404.html", context)
 
 
 def courses_overview(request):
@@ -109,12 +97,24 @@ def unit_view(request, unit_id):
         # 'gestures': django_serializers.serialize("json", unit.gestures.all()),
         'gestures': json.dumps(serializers.GestureSerializer(unit.gestures.all(), many=True).data)
     }
-    pprint(context)
     return render(request, "sign_language_app/unit.html", context)
 
 
-# def get_gesture_reference_video(request, gesture_id):
-#     user = get_user(request)
-#     gesture: Gesture = get_object_or_404(Gesture, pk=gesture_id)
-#     reference_video_path = gesture.reference_video
-#     return JsonResponse({'reference_video_path': reference_video_path})
+@login_required
+def save_unit_attempt(request, unit_id):
+    user = get_user(request)
+
+
+@login_required
+def unit_summary(request, unit_id):
+    user = get_user(request)
+    unit = get_object_or_404(Unit, pk=unit_id)
+    unit_attempts = UnitAttempt.objects.filter(user=user, unit=unit).all()
+    if not unit_attempts:
+        return error_view(request, exception='You have never completed this course.')
+    context = {
+        'unit': unit,
+        'unit_attempts': unit_attempts
+    }
+    return render(request, "sign_language_app/unit_summary.html", context)
+

@@ -7810,6 +7810,24 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
     background-color: #5a812f;
     color: #fff; }
 
+.summary-card-success {
+  background-color: #48c78e; }
+  .summary-card-success .card-footer {
+    background-color: #48c78e;
+    border-color: rgba(0, 0, 0, 0.7); }
+    .summary-card-success .card-footer .card-footer-item {
+      border-right: 1px solid rgba(0, 0, 0, 0.7);
+      color: rgba(0, 0, 0, 0.7); }
+
+.summary-card-failure {
+  background-color: #f14668; }
+  .summary-card-failure .card-footer {
+    background-color: #f14668;
+    border-color: rgba(0, 0, 0, 0.7); }
+    .summary-card-failure .card-footer .card-footer-item {
+      border-right: 1px solid rgba(0, 0, 0, 0.7);
+      color: rgba(0, 0, 0, 0.7); }
+
 .camera-box {
   border-radius: 6px;
   display: block; }

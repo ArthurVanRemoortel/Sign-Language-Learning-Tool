@@ -182,6 +182,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ROLEPERMISSIONS_MODULE = 'learning_site.roles'
 ROLEPERMISSIONS_REGISTER_ADMIN = True
 
-MEDIA_ROOT = Path(os.path.join(BASE_DIR, 'sl_ai/ai_data'))
 MEDIA_URL = '/media/'
-Path(MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
+MEDIA_ROOT = Path(os.path.join(BASE_DIR, 'sl_ai/ai_data'))
+UPLOADED_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-uploaded')
+USER_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-users')
+
+# Created the directories if they do not exist.
+MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+UPLOADED_GESTURES_ROOT.mkdir(parents=True, exist_ok=True)
+USER_GESTURES_ROOT.mkdir(parents=True, exist_ok=True)

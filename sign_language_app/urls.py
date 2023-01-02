@@ -18,6 +18,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('courses', views.courses_overview, name='courses_overview'),
     path('unit/<int:unit_id>', views.unit_view, name='unit'),
+    path('unit/<int:unit_id>/summary', views.unit_summary, name='unit_summary'),
 ]
 
 # Profile Patterns
@@ -51,6 +52,6 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    path('api/test', api_views.test_auth),
+    path('api/test', api_views.test_auth),  # TODO: Fix this path
     path('api/retrain_model', api_views.trigger_retrain_model),
 ]

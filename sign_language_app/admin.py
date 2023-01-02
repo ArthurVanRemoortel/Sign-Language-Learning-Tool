@@ -1,9 +1,11 @@
 from django.contrib import admin
-from sign_language_app import models
-# Register your models here.
+from django.apps import apps
 
-admin.site.register(models.Course)
-admin.site.register(models.Unit)
-admin.site.register(models.Gesture)
-admin.site.register(models.GestureLocation)
-admin.site.register(models.UnitAttempt)
+
+all_models = apps.get_models()
+
+for model in all_models:
+    try:
+        admin.site.register(model)
+    except admin.sites.AlreadyRegistered:
+        pass

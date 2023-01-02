@@ -9,7 +9,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 
-from sign_language_app.models import Course
+from learning_site.settings import UPLOADED_GESTURES_ROOT
+from sign_language_app.models import Course, UserSettings
 
 
 class NewUserForm(UserCreationForm):
@@ -66,6 +67,7 @@ class NewUserForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
+        UserSettings(user=user).save()
         return user
 
 
@@ -118,6 +120,9 @@ class LoginForm(forms.Form):
                 raise ValidationError(
                     "Please enter a correct username and password. Note that both fields may be case-sensitive."
                 )
+            else:
+                if not self.user_cache.settings.exists():
+                    UserSettings(user=self.user_cache).save()
         return self.cleaned_data
 
     def get_user(self):
@@ -191,11 +196,12 @@ class UploadGestureForm(forms.Form):
     videos = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'id': 'videosInput', 'class': 'file-input'}))
 
     def handle_uploaded_files(self, request, user):
+        """ Saved all the videos files from the POST request to disk. """
         # TODO: Check for max file size
         word = self.cleaned_data['word']
         left_hand = self.cleaned_data['left_hand']
         right_hand = self.cleaned_data['right_hand']
-        root_path = Path('sl_ai/ai_data/vgt-uploaded') / str(user.id) / f"{word}_{1 if left_hand else 0}{1 if right_hand else 0}"
+        root_path = UPLOADED_GESTURES_ROOT / str(user.id) / f"{word}_{1 if left_hand else 0}{1 if right_hand else 0}"
         root_path.mkdir(parents=True, exist_ok=True)
         for file in request.FILES.getlist('videos'):
             with open(root_path / file.name, 'wb+') as destination:

@@ -84,6 +84,7 @@ def manage_students_view(request):
 @login_required
 @teacher_or_admin_required
 def manage_courses_view(request):
+    """ Page for teachers with an overview of their courses. """
     teacher = get_user(request)
     context = {
         'current_section': 'manage_courses',
@@ -95,6 +96,7 @@ def manage_courses_view(request):
 @login_required
 @teacher_or_admin_required
 def new_course_view(request):
+    """ Page for teacher to create new courses and units. """
     user = get_user(request)
     upload_gesture_form = UploadGestureForm(request.GET)
 
@@ -199,6 +201,7 @@ def manage_teachers_view(request):
 @login_required
 @teacher_or_admin_required
 def create_gesture(request):
+    """ Function that creates a new gestures from a list of uploaded videos. """
     user = get_user(request)
     if request.method == 'POST':
         form = UploadGestureForm(request.POST, request.FILES)
