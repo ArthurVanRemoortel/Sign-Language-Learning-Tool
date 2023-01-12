@@ -99,7 +99,13 @@
                     {% else %}is-info
                     {% endif %}">
                         <div class="message-header">
-                            <p>Error</p>
+                            <p>
+                                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR%}Error
+                                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS%}Success
+                                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING%}Warning
+                                {% else %}Info
+                                {% endif %}
+                            </p>
                             <button class="delete is-small" aria-label="delete"></button>
                         </div>
                         <div class="message-body">
