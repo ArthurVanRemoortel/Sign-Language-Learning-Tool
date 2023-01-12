@@ -226,6 +226,18 @@ def create_gesture(request):
 
 
 @login_required
+@teacher_or_admin_required
+def delete_gesture(request, gesture_id):
+    user = get_user(request)
+    gesture = get_object_or_404(Gesture, pk=gesture_id)
+    if gesture.creator != user:
+        messages.error(request, "You cannot delete a gesture that you didn't create.")
+    messages.success(request, f"{gesture.word} has been deleted.")
+    gesture.delete()
+    return redirect('manage_gestures')
+
+
+@login_required
 def feedback(request):
     user = get_user(request)
     context = {

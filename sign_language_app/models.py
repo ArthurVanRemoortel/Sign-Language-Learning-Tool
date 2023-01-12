@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 from pathlib import Path
 from typing import List, Optional
 
@@ -7,9 +8,11 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q, QuerySet
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
-from learning_site.settings import MEDIA_ROOT, USER_GESTURES_ROOT
+from learning_site.settings import MEDIA_ROOT, USER_GESTURES_ROOT, UPLOADED_GESTURES_ROOT
 
 
 class UserSettings(models.Model):
@@ -66,6 +69,14 @@ class Gesture(models.Model):
 
         video_file = random.choice(os.listdir(MEDIA_ROOT / videos_location))
         return f'{videos_location}/{video_file}'
+
+    def delete_videos(self):
+        if not self.creator:
+            return
+        try:
+            shutil.rmtree(UPLOADED_GESTURES_ROOT / str(self.creator.id) / self.handed_string)
+        except OSError:
+            pass
 
 
 class Course(models.Model):
@@ -243,3 +254,8 @@ class StudentsAccess(models.Model):
         teachers = StudentsAccess.get_teachers(student)
         teacher_courses = Course.objects.filter(Q(creator__in=teachers))
         return teacher_courses
+
+
+@receiver(post_delete, sender=Gesture)
+def signal_function_name(sender, instance: Gesture, using, **kwargs):
+    instance.delete_videos()

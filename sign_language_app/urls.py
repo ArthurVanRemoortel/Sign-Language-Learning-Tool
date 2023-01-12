@@ -29,6 +29,7 @@ urlpatterns += [
     path('manage_students', profile_views.manage_students_view, name='manage_students'),
     path('manage_courses', profile_views.manage_courses_view, name='manage_courses'),
     path('manage_gestures', profile_views.manage_gestures, name='manage_gestures'),
+    path('manage_gestures/<int:gesture_id>/delete', profile_views.delete_gesture, name='delete_gesture'),
     path('manage_teachers', profile_views.manage_teachers_view, name='manage_teachers'),
     path('feedback', profile_views.feedback, name='feedback'),
     path('create_gesture', profile_views.create_gesture, name='create_gesture'),
