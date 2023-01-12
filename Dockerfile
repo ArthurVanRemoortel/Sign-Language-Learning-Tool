@@ -19,7 +19,10 @@ ENV YOUR_ENV=${YOUR_ENV} \
   PIP_DEFAULT_TIMEOUT=100 \
   POETRY_VERSION=1.2.0
 
+
 # System deps:
+RUN apt-get update
+RUN apt install -y libgl1-mesa-glx
 RUN pip install "poetry==$POETRY_VERSION"
 
 # Copy only requirements to cache them in docker layer
