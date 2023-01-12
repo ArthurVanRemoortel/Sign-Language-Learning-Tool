@@ -5,31 +5,6 @@ from sign_language_app.utils import is_teacher_or_admin
 
 register = template.Library()
 
-#
-# @register.filter
-# def to_columns(iterable, cols):
-#     result = [[] for _ in range(cols)]
-#     diffs = len(iterable) % cols
-#     print("diffs:", diffs)
-#     prev_index = 0
-#     i = 0
-#     times_offset = 0
-#     for value in iterable:
-#         index = int(i / cols)
-#         if index != prev_index:
-#             if diffs > 0:
-#                 index = prev_index
-#                 diffs -= 1
-#                 times_offset += 1
-#         index -= times_offset
-#         print(i, index)
-#         result[index].append(value)
-#         prev_index = index
-#         i += 1
-#
-#     return result
-
-
 @register.filter
 def to_columns(iterable, cols):
     """
@@ -60,3 +35,8 @@ def get_value(dictionary, key):
 @register.filter
 def check_teacher_or_admin(user: User):
     return is_teacher_or_admin(user)
+
+
+@register.filter
+def times(number):
+    return range(number)

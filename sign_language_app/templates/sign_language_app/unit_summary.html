@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends 'sign_language_app/base.html'%}
+{% load extras %}
+{% block title %}
+    Summary {{ unit.name }}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="title">Exercise Summary</h1>
+        <h2 class="subtitle">{{ unit.name }}</h2>
+        <div class="card {% if score >= 50 %} summary-card-success {% else %} summary-card-failure {% endif %}">
+            <div class="card-content">
+                <div class="content">
+                    <p class="title">
+                        {% if this_attempt.passed %}You passed!{% else %}You have failed.{% endif %}
+                    </p>
+                    <p class="subtitle">
+                        You finished this unit with a score of {{ this_attempt.score }}%. You can try again to get a better score or proceed to the next unit.
+                    </p>
+                </div>
+            </div>
+            <footer class="card-footer">
+                <a href="{% url 'unit' unit.id %}" class="card-footer-item">Try Again</a>
+                {% with next_unit=unit.next_unit %}
+                    {% if next_unit %}
+                        <a href="{% url 'unit' next_unit.id %}" class="card-footer-item">{{ next_unit.name }}</a>
+                    {% else %}
+                        <a href="{% url 'courses_overview' %}" class="card-footer-item">Browse courses</a>
+                    {% endif %}
+                {% endwith %}
+            </footer>
+        </div>
+        <br>
+        <h3 class="title is-3">Gestures</h3>
+        {% for gesture, attempts in attempts_per_gesture.items %}
+            <div class="box">
+                <p class="subtitle"> {{ gesture.word }}</p>
+                <div class="columns">
+                    <div class="column video_preview_solution">
+                        <p>Solution</p>
+                        <video preload="auto" controls style="height: 200px">
+                            <source src='{{ MEDIA_URL }}/{{ gesture.reference_video }}' type="video/mp4">
+                        </video>
+                    </div>
+                    {% for gesture_attempt in attempts %}
+                        <div class="column {% if gesture_attempt.success %}video_preview_correct{% else %}video_preview_incorrect{% endif %}">
+                            <p>{% if gesture_attempt.success %}Correct{% else %}Incorrect{% endif %}</p>
+                            <video preload="auto" controls style="height: 200px">
+                                <source src='{{ MEDIA_URL }}/{{ gesture.reference_video }}' type="video/mp4">
+                            </video>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+</html>

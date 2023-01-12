@@ -38,20 +38,10 @@
             </div>
             <video class="input_video" hidden></video>
             <canvas class="output_canvas camera-canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px"></canvas>
-            <video preload="preload" id="solutionVideo" hidden style="height: 0;">
+            <video preload="auto" id="solutionVideo" hidden style="height: 0;">
                 <source src="" type="video/mp4"></source>
             </video>
         </div>
-
-
-        {#        {% if user.is_superuser %}#}
-        {#            <div class="level">#}
-        {#                <button class="button is-danger">Simulate Incorrect</button>#}
-        {#                <button class="button is-success">Simulate Correct</button>#}
-        {#            </div>#}
-        {#        {% else %}#}
-        {#        {% endif %}#}
-
     </div>
 {% endblock %}
 
@@ -96,9 +86,24 @@
         let gesture_attempts_remaining = 3
 
         unitProgressBar.max = gestures.length
+
+        let exerciseData = {
+            gestures: {
+            }
+        }
+        for (const gesture of gestures){
+            exerciseData.gestures[gesture.id] = []
+        }
+
         resetRecording()
         drawHearts()
         loadCamera()
+
+
+        function saveGestureAttempt(gesture_id, status){
+            exerciseData.gestures[gesture_id].push(status)
+        }
+
 
         function loadGesture() {
             if (current_gesture_i >= gestures.length)
@@ -130,7 +135,8 @@
             unitProgressBar.value = current_gesture_i
         }
 
-        function triggerAnim(correct) {
+        function showGestureResult(correct) {
+            saveGestureAttempt(gestures[current_gesture_i].id, correct)
             if (correct){
                 $(cameraAreaBox).addClass('feedback-pulse-correct')
                 current_gesture_i += 1
@@ -144,9 +150,6 @@
                 } else if (gesture_attempts_remaining === 1){
                     showHints()
                 }
-                if (lives_remaining <= 0){
-
-                }
             }
         }
         $(cameraAreaBox).on('animationend', function(){
@@ -158,11 +161,32 @@
         }, false);
 
 
+        function endUnit(){
+            {#let csrf_token = '{{ csrf_token }}';#}
+            const csrf_token = getCookie('csrftoken')
+            console.log(exerciseData)
+             $.ajax({
+                url: '{% url "save_unit_attempt" unit.id %}',
+                data: JSON.stringify(exerciseData),
+                headers: {'X-CSRFToken': csrf_token},
+                contentType: "application/json",
+                dataType: "json",
+                processData: false,
+                type: 'POST',
+                success: function(data) {
+                    window.location.href = data.redirect_url
+                },
+                error: function(err) { console.log(err); },
+                beforeSend: function (xhr) {
+                },
+            });
+        }
 
         function veryfiUserInput(data){
-            let csrf_token = '{{ csrf_token }}';
+            {#let csrf_token = '{{ csrf_token }}';#}
+            const csrf_token = getCookie('csrftoken')
             $.ajax({
-                url: 'http://localhost:8000/api/test',
+                url: '{% url "check_user_input" %}',
                 data: JSON.stringify(data),
                 headers: {'X-CSRFToken': csrf_token},
                 contentType: "application/json",
@@ -171,15 +195,31 @@
                 type: 'POST',
                 success: function(data) {
                     if (data.correct){
-                        triggerAnim(true)
+                        showGestureResult(true)
                     } else {
-                        triggerAnim(false)
+                        showGestureResult(false)
                     }
                 },
                 error: function(err) { console.log(err); },
                 beforeSend: function (xhr) {
                 },
             });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
 
         function animateGestureTitle(){
@@ -229,13 +269,10 @@
 
         function endRecording() {
             if (performance.now() - gestureStart < recordingCutoffDelay + minRecordingSize){
-                console.log("This recording was to short. This was probably an accident.")
                 resetRecording()
                 return
             }
             gestureEnd = performance.now()
-            console.log("Ended gesture recording")
-
             let data = {
                 hand_frames: hand_frames,
                 gesture: current_gesture
@@ -275,6 +312,10 @@
 
         function solutionEnded(e){
             is_displaying_solution = false
+            if (lives_remaining <= 0 || current_gesture_i >= gestures.length) {
+                endUnit()
+                return
+            }
             loadGesture()
             drawHearts()
         }
@@ -290,7 +331,6 @@
                 }
                 livesArea.innerHTML += heart_icon
             }
-
         }
 
         function onResults(results) {

@@ -1,3 +1,4 @@
+import json
 import os
 import random
 from pathlib import Path
@@ -6,6 +7,7 @@ import numpy as np
 import pandas as pd
 from django.db.models import Q
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -13,12 +15,12 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from pprint import pprint
 
 from sign_language_app import serializers
 from sign_language_app.classifier import Classifier
-from sign_language_app.models import Gesture
+from sign_language_app.models import Gesture, Unit, UnitAttempt, GestureAttempt
 from sign_language_app.utils import get_user, is_admin
 from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list
 from sign_language_app.background_tasks import retrain_model
@@ -40,7 +42,9 @@ def trigger_retrain_model(request):
 
 @api_view(['POST', 'OPTIONS'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([])
+@permission_classes([])
 def test_auth(request):
     data = request.data
     hand_frames = data['hand_frames']
@@ -54,6 +58,7 @@ def test_auth(request):
     right_landmarks = {i: [] for i in range(0, 21)}
 
     # TODO: Refactor this.
+    # TODO: Check if is_landmark_in_active_zone
     for frame in hand_frames:
         left, right = frame
         if left:# and gesture.left_hand:
@@ -84,10 +89,8 @@ def test_auth(request):
         prediction_percents = (result*100)
         frame = pd.DataFrame(prediction_percents.astype(np.uint8))
         print(frame)
-
         is_correct = random.randint(0, 1) == 1
     return JsonResponse({'status': 'OK', "correct": 0}, status=status.HTTP_201_CREATED)
-
 
 
 class GestureViewSet(viewsets.ModelViewSet):

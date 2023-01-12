@@ -15,7 +15,7 @@
 
 
 $camera-loader-size: 150px
-$success-color: #48c78e
+$success-color: $primary
 $failure-color: #f14668
 
 .footer
@@ -38,6 +38,16 @@ $failure-color: #f14668
   &:hover
     background-color: adjust-color($primary-dark, $lightness: -5%)
     color: #fff
+
+
+.video_preview_correct
+  background-color: $success-color
+
+.video_preview_incorrect
+  background-color: $failure-color
+
+.video_preview_solution
+  background-color: $info
 
 
 .summary-card-success

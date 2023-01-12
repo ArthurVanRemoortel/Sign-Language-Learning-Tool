@@ -58,6 +58,7 @@ class Gesture(models.Model):
 
     @property
     def reference_video(self):
+        """ Returns the video path to a solution """
         if self.creator:
             videos_location = f'vgt-uploaded/{str(self.creator.id)}/{self.handed_string}'
         else:
@@ -151,7 +152,7 @@ class UnitAttempt(models.Model):
     unit = models.ForeignKey(
         Unit, on_delete=models.CASCADE, null=False, related_name="unit_attempts"
     )
-    datetime = models.DateTimeField(null=False)
+    datetime = models.DateTimeField(null=False, auto_now_add=True)
     score = models.IntegerField(null=False, default=0)
 
     def __str__(self):
@@ -178,17 +179,26 @@ class UnitAttempt(models.Model):
             return 100
         return int(points / max_points * 100)
 
+    @property
+    def passed(self) -> bool:
+        """ Return if the user scored high enough to pass. """
+        return self.score >= 50
+
 
 class GestureAttempt(models.Model):
     """ Represents a user attempting to perform a gesture. Used to calculate score and keep track of videos for teachers. """
     unit_attempt = models.ForeignKey(UnitAttempt, on_delete=models.CASCADE, null=False, related_name="gesture_attempts")
     gesture = models.ForeignKey(Gesture, on_delete=models.CASCADE, null=False)
-    attempts = models.IntegerField(null=False, default=0)  # How many attempts it took the user to complete this exercise. Determines the final score.
+    attempt = models.IntegerField(null=False, default=0)  # How many attempts it took the user to complete this exercise. Determines the final score.
+    success = models.BooleanField(default=False, null=False)
 
     def get_video_path(self) -> Optional[Path]:
         user_settings: UserSettings = self.unit_attempt.user.settings
         if not user_settings.allow_video_uploads:
             return None
+
+    class Meta:
+        ordering = ["id", "attempt"]
 
 
 class TeacherCode(models.Model):
