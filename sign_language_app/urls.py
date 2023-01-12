@@ -30,6 +30,7 @@ urlpatterns += [
     path('manage_courses', profile_views.manage_courses_view, name='manage_courses'),
     path('manage_gestures', profile_views.manage_gestures, name='manage_gestures'),
     path('manage_gestures/<int:gesture_id>/delete', profile_views.delete_gesture, name='delete_gesture'),
+    path('manage_courses/<int:course_id>/delete', profile_views.delete_course, name='delete_course'),
     path('manage_teachers', profile_views.manage_teachers_view, name='manage_teachers'),
     path('feedback', profile_views.feedback, name='feedback'),
     path('create_gesture', profile_views.create_gesture, name='create_gesture'),

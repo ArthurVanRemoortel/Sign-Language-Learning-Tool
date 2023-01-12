@@ -238,6 +238,18 @@ def delete_gesture(request, gesture_id):
 
 
 @login_required
+@teacher_or_admin_required
+def delete_course(request, course_id):
+    user = get_user(request)
+    course = get_object_or_404(Course, pk=course_id)
+    if course.creator != user:
+        messages.error(request, "You cannot delete a course that you didn't create.")
+    messages.success(request, f"{course.name} has been deleted.")
+    course.delete()
+    return redirect('manage_courses')
+
+
+@login_required
 def feedback(request):
     user = get_user(request)
     context = {
