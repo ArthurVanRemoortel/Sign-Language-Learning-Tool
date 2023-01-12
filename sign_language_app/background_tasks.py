@@ -21,18 +21,19 @@ def retrain_thread(new_gestures):
     print("Starting training...")
     csv_out_path = Path('sl_ai/uploaded_gestures_dataset.csv')
     model_path = Path('sl_ai/model.h5')
-
     new_dataset = GestureDataset()
 
     # TODO: Should return the data. Writing to csv should be be separate function.
     new_dataset.analyze_videos(csv_out_path=csv_out_path)
+    if not csv_out_path.exists():
+        IS_TRAINING = False
+        return
     new_dataset.load_from_csv(csv_out_path)
-
     for gesture in new_gestures:
         gesture.status = Gesture.Status.COMPLETE
         gesture.save()
 
-    # TODO: Add methods to Classifier()
+    # TODO: Add methods to Classifier class
     Classifier().gesture_classifier.append_dataset(new_dataset)
     Classifier().gesture_classifier.train(save_path=model_path)
 

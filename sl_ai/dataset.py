@@ -324,7 +324,7 @@ class GestureDataset:
         Y_dataset = []
         gesture_id = -1
         last_gesture_number = -1
-        with open(csv_path, 'r', encoding="utf-8") as data_file:
+        with open(csv_path, 'r', encoding="latin-1") as data_file:
             lines = data_file.readlines()
             for landmark_line in lines:
                 landmark_line = landmark_line.split(',')
@@ -335,8 +335,8 @@ class GestureDataset:
                 hand_number = int(hand_number)
                 landmark_id = int(landmark_id)
 
-                if csv_path.name == "gestures_dataset.csv" and gesture_name not in ["belgië", "verenigde staten", "hallo"]:  # Currently only these gestures have enough data. TODO: Remove this later.
-                    continue
+                # if csv_path.name == "gestures_dataset.csv" and gesture_name not in ["belgië", "verenigde staten", "hallo"]:  # Currently only these gestures have enough data. TODO: Remove this later.
+                #     continue
 
                 if landmark_id != 0:
                     continue

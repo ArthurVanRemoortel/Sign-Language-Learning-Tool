@@ -61,23 +61,24 @@ class GestureClassifier:
         self.make_model()
 
         # TODO: Make sure all categories are represented.
-        self.x_train, x_test, self.y_train, y_test = train_test_split(self.gesture_dataset.x_data, self.gesture_dataset.y_data, train_size=train_size, random_state=42, stratify=self.gesture_dataset.y_data)
-        x_validate, x_test, y_validate, y_test = train_test_split(x_test, y_test, test_size=0.5, random_state=42)
+        self.x_train, x_test, self.y_train, y_test = train_test_split(self.gesture_dataset.x_data, self.gesture_dataset.y_data, train_size=train_size, random_state=42, stratify=self.gesture_dataset.y_data, shuffle=True)
+        x_validate, x_test, y_validate, y_test = train_test_split(x_test, y_test, test_size=0.4, random_state=42, shuffle=True)
         self.x_test = x_test
         self.y_test = y_test
 
         # cp_callback = tf.keras.callbacks.ModelCheckpoint(MODEL_SAVE_PATH, verbose=1, save_weights_only=True, save_best_only=True)
-        es_callback = tf.keras.callbacks.EarlyStopping(patience=20, verbose=1)
+        es_callback = tf.keras.callbacks.EarlyStopping(patience=50, verbose=1)
         self.train_history = self.model.fit(
             self.x_train,
             self.y_train,
             epochs=1000,
-            batch_size=32,
+            batch_size=2,
             validation_data=(x_validate, y_validate),
             callbacks=[es_callback]
         )
         [loss, acc] = self.model.evaluate(self.x_test, self.y_test, verbose=1)
         print("Accuracy:" + str(acc))
+        print("Loos:" + str(loss))
 
         if save_path:
             self.save_model(save_path)
