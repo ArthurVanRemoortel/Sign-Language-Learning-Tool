@@ -171,7 +171,7 @@ class UnitAttempt(models.Model):
 
     def get_user_gesture_videos(self) -> List[Path]:
         """ Returns the videos files for this user and unit. """
-        user_settings: UserSettings = self.user.settings
+        user_settings: UserSettings = self.user.settings.first()
         if not user_settings.allow_video_uploads:
             return list()
         videos_location: Path = USER_GESTURES_ROOT / self.unit.id / self.user.id
@@ -201,12 +201,17 @@ class GestureAttempt(models.Model):
     unit_attempt = models.ForeignKey(UnitAttempt, on_delete=models.CASCADE, null=False, related_name="gesture_attempts")
     gesture = models.ForeignKey(Gesture, on_delete=models.CASCADE, null=False)
     attempt = models.IntegerField(null=False, default=0)  # How many attempts it took the user to complete this exercise. Determines the final score.
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False)
     success = models.BooleanField(default=False, null=False)
 
-    def get_video_path(self) -> Optional[Path]:
-        user_settings: UserSettings = self.unit_attempt.user.settings
+    @property
+    def get_last_video_url(self) -> Optional[str]:
+        """ Find the video of the user gesture in the temporary "last" folder. """
+        user_settings: UserSettings = self.unit_attempt.user.settings.first()
         if not user_settings.allow_video_uploads:
             return None
+        location = Path("vgt-users") / str(self.user.id) / str(self.unit_attempt.unit.id) / "last" / f'{self.gesture.id}_{self.attempt}.webm'
+        return location.as_posix()
 
     class Meta:
         ordering = ["id", "attempt"]
@@ -258,4 +263,5 @@ class StudentsAccess(models.Model):
 
 @receiver(post_delete, sender=Gesture)
 def signal_function_name(sender, instance: Gesture, using, **kwargs):
+    """ Delete videos on disk when a gesture id deleted. """
     instance.delete_videos()

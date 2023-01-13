@@ -129,7 +129,8 @@ def save_unit_attempt(request, unit_id):
                 unit_attempt=unit_attempt,
                 gesture=Gesture.objects.get(pk=gesture_id),
                 attempt=attempts_i,
-                success=attempt_success
+                success=attempt_success,
+                user=user,
             )
             gesture_attempt.save()
         attempts_counts = filter(lambda success: success, attempts)

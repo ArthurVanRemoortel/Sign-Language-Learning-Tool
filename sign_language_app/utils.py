@@ -1,4 +1,6 @@
+import os
 import random
+import shutil
 import string
 from functools import wraps
 from pathlib import Path
@@ -60,8 +62,18 @@ def generate_teacher_code() -> str:
 
 def save_user_gesture_video(video_data, user: User, unit: Unit, gesture: Gesture, attempt: int):
     """ Saved a video blob to a temporary location. """
-    location = USER_GESTURES_ROOT / str(user.id) / "last" / str(unit.id)
+    location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / "last"
     location.mkdir(parents=True, exist_ok=True)
     with open(location / f'{gesture.id}_{attempt}.webm', "wb+") as file_object:
         for chunk in video_data.chunks():
             file_object.write(chunk)
+
+
+def copy_user_gesture_video(user: User, unit: Unit, gesture: Gesture, attempt: int):
+    """  """
+    location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / "last" / f'{gesture.id}_{attempt}.webm'
+    if location.exists():
+        copy_location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / "saved"
+        copy_location.mkdir(parents=True, exist_ok=True)
+        copy_location = copy_location / f'{gesture.id}_{attempt}.webm'
+        shutil.move(location, copy_location)

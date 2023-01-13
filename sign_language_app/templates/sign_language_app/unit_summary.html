@@ -45,12 +45,15 @@
                         </video>
                     </div>
                     {% for gesture_attempt in attempts %}
-                        <div class="column {% if gesture_attempt.success %}video_preview_correct{% else %}video_preview_incorrect{% endif %}">
-                            <p>{% if gesture_attempt.success %}Correct{% else %}Incorrect{% endif %}</p>
-                            <video preload="auto" controls style="height: 200px">
-                                <source src='{{ MEDIA_URL }}/{{ gesture.reference_video }}' type="video/mp4">
-                            </video>
-                        </div>
+                        {% with video_url=gesture_attempt.get_last_video_url %}
+                            <div class="column {% if gesture_attempt.success %}video_preview_correct{% else %}video_preview_incorrect{% endif %}">
+                                <p>{% if gesture_attempt.success %}Correct{% else %}Incorrect{% endif %}</p>
+                                <video preload="auto" controls style="height: 200px">
+                                    <source src='{{ MEDIA_URL }}/{{ video_url }}' type="video/mp4">
+                                </video>
+                            </div>
+                        {% endwith %}
+
                     {% endfor %}
                 </div>
             </div>
