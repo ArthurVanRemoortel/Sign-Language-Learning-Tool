@@ -1,6 +1,7 @@
 import random
 import string
 from functools import wraps
+from pathlib import Path
 
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
@@ -11,7 +12,8 @@ from rolepermissions.decorators import has_role_decorator
 from rolepermissions.utils import user_is_authenticated
 
 from learning_site.roles import Teacher
-from sign_language_app.models import TeacherCode
+from learning_site.settings import USER_GESTURES_ROOT
+from sign_language_app.models import TeacherCode, Gesture, Unit
 
 
 def get_user(request):
@@ -30,14 +32,15 @@ def is_admin(user: User):
     return user.is_superuser
 
 
-def is_teacher_or_admin(user: User):
+def is_teacher_or_admin(user: User) -> bool:
+    """ Tests if a user is an admin or a teacher. """
     if not user:
         return False
     return is_admin(user) or is_teacher(user)
 
 
-
 def teacher_or_admin_required(function):
+    """ Decorator used to limit access to a view to admins or teachers."""
     @wraps(function)
     def wrap(request, *args, **kwargs):
         user = get_user(request)
@@ -47,8 +50,18 @@ def teacher_or_admin_required(function):
     return wrap
 
 
-def generate_teacher_code():
+def generate_teacher_code() -> str:
+    """ generates a unique teacher invitation code. """
     code = None
     while code is None or TeacherCode.objects.filter(code=code).exists():
         code = ''.join(random.sample(string.ascii_uppercase, 5))
     return code
+
+
+def save_user_gesture_video(video_data, user: User, unit: Unit, gesture: Gesture, attempt: int):
+    """ Saved a video blob to a temporary location. """
+    location = USER_GESTURES_ROOT / str(user.id) / "last" / str(unit.id)
+    location.mkdir(parents=True, exist_ok=True)
+    with open(location / f'{gesture.id}_{attempt}.webm', "wb+") as file_object:
+        for chunk in video_data.chunks():
+            file_object.write(chunk)

@@ -74,6 +74,8 @@
         let gestureEnd = null
 
         let hand_frames = []
+        let videoBlobs = [];
+        let mediaRecorder;
 
         let missingHandsTime = null
 
@@ -165,7 +167,7 @@
             {#let csrf_token = '{{ csrf_token }}';#}
             const csrf_token = getCookie('csrftoken')
             console.log(exerciseData)
-             $.ajax({
+            $.ajax({
                 url: '{% url "save_unit_attempt" unit.id %}',
                 data: JSON.stringify(exerciseData),
                 headers: {'X-CSRFToken': csrf_token},
@@ -258,6 +260,15 @@
 
         function beginRecording() {
             gestureStart = performance.now()
+            const stream = canvasElement.captureStream(30);
+            mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
+            videoBlobs = []
+            mediaRecorder.addEventListener('dataavailable', function(e) {
+                if (e.data.size > 0) {
+                    videoBlobs.push(e.data);
+                }
+            });
+            mediaRecorder.start(100);
         }
 
         function resetRecording(){
@@ -265,6 +276,9 @@
             gestureEnd = null
             missingHandsTime = null
             hand_frames = []
+            videoBlobs = []
+            if (mediaRecorder)
+                mediaRecorder.stop();
         }
 
         function endRecording() {
@@ -278,7 +292,44 @@
                 gesture: current_gesture
             };
             veryfiUserInput(data)
-            resetRecording()
+            setTimeout(() => {
+                uploadGestureVideo()
+                resetRecording()
+            }, 0)
+        }
+
+        function uploadGestureVideo(){
+            const blob = new Blob(videoBlobs, {
+                type: "video/webm"
+            });
+            var form = new FormData();
+            form.append('video', blob);
+            form.append('gesture_id', current_gesture.id);
+            form.append('unit_id', {{ unit.id }});
+            form.append('attempt', 3 - gesture_attempts_remaining + 1);
+            const csrf_token = getCookie('csrftoken')
+            $.ajax({
+                type: 'POST',
+                url: '{% url "upload_gesture_video" %}',
+                data: form,
+                headers: {'X-CSRFToken': csrf_token},
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    console.log(data)
+                },
+                error: function(err) { console.log(err); },
+                beforeSend: function (xhr) {
+                },
+            });
+            {#console.log(blob)#}
+            {#const url = URL.createObjectURL(blob);#}
+            {#const a = document.createElement("a");#}
+            {#a.href = url;#}
+            {#a.download = "recording.webm";#}
+            {#a.click();#}
+            {#URL.revokeObjectURL(url);#}
+            {#resetRecording()#}
         }
 
         const zip = (a, b) => a.map((k, i) => [k, b[i]]);

@@ -11,7 +11,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.urls import reverse
 from django.views.defaults import page_not_found
 
-from sign_language_app import serializers
+from sign_language_app import serializers, utils
 from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
 from django.core import serializers as django_serializers
@@ -146,3 +146,18 @@ def save_unit_attempt(request, unit_id):
     unit_attempt.save()
     return JsonResponse({'continue': True, 'redirect_url': reverse('unit_summary', kwargs={'unit_id': unit.id, 'attempt_id': unit_attempt.id})})
 
+
+@login_required
+def upload_gesture_video(request):
+    user = get_user(request)
+    if request.method == 'POST':
+        video_data = request.FILES['video']
+        unit_id = request.POST['unit_id']
+        gesture_id = request.POST['gesture_id']
+        attempt = request.POST['attempt']
+        unit = get_object_or_404(Unit, pk=unit_id)
+        gesture = get_object_or_404(Gesture, pk=gesture_id)
+        # TODO: Check user settings.
+        utils.save_user_gesture_video(video_data=video_data, unit=unit, gesture=gesture, user=user, attempt=attempt)
+
+    return JsonResponse({'status': 'OK'})

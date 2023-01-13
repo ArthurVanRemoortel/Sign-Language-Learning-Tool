@@ -40,6 +40,7 @@ def trigger_retrain_model(request):
     return JsonResponse({'status': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
 
 
+
 @api_view(['POST', 'OPTIONS'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 # @permission_classes([IsAuthenticated])
