@@ -38,7 +38,7 @@
             </div>
             <video class="input_video" hidden></video>
             <canvas class="output_canvas camera-canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px"></canvas>
-            <video preload="auto" id="solutionVideo" hidden style="height: 0;">
+            <video class="mirrored" preload="auto" id="solutionVideo" hidden style="height: 0;">
                 <source src="" type="video/mp4"></source>
             </video>
         </div>
@@ -346,14 +346,16 @@
         }
 
         function updateCanvas() {
-            canvasCtx.drawImage(solutionVideo, 0, 0, canvasElement.width, canvasElement.height);
             if (is_displaying_solution)
-                window.requestAnimationFrame(updateCanvas);
+                canvasCtx.scale(-1, 1);
+                canvasCtx.translate(-canvasElement.width, 0);
+                canvasCtx.drawImage(solutionVideo, 0, 0, canvasElement.width, canvasElement.height);
+                canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                requestAnimationFrame(updateCanvas);
         }
 
         function showSolution(){
             setTimeout(function (){
-                console.log(current_gesture)
                 solutionVideo.src = '{{ MEDIA_URL }}' + current_gesture.reference_video
                 is_displaying_solution = true
                 solutionVideo.play()
@@ -388,6 +390,7 @@
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.translate(canvasElement.width, 0);
+            {#canvasCtx.scale(1, 1);#}
             canvasCtx.scale(-1, 1);
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
             let found_left_hand = null
@@ -400,13 +403,15 @@
                     const zipped_landmarks = zip(results.multiHandLandmarks, results.multiHandedness);
                     for (const landmarks_handed of zipped_landmarks) {
                         let landmarks = landmarks_handed[0]
-                        let handedness = flip_handedness(landmarks_handed[1].label)
+                        let handedness = landmarks_handed[1].label
+                        handedness = flip_handedness(handedness)
+                        console.log(landmarks[0].x)
                         if (handedness === 'Left'){
                             found_left_hand = landmarks
                         } else if (handedness === "Right"){
                             found_right_hand = landmarks
                         }
-                        let color = '#00FF00';
+                        let color;
                         if (handedness === "Right")
                             color = '#518dce'
                         else
