@@ -7837,6 +7837,123 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
       border-right: 1px solid rgba(0, 0, 0, 0.7);
       color: rgba(0, 0, 0, 0.7); }
 
+.course-card-footer-item {
+  align-items: flex-start;
+  justify-content: left;
+  padding: 0.75rem; }
+  .course-card-footer-item:not(:last-child) {
+    border-right: 1px solid #ededed; }
+
+.tag.is-white.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: white;
+  color: white; }
+  .tag.is-white.is-outlined:focus, .tag.is-white.is-outlined.is-focused {
+    background-color: white;
+    border-color: white;
+    color: #0a0a0a; }
+
+.tag.is-black.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #0a0a0a;
+  color: #0a0a0a; }
+  .tag.is-black.is-outlined:focus, .tag.is-black.is-outlined.is-focused {
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: white; }
+
+.tag.is-light.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #EBF2FA;
+  color: #EBF2FA; }
+  .tag.is-light.is-outlined:focus, .tag.is-light.is-outlined.is-focused {
+    background-color: #EBF2FA;
+    border-color: #EBF2FA;
+    color: rgba(0, 0, 0, 0.7); }
+
+.tag.is-dark.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #363636;
+  color: #363636; }
+  .tag.is-dark.is-outlined:focus, .tag.is-dark.is-outlined.is-focused {
+    background-color: #363636;
+    border-color: #363636;
+    color: #fff; }
+
+.tag.is-primary.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #A5BE00;
+  color: #A5BE00; }
+  .tag.is-primary.is-outlined:focus, .tag.is-primary.is-outlined.is-focused {
+    background-color: #A5BE00;
+    border-color: #A5BE00;
+    color: #fff; }
+
+.tag.is-link.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #A5BE00;
+  color: #A5BE00; }
+  .tag.is-link.is-outlined:focus, .tag.is-link.is-outlined.is-focused {
+    background-color: #A5BE00;
+    border-color: #A5BE00;
+    color: #fff; }
+
+.tag.is-info.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #3e8ed0;
+  color: #3e8ed0; }
+  .tag.is-info.is-outlined:focus, .tag.is-info.is-outlined.is-focused {
+    background-color: #3e8ed0;
+    border-color: #3e8ed0;
+    color: #fff; }
+
+.tag.is-success.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #48c78e;
+  color: #48c78e; }
+  .tag.is-success.is-outlined:focus, .tag.is-success.is-outlined.is-focused {
+    background-color: #48c78e;
+    border-color: #48c78e;
+    color: #fff; }
+
+.tag.is-warning.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #ffe08a;
+  color: #ffe08a; }
+  .tag.is-warning.is-outlined:focus, .tag.is-warning.is-outlined.is-focused {
+    background-color: #ffe08a;
+    border-color: #ffe08a;
+    color: rgba(0, 0, 0, 0.7); }
+
+.tag.is-danger.is-outlined {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1.6px;
+  border-color: #f14668;
+  color: #f14668; }
+  .tag.is-danger.is-outlined:focus, .tag.is-danger.is-outlined.is-focused {
+    background-color: #f14668;
+    border-color: #f14668;
+    color: #fff; }
+
 .camera-box {
   border-radius: 6px;
   display: block; }

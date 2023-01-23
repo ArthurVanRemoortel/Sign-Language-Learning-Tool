@@ -18,6 +18,10 @@ $camera-loader-size: 150px
 $success-color: $primary
 $failure-color: #f14668
 
+$hero-body-padding-medium: 9rem 4.5rem !default
+
+
+
 .footer
   background-color: $secondary-dark
   color: $text-color-dark
@@ -69,8 +73,32 @@ $failure-color: #f14668
       border-right: 1px solid rgba(0, 0, 0, 0.7)
       color: rgba(0, 0, 0, 0.7)
 
+.course-card-footer-item
+  align-items: flex-start
+  justify-content: left
+  padding: $card-footer-padding
+  &:not(:last-child)
+    +ltr-property("border", $card-footer-border-top)
 
 
+.tag
+  @each $name, $pair in $colors
+    $color: nth($pair, 1)
+    $color-invert: nth($pair, 2)
+
+    &.is-#{$name}
+      &.is-outlined
+        background-color: transparent
+        border-style: solid
+        border-width: 1.6px
+        border-color: $color
+        color: $color
+
+        &:focus,
+        &.is-focused
+          background-color: $color
+          border-color: $color
+          color: $color-invert
 
 .camera-box
   border-radius: 6px

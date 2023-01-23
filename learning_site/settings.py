@@ -223,7 +223,7 @@ ROLEPERMISSIONS_MODULE = 'learning_site.roles'
 ROLEPERMISSIONS_REGISTER_ADMIN = True
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = Path(os.path.join(BASE_DIR, 'sl_ai/ai_data'))
+MEDIA_ROOT = BASE_DIR / 'sl_ai/ai_data'
 UPLOADED_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-uploaded')
 USER_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-users')
 

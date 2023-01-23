@@ -4,8 +4,37 @@
     Courses
 {% endblock %}
 
+
+{% block hero %}
+    <section class="hero is-small is-secondary pb-5">
+        <div class="hero-body">
+            <p class="title">
+                {{ recommendation_string}}
+            </p>
+            <div class="columns">
+                {% for recommended_course, recommended_unit in recommended_courses %}
+                    <div class="column is-one-quarter">
+                        <div class="card">
+                            <div class="card-content">
+                                <p class="title">
+                                    {{ recommended_course.name }} <span class="tag is-info">{{ recommended_course.get_difficulty_display }}</span>
+                                </p>
+                                <div class="content">
+                                    <a href="{% url "unit" recommended_unit.id %}" class="button is-info is-rounded is-fullwidth">
+                                        <span>{{ recommended_unit.name }}</span><span class="icon is-small"><i class="fa-solid fa-angle-right"></i></span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
 {% block content %}
-    <div class="container is-max-desktop">
+    <div class="container is-max-desktop m-5">
         <h2 class="title is-2 is-spaced bd-anchor-title">
             Courses
         </h2>
@@ -68,7 +97,6 @@
             </div>
             <div class="column is-four-fifths">
                 <form action="{% url 'courses_overview' %}" method="get">
-{#                    {% csrf_token %}#}
                     <div class="field has-addons">
                         <div class="control is-expanded">
                             <label for="searchInput"></label>
@@ -83,8 +111,9 @@
                     <div class="card mt-4">
                         <div class="card-content">
                             <p class="title">
-                                {{ course.name }}
+                                <span class="tag is-info is-medium is-outlined mb-1">{{ course.get_difficulty_display }}</span> {{ course.name }}
                             </p>
+
                             <p class="subtitle">
                                 {{ course.description }}
                             </p>
@@ -94,9 +123,13 @@
                                         {% for unit in col %}
                                             <div class="mt-2">
                                                 {% if unit in completed_units %}
-                                                    <a href="{% url "unit" unit.id %}" class="button is-primary is-rounded is-fullwidth">{{ unit.name }}</a>
+                                                    <a href="{% url "unit" unit.id %}" class="button is-primary is-rounded is-fullwidth">
+                                                        <span>{{ unit.name }}</span><span class="icon is-small"> <i class="fas fa-check"></i></span>
+                                                    </a>
                                                 {% elif unit == next_units|get_value:course.id %}
-                                                    <a href="{% url "unit" unit.id %}" class="button is-info is-rounded is-fullwidth">{{ unit.name }}</a>
+                                                    <a href="{% url "unit" unit.id %}" class="button is-info is-rounded is-fullwidth">
+                                                        <span>{{ unit.name }}</span><span class="icon is-small"><i class="fa-solid fa-angle-right"></i></span>
+                                                    </a>
                                                 {% else %}
                                                     <a href="{% url "unit" unit.id %}" class="button is-rounded is-fullwidth">{{ unit.name }}</a>
                                                 {% endif %}
@@ -106,19 +139,13 @@
                                 {% endfor %}
                             </div>
                         </div>
-
-                        <footer class="card-footer">
-                            <p class="card-footer-item">
-                              <span>
-                                Details
-                              </span>
-                            </p>
-                            <p class="card-footer-item">
-                              <span>
-                                Resume
-                              </span>
-                            </p>
-                        </footer>
+                        {% if not course.creator %}
+                            <footer class="card-footer">
+                                <p class="course-card-footer-item is-small">
+                                    Published by Arthur Van Remoortel
+                                </p>
+                            </footer>
+                        {% endif %}
                     </div>
                 {% endfor %}
                 <br>
@@ -170,7 +197,6 @@
             button.addEventListener("click", function(){
                 filter_courses(with_filter_prefix(button_string))
             });
-
             for (const filter_string of active_filters){
                 if (filter_string.includes(button_string))
                     button.classList.remove('is-outlined')

@@ -4,10 +4,12 @@ import shutil
 import string
 from functools import wraps
 from pathlib import Path
+from typing import List, Tuple
 
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import Http404
 from rolepermissions.checkers import has_permission, has_role
 from rolepermissions.decorators import has_role_decorator
@@ -15,7 +17,7 @@ from rolepermissions.utils import user_is_authenticated
 
 from learning_site.roles import Teacher
 from learning_site.settings import USER_GESTURES_ROOT
-from sign_language_app.models import TeacherCode, Gesture, Unit
+from sign_language_app.models import TeacherCode, Gesture, Unit, Course
 
 
 def get_user(request):
@@ -77,3 +79,11 @@ def copy_user_gesture_video(user: User, unit: Unit, gesture: Gesture, attempt: i
         copy_location.mkdir(parents=True, exist_ok=True)
         copy_location = copy_location / f'{gesture.id}_{attempt}.webm'
         shutil.move(location, copy_location)
+
+
+def find_course_recommendations(user, max_courses=4) -> (str, List[Tuple[Course, Unit]]):
+    if not user:
+        # User is not logged in. Select some beginenr courses.
+        return "Courses for beginners", [(c, c.units[0]) for c in Course.objects.filter(Q(difficulty=Course.Difficulty.BEGINNER))[:max_courses]]
+    else:
+        return "Continue where you left of", [(c, c.get_next_unit(user)) for c in Course.objects.filter(Q(units__unit_attempts__user=user)).distinct()[:max_courses]]

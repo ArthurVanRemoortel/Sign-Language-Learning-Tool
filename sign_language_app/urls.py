@@ -21,7 +21,6 @@ urlpatterns = [
     path('unit/<int:unit_id>/summary/<int:attempt_id>', views.unit_summary, name='unit_summary'),
     path('unit/<int:unit_id>/save', views.save_unit_attempt, name='save_unit_attempt'),
     path('api/upload_gesture_video', views.upload_gesture_video, name='upload_gesture_video'),
-
 ]
 
 # Profile Patterns

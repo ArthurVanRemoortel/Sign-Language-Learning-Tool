@@ -31,7 +31,7 @@
 </head>
 
 <body>
-<nav class="navbar navbar-expand-lg mb-5">
+<nav class="navbar navbar-expand-lg">
     <div class="navbar-brand">
         <a class="navbar-item" href="{% url 'index' %}">
             <img src="{% static 'sign_language_app/images/logo_blank.png'%}" alt="" width="50" height="38">
@@ -48,9 +48,6 @@
         <div class="navbar-start">
             <a class="navbar-item" href="{% url 'courses_overview' %}">
                 Courses
-            </a>
-            <a class="navbar-item" href="{% url 'unit' unit_id=1 %}">
-                (DEV) Exercise 1
             </a>
         </div>
 
@@ -87,8 +84,9 @@
 </nav>
 
 <div class="page-wrapper">
-
-    <div class="container" style="width:100%">
+    {% block hero %}
+    {% endblock %}
+    <div class="container" style="width:100%" id="messagesContainer">
         {% if messages %}
             <ul class="messages">
                 {% for message in messages %}
@@ -110,6 +108,7 @@
                         </div>
                         <div class="message-body">
                             {{ message }}
+Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet ferment
                         </div>
                     </article>
                 {% endfor %}

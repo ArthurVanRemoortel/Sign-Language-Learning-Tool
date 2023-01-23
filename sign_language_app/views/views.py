@@ -16,7 +16,7 @@ from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
 from django.core import serializers as django_serializers
 
-from sign_language_app.utils import get_user
+from sign_language_app.utils import get_user, find_course_recommendations
 from sign_language_app.views.error_views import error_view
 
 
@@ -35,8 +35,7 @@ def courses_overview(request):
         search_input_text = search_form.cleaned_data.get("search_input", None)
         if search_input_text:
             courses = courses.filter(Q(name__icontains=search_input_text) | Q(description__icontains=search_input_text) | Q(units__name__icontains=search_input_text)).distinct()
-    completed_units = []
-    next_units = {}
+
 
     if filters:
         for filter_query in filters.split(','):
@@ -59,10 +58,15 @@ def courses_overview(request):
                 else:
                     courses = StudentsAccess.get_school_courses(student=user)
 
+    completed_units = []
+    next_units = {}
     if user:
         completed_units = [attempt.unit for attempt in UnitAttempt.objects.filter(user=user)]
         next_units = {course.id: course.get_next_unit(user) for course in courses}
-    # courses = courses.union(*[courses for _ in range(50)], all=True)  # Hacky way to make the results longer to test pagination.
+
+
+    recommendation_string, recommended_courses = find_course_recommendations(user, max_courses=4)
+
     paginator = Paginator(courses, 15)
     try:
         courses = paginator.page(page_number)
@@ -76,7 +80,9 @@ def courses_overview(request):
         "filters": filters,
         'courses_paginator': courses_paginator,
         "completed_units": completed_units,
-        "next_units": next_units
+        "next_units": next_units,
+        "recommended_courses": recommended_courses,
+        "recommendation_string": recommendation_string
     }
     return render(request, "sign_language_app/courses_overview.html", context)
 
@@ -97,11 +103,12 @@ def unit_summary(request, unit_id, attempt_id):
     unit = get_object_or_404(Unit, pk=unit_id)
     this_attempt = get_object_or_404(UnitAttempt, pk=attempt_id)
     unit_attempts = UnitAttempt.objects.filter(user=user, unit=unit).all()
+    if this_attempt.unit != unit:
+        return error_view(request, exception='This unit attempts does not exist.')
     if not unit_attempts:
         return error_view(request, exception='You have never completed this course.')
     if this_attempt.user != user:
         return error_view(request, exception="You do not have access this user's data")
-    # TODO: Lake sure unit_attempt actually belongs to the unit.
     context = {
         'unit': unit,
         'this_attempt': this_attempt,
@@ -124,7 +131,7 @@ def save_unit_attempt(request, unit_id):
 
     data_from_post = json.load(request)
     for gesture_id, attempts in data_from_post['gestures'].items():
-        for attempts_i, attempt_success in enumerate(attempts):
+        for attempts_i, attempt_success in enumerate(attempts, start=1):
             gesture_attempt = GestureAttempt(
                 unit_attempt=unit_attempt,
                 gesture=Gesture.objects.get(pk=gesture_id),
