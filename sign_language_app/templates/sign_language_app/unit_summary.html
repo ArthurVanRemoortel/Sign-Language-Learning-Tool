@@ -22,10 +22,10 @@
                 </div>
             </div>
             <footer class="card-footer">
-                <a href="{% url 'unit' unit.id %}" class="card-footer-item">Try Again</a>
+                <a href="{% url 'unit' unit.id %}" class="card-footer-item"><span class="icon is-small mr-1"><i class="fa-solid fa-repeat"></i></span><span>Try Again</span></a>
                 {% with next_unit=unit.next_unit %}
                     {% if next_unit %}
-                        <a href="{% url 'unit' next_unit.id %}" class="card-footer-item">{{ next_unit.name }}</a>
+                        <a href="{% url 'unit' next_unit.id %}" class="card-footer-item"><span>{{ next_unit.name }}</span><span class="icon is-small"><i class="fa-solid fa-angle-right"></i></span></a>
                     {% else %}
                         <a href="{% url 'courses_overview' %}" class="card-footer-item">Browse courses</a>
                     {% endif %}
@@ -40,7 +40,7 @@
                 <div class="columns">
                     <div class="column video_preview_solution">
                         <p>Solution</p>
-                        <video preload="auto" controls style="height: 200px" class="mirrored">
+                        <video preload="auto" onclick="this.play()" style="height: 200px" class="mirrored" >
                             <source src='{{ MEDIA_URL }}/{{ gesture.reference_video }}' type="video/mp4">
                         </video>
                     </div>
@@ -48,12 +48,11 @@
                         {% with video_url=gesture_attempt.get_last_video_url %}
                             <div class="column {% if gesture_attempt.success %}video_preview_correct{% else %}video_preview_incorrect{% endif %}">
                                 <p>{% if gesture_attempt.success %}Correct{% else %}Incorrect{% endif %}</p>
-                                <video preload="auto" controls style="height: 200px">
+                                <video preload="auto" onclick="this.play()" style="height: 200px">
                                     <source src='{{ MEDIA_URL }}/{{ video_url }}' type="video/mp4">
                                 </video>
                             </div>
                         {% endwith %}
-
                     {% endfor %}
                 </div>
             </div>
