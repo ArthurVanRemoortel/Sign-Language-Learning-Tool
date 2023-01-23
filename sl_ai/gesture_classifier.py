@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 
-from sl_ai.dataset import GestureDataset, fill_holes, make_coordinates_list_fixed_length, pre_process_point_history
+from sl_ai.dataset import GestureDataset, fill_holes, make_coordinates_list_fixed_length, pre_process_point_history_center
 from sl_ai.config import MAX_VIDEO_FRAMES
 import tensorflow as tf
 
@@ -36,19 +36,31 @@ class GestureClassifier:
         self.gesture_dataset.append_dataset(new_dataset)
 
     def make_model(self):
+        TIME_STEPS = MAX_VIDEO_FRAMES * 2 * 2
+        DIMENSION = 1
+        NUM_CLASSES = len(self.gesture_dataset)
         # TODO: Experiment with tensorflow optimisers.
         self.model = tf.keras.models.Sequential([
-            tf.keras.layers.InputLayer(input_shape=(MAX_VIDEO_FRAMES * 2 * 2,)),
-            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.InputLayer(input_shape=(TIME_STEPS, )),
+            tf.keras.layers.Dropout(0.4),
             tf.keras.layers.Dense(24, activation='relu'),
-            tf.keras.layers.Dropout(0.5),
+            tf.keras.layers.Dropout(0.2),
             tf.keras.layers.Dense(10, activation='relu'),
-            tf.keras.layers.Dense(len(self.gesture_dataset), activation='softmax')
+            tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
         ])
+        # self.model = tf.keras.models.Sequential([
+        #     tf.keras.layers.InputLayer(input_shape=(TIME_STEPS, DIMENSION)),
+        #     tf.keras.layers.Reshape((TIME_STEPS, DIMENSION), input_shape=(TIME_STEPS * DIMENSION,)),
+        #     tf.keras.layers.Dropout(0.2),
+        #     tf.keras.layers.LSTM(16, input_shape=[TIME_STEPS, DIMENSION]),
+        #     tf.keras.layers.Dropout(0.5),
+        #     tf.keras.layers.Dense(10, activation='relu'),
+        #     tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
+        # ])
         self.model.compile(
-            optimizer='rmsprop',
+            optimizer='adam',
             loss='sparse_categorical_crossentropy',  # Experiment using different loss and metric functions.
-            metrics=['accuracy']
+            metrics=['sparse_categorical_accuracy']
         )
 
     def train(self, save_path: Optional[Path] = None, train_size=0.5):
@@ -67,12 +79,12 @@ class GestureClassifier:
         self.y_test = y_test
 
         # cp_callback = tf.keras.callbacks.ModelCheckpoint(MODEL_SAVE_PATH, verbose=1, save_weights_only=True, save_best_only=True)
-        es_callback = tf.keras.callbacks.EarlyStopping(patience=50, verbose=1)
+        es_callback = tf.keras.callbacks.EarlyStopping(patience=30, verbose=1)
         self.train_history = self.model.fit(
             self.x_train,
             self.y_train,
             epochs=1000,
-            batch_size=2,
+            batch_size=1,
             validation_data=(x_validate, y_validate),
             callbacks=[es_callback]
         )
@@ -102,14 +114,12 @@ class GestureClassifier:
         if not self.model:
             raise Exception('Cannot make prediction when the model is not loaded yet.')
 
-        # left_landmarks = np.array(left_landmarks[0], dtype='float32')
-        # right_landmarks = np.array(right_landmarks[0], dtype='float32')
+        left_landmarks = np.array(left_landmarks[12], dtype='float32')
+        right_landmarks = np.array(right_landmarks[12], dtype='float32')
 
-        x_data = np.append(left_landmarks[0], right_landmarks[0]).astype(dtype='float32')
-        # print(x_data)
+        x_data = np.concatenate((left_landmarks, right_landmarks), axis=0)#.astype(dtype='float32')
         x_data = x_data.reshape((-1, x_data.shape[0]))
-        # print(x_data)
-        prediction = self.model.predict([x_data])
+        prediction = self.model.predict(x_data)
         return prediction
 
     def visualize_accuracy(self):
@@ -119,8 +129,8 @@ class GestureClassifier:
         if not self.train_history:
             raise Exception('Cannot visualise model without training history.')
 
-        plt.plot(self.train_history.history['accuracy'], label='training accuracy')
-        plt.plot(self.train_history.history['val_accuracy'], label='testing accuracy')
+        plt.plot(self.train_history.history['sparse_categorical_accuracy'], label='training accuracy')
+        plt.plot(self.train_history.history['val_sparse_categorical_accuracy'], label='testing accuracy')
         plt.title('Accuracy')
         plt.xlabel('epochs')
         plt.ylabel('accuracy')

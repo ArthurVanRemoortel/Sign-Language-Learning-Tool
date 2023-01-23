@@ -4,6 +4,7 @@ import functools
 import itertools
 import os
 import time
+from math import sqrt
 from pathlib import Path
 from pprint import pprint
 from typing import List, Union, Optional
@@ -24,10 +25,8 @@ MIN_DETECTION_CONFIDENCE = 0.7
 MIN_TRACKING_CONFIDENCE = 0.5
 
 
-def log_csv(file_path: Path, gesture_name: str, gesture_number, video_number, hand_number, landmark_id, point_history_list):
-    with open(file_path, 'a', newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow([gesture_name, gesture_number, video_number, hand_number, landmark_id, *point_history_list])
+def log_csv(writer, gesture_name: str, gesture_number, video_number, hand_number, landmark_id, point_history_list):
+    writer.writerow([gesture_name, gesture_number, video_number, hand_number, landmark_id, *[p for p in point_history_list]])
 
 
 def fill_holes(data_list: list, empty_val):
@@ -47,9 +46,12 @@ def fill_holes(data_list: list, empty_val):
                         rest = rest[1:]
                     next_x, next_y = rest[0]
                     prev_x, prev_y = previous_value
-                    result.append([int((prev_x + next_x) / 2), int((prev_y + next_y) / 2)])
+                    new_value = [((prev_x + next_x) / 2), ((prev_y + next_y) / 2)]
+                    result.append(new_value)
+                    previous_value = new_value
                 except IndexError:
                     result.append(previous_value)
+                    previous_value = value
         else:
             previous_value = value
             result.append(value)
@@ -147,19 +149,19 @@ def calculate_landmark_list(image_width, image_height, landmarks):
 
     landmark_point = []
     for _, landmark in enumerate(landmarks):
-        landmark_x = min(int(x_getter(landmark) * image_width), image_width - 1)
-        landmark_y = min(int(y_getter(landmark) * image_height), image_height - 1)
+        landmark_x = x_getter(landmark) #min(int(x_getter(landmark) * image_width), image_width - 1)
+        landmark_y = y_getter(landmark) #min(int(y_getter(landmark) * image_height), image_height - 1)
         landmark_point.append([landmark_x, landmark_y])
     return landmark_point
 
 
-def pre_process_point_history(image_width, image_height, point_history):
+def pre_process_point_history_center(image_width, image_height, point_history):
     """
     Original from https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe
     Converts a list of coordinates to a list of deltas corresponding to how much a landmark moves relative to the start on the gesture.
     """
     temp_point_history = copy.deepcopy(point_history)
-    base_x, base_y = image_width / 2, image_height / 2
+    base_x, base_y = .5, .5
     for index, point in enumerate(temp_point_history):
         # if index == 0:
         #     base_x, base_y = point[0], point[1]
@@ -168,11 +170,32 @@ def pre_process_point_history(image_width, image_height, point_history):
         if point == [-1, -1]:
             continue
         temp_point_history[index][0] = (temp_point_history[index][0] -
-                                        base_x) / image_width
+                                        base_x)
         temp_point_history[index][1] = (temp_point_history[index][1] -
-                                        base_y) / image_height
+                                        base_y)
     temp_point_history = list(
         itertools.chain.from_iterable(temp_point_history))  # [[x, y], [x, y]] => [x, y, x, y]
+    return temp_point_history
+
+
+def pre_process_point_history_deltas(image_width, image_height, point_history):
+    temp_point_history = copy.deepcopy(point_history)
+    prev_x, prev_y = None, None
+    for index, point in enumerate(temp_point_history):
+        if point == [-1.0, -1.0]:
+            temp_point_history[index] = (0, 0)
+            continue
+        if prev_x is None and prev_y is None:
+            prev_x, prev_y = point
+        if temp_point_history[index] == [0, 0]:
+            continue
+        # delta = ((temp_point_history[index][0] - prev_x), (temp_point_history[index][1] - prev_y))
+        delta = ((point[0] - prev_x), (point[1] - prev_y))
+        temp_point_history[index] = delta
+        prev_x, prev_y = point
+        # print(delta)
+    temp_point_history = list(
+        itertools.chain.from_iterable(temp_point_history))
     return temp_point_history
 
 
@@ -215,18 +238,15 @@ class GestureData:
 def preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height):
     trim_landmark_lists(left_landmarks, right_landmarks, [-1, -1])
     for landmark_id, landmarks in left_landmarks.items():
-        landmarks = fill_holes(landmarks, [-1, -1])
         landmarks = make_coordinates_list_fixed_length(landmarks, MAX_VIDEO_FRAMES)
-        landmarks = pre_process_point_history(frame_width, frame_height, landmarks)
+        landmarks = fill_holes(landmarks, [-1, -1])
+        #landmarks = pre_process_point_history(frame_width, frame_height, landmarks)
         left_landmarks[landmark_id] = landmarks
 
     for landmark_id, landmarks in right_landmarks.items():
-        landmarks = fill_holes(landmarks, [-1, -1])
         landmarks = make_coordinates_list_fixed_length(landmarks, MAX_VIDEO_FRAMES)
-        # print(landmarks)
-        landmarks = pre_process_point_history(frame_width, frame_height, landmarks)
-        # print(landmarks)
-        # print()
+        landmarks = fill_holes(landmarks, [-1, -1])
+        #landmarks = pre_process_point_history(frame_width, frame_height, landmarks)
         right_landmarks[landmark_id] = landmarks
 
 
@@ -250,6 +270,7 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
     left_landmarks = {i: [] for i in range(0, 21)}
     right_landmarks = {i: [] for i in range(0, 21)}
 
+    video_name = video_path.name
     video_data = read_video(video_path)
 
     frame_height = None
@@ -260,7 +281,8 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
         if frame_height is None:
             frame_height, frame_width, _ = frame.shape
 
-        frame = cv2.flip(frame, 1)  # Mediapipe was designed to work with webcam video, which are mirrored. The videos in the dataset are not.
+        #frame = cv2.flip(frame, 1)  # Mediapipe was designed to work with webcam video, which are mirrored. The videos in the dataset are not.
+        frame = cv2.flip(frame, 0)
         frame.flags.writeable = False
         results = mediapipe_hands.process(frame)
 
@@ -281,10 +303,10 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
                 if not gesture.uses_hand(hand_name):
                     # Detected a hand that should not have been tracked.
                     continue
-                if not is_landmark_in_active_zone(hand_landmarks.landmark):
-                    # Ignore when the hands are at the edge of the frame. The person is the video is still
-                    # getting in position and is not performing the gesture yet.
-                    continue
+                # if not is_landmark_in_active_zone(hand_landmarks.landmark):
+                #     # Ignore when the hands are at the edge of the frame. The person is the video is still
+                #     # getting in position and is not performing the gesture yet.
+                #     continue
                 landmark_list = calculate_landmark_list(frame_width, frame_height, landmarks_coordinates)
                 for landmark_id, landmark in enumerate(landmark_list):
                     if hand_name == 'left':
@@ -302,7 +324,7 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
                 for landmark_id in right_landmarks.keys():
                     right_landmarks[landmark_id].append([-1, -1])
 
-    return (frame_width, frame_height), left_landmarks, right_landmarks
+    return video_name, (frame_width, frame_height), left_landmarks, right_landmarks
 
 
 class GestureDataset:
@@ -324,35 +346,37 @@ class GestureDataset:
         Y_dataset = []
         gesture_id = -1
         last_gesture_number = -1
-        with open(csv_path, 'r', encoding="latin-1") as data_file:
-            lines = data_file.readlines()
-            for landmark_line in lines:
-                landmark_line = landmark_line.split(',')
-                # TODO: Add handedness to each row.
+        with open(csv_path, 'r', encoding="latin-1") as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=';')
+            for landmark_line in csv_reader:
                 gesture_name, gesture_number, video_number, hand_number, landmark_id, *history = landmark_line
-                gesture_number = int(gesture_number)
-                video_number = int(video_number)
-                hand_number = int(hand_number)
                 landmark_id = int(landmark_id)
-
-                # if csv_path.name == "gestures_dataset.csv" and gesture_name not in ["belgië", "verenigde staten", "hallo"]:  # Currently only these gestures have enough data. TODO: Remove this later.
-                #     continue
-
+                gesture_number = int(gesture_number)
+                video_number = video_number
+                hand_number = int(hand_number)
                 if landmark_id != 0:
                     continue
 
                 if gesture_number != last_gesture_number:
                     last_gesture_number = gesture_number
                     gesture_id += 1
-
-                print(f"{gesture_name}({gesture_number} -> {gesture_id})")
-
+                    print(f"{gesture_name}({gesture_number} -> {gesture_id})")
+                history = list(map(lambda coordinate: eval(coordinate), history))
+                history = pre_process_point_history_center(None, None, history)
                 history = np.array(history, dtype='float32')
+                # print(history)
+                # print(video_number)
                 if hand_number == 0:
+                    # print("left", len(history))
                     Y_dataset.append(gesture_id)
                     X_dataset.append(history)
                 elif hand_number == 1:
-                    X_dataset[-1] = np.append(X_dataset[-1], history)  # Appends the right hand after the left hand.
+                    # Appends the right hand after the left hand.
+                    # print("L", len(X_dataset[-1+landmark_id]), list(X_dataset[-1+landmark_id])[:2], '...')
+                    # print("R", len(history), list(history)[:2], '...')
+                    combi = np.concatenate((X_dataset[-1+0], history), axis=0)
+                    X_dataset[-1+0] = combi
+
 
         self.y_data = np.array(Y_dataset)
         self.x_data = np.array(X_dataset)
@@ -388,20 +412,20 @@ class GestureDataset:
                     ),
                     gesture.reference_videos)
 
-                for video_i, result in enumerate(results):
-                    (frame_width, frame_height), left_landmarks, right_landmarks = result
-                    try:
-                        preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
-                        if csv_out_path:
+                with open(csv_out_path, 'a', newline="") as f:
+                    writer = csv.writer(f, delimiter=';')
+                    for video_i, result in enumerate(results):
+                        video_name, (frame_width, frame_height), left_landmarks, right_landmarks = result
+                        try:
+                            preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
                             for landmark_id, values in left_landmarks.items():
-                                log_csv(csv_out_path, gesture_name=gesture.name, gesture_number=gesture_i, video_number=video_i, hand_number=0, landmark_id=landmark_id,
+                                log_csv(writer, gesture_name=gesture.name, gesture_number=gesture_i, video_number=video_name, hand_number=0, landmark_id=landmark_id,
                                         point_history_list=values)
-
                             for landmark_id, values in right_landmarks.items():
-                                log_csv(csv_out_path, gesture_name=gesture.name, gesture_number=gesture_i, video_number=video_i, hand_number=1, landmark_id=landmark_id,
+                                log_csv(writer, gesture_name=gesture.name, gesture_number=gesture_i, video_number=video_name, hand_number=1, landmark_id=landmark_id,
                                         point_history_list=values)
-                    except Exception as e:
-                        print(f'Failure on a video for gesture {gesture.name}: {e}')
+                        except Exception as e:
+                            print(f'Failure on a video for gesture {gesture.name}: {e}')
         print(f"Completed analyzing videos in {time.time() - start_time}")
 
     def scan_videos(self, dataset_location: Path, handedness_data):
@@ -426,7 +450,6 @@ class GestureDataset:
             gesture_data.add_video(gesture_path / str(video_name))
         self.gestures.append(gesture_data)
 
-
     def __len__(self):
         return len(np.unique(self.y_data))
 
@@ -435,8 +458,8 @@ if __name__ == '__main__':
     CSV_OUT_PATH = Path('gestures_dataset.csv')
     DATASET_LOCATION = Path('ai_data/vgt-all')
 
-    UPLOADED_CSV_OUT_PATH = Path('gestures_dataset.csv')
-    UPLOADED_DATASET_LOCATION = Path('ai_data/vgt-all')
+    # UPLOADED_CSV_OUT_PATH = Path('gestures_dataset.csv')
+    # UPLOADED_DATASET_LOCATION = Path('ai_data/vgt-all')
 
     dataset = GestureDataset()
     handedness_data = {}
@@ -447,7 +470,6 @@ if __name__ == '__main__':
     dataset.scan_videos(dataset_location=DATASET_LOCATION, handedness_data=handedness_data)
     dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
     # dataset.load_from_csv(CSV_OUT_PATH)
-
 
     # dataset = GestureDataset()
     # handedness_data = {}

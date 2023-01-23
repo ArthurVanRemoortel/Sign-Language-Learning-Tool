@@ -22,7 +22,8 @@ from sign_language_app import serializers
 from sign_language_app.classifier import Classifier
 from sign_language_app.models import Gesture, Unit, UnitAttempt, GestureAttempt
 from sign_language_app.utils import get_user, is_admin
-from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list
+from sl_ai.dataset import preprocess_landmarks, trim_landmark_lists, calculate_landmark_list, \
+    pre_process_point_history_center
 from sign_language_app.background_tasks import retrain_model
 
 FRAME_WIDTH = 720
@@ -81,9 +82,16 @@ def test_auth(request):
     if left_landmarks == right_landmarks:
         is_correct = 0
         print("WARNING: Nothing was detected.")
+
     else:
         # TODO: Verify if the js and python coordinate systems are the same.
         preprocess_landmarks(left_landmarks, right_landmarks, FRAME_WIDTH, FRAME_HEIGHT)
+        for i, landmarks in left_landmarks.items():
+            left_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
+        for i, landmarks in right_landmarks.items():
+            right_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
+        # left_landmarks = pre_process_point_history_center(None, None, left_landmarks)
+        # right_landmarks = pre_process_point_history_center(None, None, right_landmarks)
         result = Classifier().gesture_classifier.predict(left_landmarks, right_landmarks)
         classes_x = np.argmax(result, axis=1)
         print(classes_x)
