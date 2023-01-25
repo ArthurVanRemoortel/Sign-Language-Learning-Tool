@@ -6,15 +6,16 @@ from pathlib import Path
 
 import pandas as pd
 import seaborn as sns
+from keras.saving.legacy.save import load_model
 
 from matplotlib import pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
-from tensorflow.python.keras.models import load_model
 
 from sl_ai.dataset import GestureDataset, fill_holes, make_coordinates_list_fixed_length, pre_process_point_history_center
 from sl_ai.config import MAX_VIDEO_FRAMES
 import tensorflow as tf
+from keras.models import load_model, save_model
 
 
 class GestureClassifier:
