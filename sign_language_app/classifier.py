@@ -39,13 +39,11 @@ class Classifier(metaclass=SingletonMeta):
 
         self.gesture_classifier: GestureClassifier = GestureClassifier(gesture_dataset=self.gesture_dataset)
 
-
         if MODEL_FILE_PATH.exists():
             self.gesture_classifier.load_saved_model(model_path=MODEL_FILE_PATH)
         else:
             print('No model file found. Training a new model.')
             self.gesture_classifier.train(save_path=MODEL_FILE_PATH)
-
         self.gesture_classifier.summary()
 
 # gesture_classifier = None

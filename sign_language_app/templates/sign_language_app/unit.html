@@ -145,6 +145,7 @@
             if (correct){
                 $(cameraAreaBox).addClass('feedback-pulse-correct')
                 current_gesture_i += 1
+                solutionEnded()
             } else {
                 $(cameraAreaBox).addClass('feedback-pulse-incorrect')
                 gesture_attempts_remaining -= 1

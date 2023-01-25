@@ -138,7 +138,6 @@ def is_landmark_in_active_zone(landmarks):
 def mirror_landmarks_list(landmarks):
     mirrored_landmarks = []
     for _, landmark in enumerate(landmarks):
-        print(landmark)
         mirrored_landmarks.append([1 - landmark[0], landmark[1]])
     return mirrored_landmarks
 
@@ -355,6 +354,9 @@ class GestureDataset:
 
         self.x_data = None
         self.y_data = None
+        self.lookup_dict = {
+
+        }
 
     def summary(self):
         print(f"Dataset contain {len(np.unique(self.y_data))} gestures.")
@@ -394,6 +396,7 @@ class GestureDataset:
                     gesture_videos_left_landmarks[gesture_id] = {}
                     gesture_videos_right_landmarks[gesture_id] = {}
                     print(f"{gesture_name}({gesture_number} -> {gesture_id})")
+                    self.lookup_dict[gesture_id] = gesture_name
 
 
                 if video_name != last_video_name:

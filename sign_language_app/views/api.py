@@ -30,11 +30,7 @@ from sign_language_app.background_tasks import retrain_model
 
 
 def visualize_gesture(coordinates, frame_width, frame_height):
-    # pairs_data = np.array(np.array(data)).reshape((-1, 2))
     fixed_coordinates = list(map(lambda pair: (pair[0] * frame_width, pair[1] * frame_height) if pair[0] != -1 else (0, 0), coordinates))
-    # x_data = np.array(x_data) * width
-    # y_data = np.array(y_data) * height
-    # li = list(zip(x_data, y_data))
     plt.scatter(*zip(*fixed_coordinates))
     plt.xlim([0, frame_width])
     plt.ylim([0, frame_height])
@@ -64,7 +60,7 @@ def test_auth(request):
     # gesture_id = data['gesture_id']
     print(f"Gesture ID: {data['gesture']['id']}")
     print(f'Frames: {len(hand_frames)}')
-    gesture = get_object_or_404(Gesture, pk=int(data['gesture']['id']))
+    gesture: Gesture = get_object_or_404(Gesture, pk=int(data['gesture']['id']))
     frame_width = data['frame_width']
     frame_height = data['frame_height']
 
@@ -114,12 +110,19 @@ def test_auth(request):
 
         result = Classifier().gesture_classifier.predict(left_landmarks, right_landmarks)
         classes_x = np.argmax(result, axis=1)
-        print(classes_x)
-        prediction_percents = (result*100)
-        frame = pd.DataFrame(prediction_percents.astype(np.uint8))
-        print(frame)
-        is_correct = random.randint(0, 1) == 1
-    return JsonResponse({'status': 'OK', "correct": 0}, status=status.HTTP_201_CREATED)
+        # print(classes_x)
+        # frame = pd.DataFrame(prediction_percents.astype(np.uint8))
+
+        predicted_gestures = {
+        }
+        for gesture_id, prediction in enumerate(result[0]):
+            prediction = int(prediction * 100)
+            if prediction > 5:
+                predicted_gestures[Classifier().gesture_classifier.gesture_dataset.lookup_dict[gesture_id]] = prediction
+        pprint(predicted_gestures)
+        is_correct = gesture.word.lower() in predicted_gestures
+        print(is_correct, gesture.word.lower(), predicted_gestures.keys())
+    return JsonResponse({'status': 'OK', "correct": is_correct}, status=status.HTTP_201_CREATED)
 
 
 class GestureViewSet(viewsets.ModelViewSet):
