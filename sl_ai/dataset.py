@@ -13,8 +13,9 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import skvideo.io
+from matplotlib import pyplot as plt
 from tqdm import tqdm
-from sl_ai.config import MAX_VIDEO_FRAMES
+from sl_ai.config import MAX_VIDEO_FRAMES, ONLY_LANDMARK_ID
 from multiprocessing import Pool
 
 # DATASET_LOCATION = Path('sl_ai/ai_data/vgt-all')
@@ -25,8 +26,8 @@ MIN_DETECTION_CONFIDENCE = 0.7
 MIN_TRACKING_CONFIDENCE = 0.5
 
 
-def log_csv(writer, gesture_name: str, gesture_number, video_number, hand_number, landmark_id, point_history_list):
-    writer.writerow([gesture_name, gesture_number, video_number, hand_number, landmark_id, *[p for p in point_history_list]])
+def log_csv(writer, gesture_name: str, gesture_number, video_number, hand_number, landmark_id, point_history_list, width, height):
+    writer.writerow([gesture_name, gesture_number, video_number, width, height, hand_number, landmark_id, *[p for p in point_history_list]])
 
 
 def fill_holes(data_list: list, empty_val):
@@ -134,6 +135,14 @@ def is_landmark_in_active_zone(landmarks):
     return min(ys) <= 0.85
 
 
+def mirror_landmarks_list(landmarks):
+    mirrored_landmarks = []
+    for _, landmark in enumerate(landmarks):
+        print(landmark)
+        mirrored_landmarks.append([1 - landmark[0], landmark[1]])
+    return mirrored_landmarks
+
+
 def calculate_landmark_list(image_width, image_height, landmarks):
     """
     Original from https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe
@@ -214,6 +223,17 @@ def trim_landmark_lists(left_landmarks, right_landmarks, empty_val):
         right_landmarks[landmark_id] = right
 
 
+def visualize_gesture(coordinates, frame_width, frame_height):
+    # pairs_data = np.array(np.array(data)).reshape((-1, 2))
+    fixed_coordinates = list(map(lambda pair: (pair[0] * frame_width, pair[1] * frame_height) if pair[0] != -1 else (0, 0), coordinates))
+    # x_data = np.array(x_data) * width
+    # y_data = np.array(y_data) * height
+    # li = list(zip(x_data, y_data))
+    plt.scatter(*zip(*fixed_coordinates))
+    plt.xlim([0, frame_width])
+    plt.ylim([0, frame_height])
+
+
 class GestureData:
     def __init__(self, name, left_hand=True, right_hand=True):
         self.name: str = name
@@ -282,7 +302,7 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
             frame_height, frame_width, _ = frame.shape
 
         #frame = cv2.flip(frame, 1)  # Mediapipe was designed to work with webcam video, which are mirrored. The videos in the dataset are not.
-        frame = cv2.flip(frame, 0)
+        frame = cv2.flip(frame, 1)
         frame.flags.writeable = False
         results = mediapipe_hands.process(frame)
 
@@ -339,47 +359,92 @@ class GestureDataset:
     def summary(self):
         print(f"Dataset contain {len(np.unique(self.y_data))} gestures.")
 
-    def load_from_csv(self, csv_path: Path):
+    def load_from_csv(self, csv_path: Path, visualize_gestures_ids=None):
+        if visualize_gestures_ids is None:
+            visualize_gestures_ids = []
         if not csv_path.exists():
             raise Exception(f"Did not find the csv dataset at {csv_path}")
         X_dataset = []
         Y_dataset = []
         gesture_id = -1
         last_gesture_number = -1
+        last_video_name = -1
+        last_hand = -1
+
+        gesture_videos_left_landmarks = {}
+        gesture_videos_right_landmarks = {}
+
         with open(csv_path, 'r', encoding="latin-1") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=';')
             for landmark_line in csv_reader:
-                gesture_name, gesture_number, video_number, hand_number, landmark_id, *history = landmark_line
+                gesture_name, gesture_number, video_name, frame_width, frame_height, hand_number, landmark_id, *history = landmark_line
+                frame_height = int(frame_height)
+                frame_width = int(frame_width)
                 landmark_id = int(landmark_id)
                 gesture_number = int(gesture_number)
-                video_number = video_number
+                video_name = video_name
                 hand_number = int(hand_number)
-                if landmark_id != 0:
-                    continue
+
+                history = list(map(lambda coordinate: eval(coordinate), history))
+                history = list(map(lambda coordinate: [float(coordinate[0]), float(coordinate[1])], history))
 
                 if gesture_number != last_gesture_number:
                     last_gesture_number = gesture_number
                     gesture_id += 1
+                    gesture_videos_left_landmarks[gesture_id] = {}
+                    gesture_videos_right_landmarks[gesture_id] = {}
                     print(f"{gesture_name}({gesture_number} -> {gesture_id})")
-                history = list(map(lambda coordinate: eval(coordinate), history))
-                history = pre_process_point_history_center(None, None, history)
-                history = np.array(history, dtype='float32')
-                # print(history)
-                # print(video_number)
-                if hand_number == 0:
-                    # print("left", len(history))
-                    Y_dataset.append(gesture_id)
-                    X_dataset.append(history)
-                elif hand_number == 1:
-                    # Appends the right hand after the left hand.
-                    # print("L", len(X_dataset[-1+landmark_id]), list(X_dataset[-1+landmark_id])[:2], '...')
-                    # print("R", len(history), list(history)[:2], '...')
-                    combi = np.concatenate((X_dataset[-1+0], history), axis=0)
-                    X_dataset[-1+0] = combi
 
+
+                if video_name != last_video_name:
+                    last_video_name = video_name
+                    gesture_videos_left_landmarks[gesture_id][video_name] = {i: [] for i in range(0, 21)}
+                    gesture_videos_right_landmarks[gesture_id][video_name] = {i: [] for i in range(0, 21)}
+
+                if last_hand != hand_number:
+                    last_hand = hand_number
+                    if visualize_gestures_ids and gesture_id in visualize_gestures_ids:
+                        visualize_gesture(history, frame_width, frame_height)
+                        # plt.close()
+                # if landmark_id != ONLY_LANDMARK_ID:
+                #     gesture_videos_left_landmarks[gesture_id][video_name][landmark_id] = [[0, 0] for _ in range(10)]
+                #     gesture_videos_right_landmarks[gesture_id][video_name][landmark_id] = [[0, 0] for _ in range(10)]
+
+                if hand_number == 0:
+                    gesture_videos_left_landmarks[gesture_id][video_name][landmark_id] = history
+                elif hand_number == 1:
+                    gesture_videos_right_landmarks[gesture_id][video_name][landmark_id] = history
+
+        for gesture_id, videos in gesture_videos_left_landmarks.items():
+            for video_id, left_landmarks in videos.items():
+                try:
+                    right_landmarks = gesture_videos_right_landmarks[gesture_id][video_id]
+                    preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
+                    for i, landmarks in left_landmarks.items():
+                        if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
+                            continue
+                        left_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
+                    for i, landmarks in right_landmarks.items():
+                        if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
+                            continue
+                        right_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
+                    # print(gesture_id, video_id, len(left_landmarks[12]))
+                    # print(gesture_id, video_id, len(right_landmarks[12]))
+                    Y_dataset.append(gesture_id)
+                    X_dataset.append(left_landmarks[ONLY_LANDMARK_ID] + right_landmarks[ONLY_LANDMARK_ID])
+                except IndexError as e:
+                    print(f'Something went wrong while processing {video_name}: {e}')
+                except Exception as e:
+                    print(f'Something went wrong while processing {video_name}: {e}')
+
+        # left_single_landmark = np.array(left_landmarks[12], dtype='float32')
+        # right_single_landmark = np.array(right_landmarks[12], dtype='float32')
+        # combi = np.concatenate((left_single_landmark, right_single_landmark), axis=0)
+        # print(combi)
+        # print(combi.shape)
 
         self.y_data = np.array(Y_dataset)
-        self.x_data = np.array(X_dataset)
+        self.x_data = np.array(X_dataset, dtype='float32')
 
     def append_dataset(self, other_dataset: 'GestureDataset'):
         if len(other_dataset.y_data) == 0:
@@ -394,8 +459,6 @@ class GestureDataset:
     def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=False):
         """
         Use mediapipe to detect hand landmarks in every training video and save this data in a usable format.
-        TODO: Could use some serious refactoring.
-        TODO: Use multiprocessing.
         """
         print(f"Analysing video {sum([len(g.reference_videos) for g in self.gestures])} files.")
         if csv_out_path and overwrite and csv_out_path.exists():
@@ -411,19 +474,18 @@ class GestureDataset:
                         detect_hands_task, gesture
                     ),
                     gesture.reference_videos)
-
                 with open(csv_out_path, 'a', newline="") as f:
                     writer = csv.writer(f, delimiter=';')
                     for video_i, result in enumerate(results):
                         video_name, (frame_width, frame_height), left_landmarks, right_landmarks = result
                         try:
-                            preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
+                            # preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
                             for landmark_id, values in left_landmarks.items():
                                 log_csv(writer, gesture_name=gesture.name, gesture_number=gesture_i, video_number=video_name, hand_number=0, landmark_id=landmark_id,
-                                        point_history_list=values)
+                                        point_history_list=values, width=frame_width, height=frame_height)
                             for landmark_id, values in right_landmarks.items():
                                 log_csv(writer, gesture_name=gesture.name, gesture_number=gesture_i, video_number=video_name, hand_number=1, landmark_id=landmark_id,
-                                        point_history_list=values)
+                                        point_history_list=values, width=frame_width, height=frame_height)
                         except Exception as e:
                             print(f'Failure on a video for gesture {gesture.name}: {e}')
         print(f"Completed analyzing videos in {time.time() - start_time}")
@@ -468,8 +530,8 @@ if __name__ == '__main__':
         handedness_data[gesture_name] = (handedness_string[0] == '1', handedness_string[1] == '1')
 
     dataset.scan_videos(dataset_location=DATASET_LOCATION, handedness_data=handedness_data)
-    dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
-    # dataset.load_from_csv(CSV_OUT_PATH)
+    # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
+    dataset.load_from_csv(CSV_OUT_PATH)
 
     # dataset = GestureDataset()
     # handedness_data = {}

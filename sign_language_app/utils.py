@@ -83,7 +83,12 @@ def copy_user_gesture_video(user: User, unit: Unit, gesture: Gesture, attempt: i
 
 def find_course_recommendations(user, max_courses=4) -> (str, List[Tuple[Course, Unit]]):
     if not user:
-        # User is not logged in. Select some beginenr courses.
-        return "Courses for beginners", [(c, c.units[0]) for c in Course.objects.filter(Q(difficulty=Course.Difficulty.BEGINNER))[:max_courses]]
-    else:
-        return "Continue where you left of", [(c, c.get_next_unit(user)) for c in Course.objects.filter(Q(units__unit_attempts__user=user)).distinct()[:max_courses]]
+        # User is not logged in. Select some beginner courses.
+        return "Courses for beginners", [(c, c.units.first()) for c in Course.objects.filter(Q(difficulty=Course.Difficulty.BEGINNER)).all()[:max_courses]]
+
+    recommendations = []
+    for c in Course.objects.filter(Q(units__unit_attempts__user=user)).distinct()[:max_courses]:
+        next_unit = c.get_next_unit(user)
+        if next_unit:
+            recommendations.append((c, next_unit))
+    return "Continue where you left of", recommendations

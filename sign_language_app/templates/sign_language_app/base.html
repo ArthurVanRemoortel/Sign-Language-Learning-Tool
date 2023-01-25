@@ -5,17 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.1.1/css/all.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/css-loader/3.3.3/css-loader.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/css-loader/3.3.3/css-loader.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -45,7 +43,11 @@
     </div>
 
     <div id="navbarBasicExample" class="navbar-menu">
+
         <div class="navbar-start">
+            <a class="navbar-item" href="{% url 'index' %}">
+                Home
+            </a>
             <a class="navbar-item" href="{% url 'courses_overview' %}">
                 Courses
             </a>
@@ -86,9 +88,9 @@
 <div class="page-wrapper">
     {% block hero %}
     {% endblock %}
-    <div class="container" style="width:100%" id="messagesContainer">
+    <div class="container" style="width:100%">
         {% if messages %}
-            <ul class="messages">
+            <ul class="messages mt-5">
                 {% for message in messages %}
                     <article class="message is-small
                     {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR%}is-danger
@@ -108,7 +110,6 @@
                         </div>
                         <div class="message-body">
                             {{ message }}
-Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet ferment
                         </div>
                     </article>
                 {% endfor %}

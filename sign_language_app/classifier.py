@@ -8,6 +8,7 @@ GESTURE_PATH = Path('sl_ai/gestures_dataset.csv')
 UPLOADED_GESTURE_PATH = Path('sl_ai/uploaded_gestures_dataset.csv')
 MODEL_FILE_PATH = Path('sl_ai/model.h5')
 
+
 class SingletonMeta(type):
     _instances = {}
 

@@ -17,7 +17,10 @@
                         <div class="card">
                             <div class="card-content">
                                 <p class="title">
-                                    {{ recommended_course.name }} <span class="tag is-info">{{ recommended_course.get_difficulty_display }}</span>
+                                    {{ recommended_course.name }}
+                                </p>
+                                <p class="subtitle">
+                                    <span class="tag is-info is-outlined">{{ recommended_course.get_difficulty_display }}</span>
                                 </p>
                                 <div class="content">
                                     <a href="{% url "unit" recommended_unit.id %}" class="button is-info is-rounded is-fullwidth">

@@ -4,12 +4,120 @@
 {% block title %}
     Home
 {% endblock %}
-
-{% block content %}
-    <div class="container" style="padding-top: 2em">
-        <div class="columns is-desktop is-centered">
-{#            Hello#}
+{% block hero %}
+    <section class="hero is-medium is-secondary pb-5">
+        <div class="hero-body">
+            <p class="title">
+                Learn Sign Languages Online
+            </p>
+            <p class="subtitle">
+                At your own pace
+            </p>
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <a href="{% url 'courses_overview' %}" class="button is-link">EXPLORE OUR COURSES</a>
+                </div>
+            </div>
         </div>
+    </section>
+{% endblock %}
+{% block content %}
+    <div class="container m-5">
+        <div class="tile is-ancestor">
+            <div class="tile is-4 is-vertical is-parent">
+                <div class="tile is-child box p-0 notification is-info">
+                    <figure class="image is-fullwidth round">
+                        <img src="https://media.istockphoto.com/id/1399208557/photo/little-girl-counting-and-learning-basic-math-while-being-homeschooled-by-her-mother-on-the.jpg?s=612x612&w=0&k=20&c=VhrEYjP7xB3raSkqwpjEBesFApu8VGkXSNi1RFyNRo8=">
+                    </figure>
+                    <div class="content p-5">
+                        <p class="title">Who is this tool for?</p>
+                        <p>This tool is for everyone! From beginners to experiences signers. </p>
+                        <p>Sign languages are also not just for the deaf, but for everyone who wished to communicate with the deaf, such as:</p>
+                        <ul>
+                            <li>Hearing children of deaf parents</li>
+                            <li>Hearing siblings and relatives of the deaf</li>
+                            <li>Hearing adults who are losing their hearing</li>
+                        </ul>
+                        <p>Sign languages are also not just for the deaf, but for everyone who wished to communicate with the deaf, such as:</p>
+                    </div>
+                </div>
+                <div class="tile is-child box notification is-warning">
+                    <p class="title">Tools For Teachers</p>
+                    <div class="content">
+                        <p>If you are a teacher interested in integrating this website with your courses, let us know!</p>
+                        <p>With a teacher account you can publish your own courses, share them with your students, see their progress and provide feedback.</p>
+                        <p>You can also help improve this tool by adding more gestures to the website yourself.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tile is-parent">
+                <div class="tile is-child box p-0 notification is-secondary has-text-light">
+                    <figure class="image image is-5by3">
+                        <img src="https://media.istockphoto.com/id/1125750539/photo/learning-sign-language.jpg?s=612x612&w=0&k=20&c=e5yA9pBjv4KPNuAts1JUtIlSHIZTc1N3u4tSRJWctTs=" style="object-fit: cover;">
+                    </figure>
+                    <div class="content p-5 ">
+                        <p class="title">Find a School</p>
+                        <p>This tool aims to be an easy way to practice sign language at home, but it's not a replacement for sign language courses.</p>
+
+                        <div class="columns is-multiline mt-5">
+                            <div class="column is-one-quarter">
+                                <figure class="image is-fullwidth m-0">
+                                    <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+                                </figure>
+                            </div>
+                            <div class="column is-three-quarters">
+                                <h4 class="title is-4">VGT Courses</h4>
+                                <p>Cursus VGT</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {#        <div class="row">#}
+        {#            <div class="columns is-desktop is-centered">#}
+        {#                <div class="columns">#}
+        {#                    <div class="column">#}
+        {#                        <div class="card">#}
+        {#                            <div class="card-content">#}
+        {#                                <div class="content has-text-centered">#}
+        {#                                    <p class="title">#}
+        {#                                        Free Courses#}
+        {#                                    </p>#}
+        {#                                    <p>#}
+        {#                                        All courses on this website are free for everyone.#}
+        {#                                    </p>#}
+        {#                                </div>#}
+        {#                            </div>#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {#                    <div class="column">#}
+        {#                        <div class="card">#}
+        {#                            <div class="card-content">#}
+        {#                                <div class="content has-text-centered">#}
+        {#                                    <p class="title">#}
+        {#                                        Free Courses#}
+        {#                                    </p>#}
+        {#                                    <p>#}
+        {#                                        All courses on this website are free for everyone.#}
+        {#                                    </p>#}
+        {#                                </div>#}
+        {#                            </div>#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {##}
+        {#                    <div class="column">#}
+        {#                        <div class="card">#}
+        {#                            <div class="card-content">#}
+        {#                                <div class="content">#}
+        {#                                    Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet fermentum.#}
+        {#                                </div>#}
+        {#                            </div>#}
+        {#                        </div>#}
+        {#                    </div>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
     </div>
 {% endblock %}
 </html>

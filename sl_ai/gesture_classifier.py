@@ -74,7 +74,7 @@ class GestureClassifier:
 
         # TODO: Make sure all categories are represented.
         self.x_train, x_test, self.y_train, y_test = train_test_split(self.gesture_dataset.x_data, self.gesture_dataset.y_data, train_size=train_size, random_state=42, stratify=self.gesture_dataset.y_data, shuffle=True)
-        x_validate, x_test, y_validate, y_test = train_test_split(x_test, y_test, test_size=0.4, random_state=42, shuffle=True)
+        x_validate, x_test, y_validate, y_test = train_test_split(x_test, y_test, test_size=0.5, random_state=42, shuffle=True, stratify=y_test)
         self.x_test = x_test
         self.y_test = y_test
 
@@ -90,7 +90,7 @@ class GestureClassifier:
         )
         [loss, acc] = self.model.evaluate(self.x_test, self.y_test, verbose=1)
         print("Accuracy:" + str(acc))
-        print("Loos:" + str(loss))
+        print("Loss:" + str(loss))
 
         if save_path:
             self.save_model(save_path)
@@ -172,6 +172,7 @@ if __name__ == '__main__':
     DATASET_LOCATION = Path('ai_data/vgt-all')
 
     gesture_dataset: GestureDataset = GestureDataset()
+    # gesture_dataset.analyze_videos(CSV_OUT_PATH, overwrite=True)
     gesture_dataset.load_from_csv(CSV_OUT_PATH)
 
     classifier: GestureClassifier = GestureClassifier(gesture_dataset=gesture_dataset)

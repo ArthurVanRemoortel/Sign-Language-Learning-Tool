@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container is-max-desktop mt-2">
+    <div class="container is-max-desktop mt-5">
         <div class="level">
             <button class="delete is-large" id="cancelUnitButton"></button>
             <progress id="unitProgressBar" class="progress is-success ml-5 mb-0 mr-5 is-large" value="0" max="100"></progress>
@@ -37,7 +37,7 @@
                 <div class="loader-1"></div>
             </div>
             <video class="input_video" hidden></video>
-            <canvas class="output_canvas camera-canvas" width="1920px" height="1080px" style="width:100%;border-radius:6px"></canvas>
+            <canvas class="output_canvas camera-canvas" width="1280px" height="720px" style="width:100%;border-radius:6px"></canvas>
             <video class="mirrored" preload="auto" id="solutionVideo" hidden style="height: 0;">
                 <source src="" type="video/mp4"></source>
             </video>
@@ -86,6 +86,9 @@
         let is_displaying_solution = false
         let lives_remaining = 3
         let gesture_attempts_remaining = 3
+
+        let camera_frame_width = null
+        let camera_frame_height = null
 
         unitProgressBar.max = gestures.length
 
@@ -289,7 +292,9 @@
             gestureEnd = performance.now()
             let data = {
                 hand_frames: hand_frames,
-                gesture: current_gesture
+                gesture: current_gesture,
+                frame_width: camera_frame_width,
+                frame_height: camera_frame_height,
             };
             veryfiUserInput(data)
             setTimeout(() => {
@@ -346,12 +351,13 @@
         }
 
         function updateCanvas() {
-            if (is_displaying_solution)
+            if (is_displaying_solution){
                 canvasCtx.scale(-1, 1);
                 canvasCtx.translate(-canvasElement.width, 0);
                 canvasCtx.drawImage(solutionVideo, 0, 0, canvasElement.width, canvasElement.height);
                 canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                 requestAnimationFrame(updateCanvas);
+            }
         }
 
         function showSolution(){
@@ -388,9 +394,12 @@
 
         function onResults(results) {
             canvasCtx.save();
+            if (!camera_frame_width){
+                camera_frame_width = canvasElement.width
+                camera_frame_height = canvasElement.height
+            }
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.translate(canvasElement.width, 0);
-            {#canvasCtx.scale(1, 1);#}
             canvasCtx.scale(-1, 1);
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
             let found_left_hand = null
@@ -405,17 +414,19 @@
                         let landmarks = landmarks_handed[0]
                         let handedness = landmarks_handed[1].label
                         handedness = flip_handedness(handedness)
-                        console.log(landmarks[0].x)
+                        {#console.log(landmarks[0].x)#}
                         if (handedness === 'Left'){
                             found_left_hand = landmarks
                         } else if (handedness === "Right"){
                             found_right_hand = landmarks
                         }
+
                         let color;
                         if (handedness === "Right")
                             color = '#518dce'
                         else
                             color = '#00FF00'
+
                         drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
                             {color: color, lineWidth: 5});
                         drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
