@@ -20,7 +20,6 @@ from sign_language_app.utils import teacher_or_admin_required, is_teacher_or_adm
 @login_required
 def profile_overview(request):
     user = get_user(request)
-    print(is_teacher_or_admin(user))
     context = {
         'current_section': 'overview'
     }

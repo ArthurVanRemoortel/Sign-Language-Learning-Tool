@@ -228,6 +228,7 @@ ROLEPERMISSIONS_REGISTER_ADMIN = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'sl_ai/ai_data'
 UPLOADED_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-uploaded')
+VGT_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-all')
 USER_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-users')
 
 # Created the directories if they do not exist.

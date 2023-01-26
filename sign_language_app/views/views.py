@@ -140,18 +140,22 @@ def save_unit_attempt(request, unit_id):
                 user=user,
             )
             gesture_attempt.save()
-        attempts_counts = filter(lambda success: success, attempts)
-        if attempts_counts == 1:
-            # Success first attempts.
+        has_correct_answer = any(filter(lambda success: success, attempts))
+        if has_correct_answer and len(attempts) == 1:
+            # Success without hints.
             points += 1
-        elif attempts_counts == 3:
+        elif has_correct_answer and len(attempts) == 2:
+            # Success without hints.
+            points += .75
+        elif has_correct_answer and len(attempts) == 3:
             # Success with hint.
             points += 0.5
         else:
             # Never success.
             points += 0
-    unit_attempt.score = int(points / unit.gestures.count())
+    unit_attempt.score = int(points / unit.gestures.count() * 100)
     unit_attempt.save()
+    print(f"Finished with a score of {unit_attempt.score}")
     return JsonResponse({'continue': True, 'redirect_url': reverse('unit_summary', kwargs={'unit_id': unit.id, 'attempt_id': unit_attempt.id})})
 
 

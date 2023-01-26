@@ -97,7 +97,6 @@ def test_auth(request):
     if left_landmarks == right_landmarks:
         is_correct = 0
         print("WARNING: Nothing was detected.")
-
     else:
         # TODO: Verify if the js and python coordinate systems are the same.
         preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
@@ -105,23 +104,23 @@ def test_auth(request):
             left_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
         for i, landmarks in right_landmarks.items():
             right_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
-        # left_landmarks = pre_process_point_history_center(None, None, left_landmarks)
-        # right_landmarks = pre_process_point_history_center(None, None, right_landmarks)
 
         result = Classifier().gesture_classifier.predict(left_landmarks, right_landmarks)
-        classes_x = np.argmax(result, axis=1)
-        # print(classes_x)
-        # frame = pd.DataFrame(prediction_percents.astype(np.uint8))
+        # classes_x = np.argmax(result, axis=1) # single best match
+        frame = pd.DataFrame((result * 100).astype(np.uint8))
+        print(f"Predictions for {gesture}")
+        print(frame)
 
-        predicted_gestures = {
-        }
+        predicted_gestures = {}
         for gesture_id, prediction in enumerate(result[0]):
             prediction = int(prediction * 100)
-            if prediction > 5:
-                predicted_gestures[Classifier().gesture_classifier.gesture_dataset.lookup_dict[gesture_id]] = prediction
+            if prediction > 10:
+                try:
+                    predicted_gestures[Classifier().gesture_classifier.gesture_dataset.lookup_dict[gesture_id]] = prediction
+                except KeyError:
+                    print(f"Warning: {gesture_id} is present in the model but was probably deleted from the dataset. Retrain the model.")
         pprint(predicted_gestures)
-        is_correct = gesture.word.lower() in predicted_gestures
-        print(is_correct, gesture.word.lower(), predicted_gestures.keys())
+        is_correct = gesture.word.lower() in predicted_gestures or gesture.word in predicted_gestures
     return JsonResponse({'status': 'OK', "correct": is_correct}, status=status.HTTP_201_CREATED)
 
 

@@ -61,14 +61,12 @@
         const unitProgressBar = document.getElementById('unitProgressBar')
         const gestureLabel = document.getElementById('gestureLabel')
         const cancelUnitButton = document.getElementById('cancelUnitButton')
-        {#const simulateCorrectButton = document.getElementById('simulateCorrectButton')#}
-        {#const simulateIncorrectButton = document.getElementById('simulateIncorrectButton')#}
         const hintsSection = document.getElementById('hintsSection')
         const livesArea = document.getElementById('livesArea')
         const canvasCtx = canvasElement.getContext('2d');
 
         const recordingCutoffDelay = 500 // Only end recording if no hands were recorded for 500 milliseconds.
-        const minRecordingSize = 1000
+        const minRecordingMilliseconds = 500 // Movements shorted than this were probably accidents and are ignored.
 
         let gestureStart = null
         let gestureEnd = null
@@ -286,7 +284,7 @@
         }
 
         function endRecording() {
-            if (performance.now() - gestureStart < recordingCutoffDelay + minRecordingSize){
+            if (performance.now() - gestureStart < recordingCutoffDelay + minRecordingMilliseconds){
                 resetRecording()
                 return
             }
@@ -456,8 +454,8 @@
             hands.setOptions({
                 maxNumHands: 2,
                 modelComplexity: 1,
-                minDetectionConfidence: 0.8,
-                minTrackingConfidence: 0.8
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.5
             });
             hands.onResults(function (results) {
                 if (!is_displaying_solution)
