@@ -349,14 +349,14 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
 class GestureDataset:
     def __init__(
             self,
+            single_gesture=False
     ):
+        self.single_gesture = single_gesture
         self.gestures: List[GestureData] = []  # No data if loaded from csv file.
 
         self.x_data = None
         self.y_data = None
-        self.lookup_dict = {
-
-        }
+        self.lookup_dict = {}
 
     def summary(self):
         print(f"Dataset contain {len(np.unique(self.y_data))} gestures.")
@@ -455,8 +455,12 @@ class GestureDataset:
         gesture_id_base = np.amax(self.y_data) + 1
         new_y_data = other_dataset.y_data + gesture_id_base
         new_x_data = other_dataset.x_data
+        for id, gesture_name in other_dataset.lookup_dict.items():
+            self.lookup_dict[id + gesture_id_base] = gesture_name
         self.y_data = np.concatenate([self.y_data, new_y_data])
         self.x_data = np.concatenate([self.x_data, new_x_data])
+        print("New lookup dict: ")
+        pprint(self.lookup_dict)
 
 
     def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=False):
@@ -466,7 +470,7 @@ class GestureDataset:
         print(f"Analysing video {sum([len(g.reference_videos) for g in self.gestures])} files.")
         if csv_out_path and overwrite and csv_out_path.exists():
             os.remove(csv_out_path)
-
+        print(csv_out_path)
         start_time = time.time()
         for gesture_i, gesture in enumerate(tqdm(self.gestures)):
             # Loop over all gestures in the dataset.
@@ -494,15 +498,28 @@ class GestureDataset:
         print(f"Completed analyzing videos in {time.time() - start_time}")
 
     def scan_videos(self, dataset_location: Path, handedness_data):
+        # TODO: Refactor this. Some duplicate code.
         self.gestures.clear()
-        for gesture_folder in os.listdir(dataset_location):
-            gesture_name = gesture_folder.split('_')[0]
-            gesture_path = dataset_location / str(gesture_folder)
-            left_hand, right_hand = handedness_data[gesture_name]
+        if not self.single_gesture:
+            gesture_folders = os.listdir(dataset_location)
+        else:
+            gesture_folders = [dataset_location]
+        for gesture_folder in gesture_folders:
+            if not self.single_gesture:
+                gesture_name = gesture_folder.split('_')[0]
+                gesture_path = dataset_location / str(gesture_folder)
+            else:
+                gesture_name = gesture_folder.name.split('_')[0]
+                gesture_path = dataset_location
+
+            left_hand, right_hand = list(handedness_data.values())[0]
             gesture = GestureData(name=gesture_name, left_hand=left_hand, right_hand=right_hand)
             for video_name in os.listdir(gesture_path):
-                gesture.add_video(gesture_path / str(video_name))
+                video_name = str(video_name)
+                if video_name.endswith('mp4') or video_name.endswith('mkv') or video_name.endswith('MOV'):
+                    gesture.add_video(gesture_path / str(video_name))
             self.gestures.append(gesture)
+
         print(f'Loaded {len(self.gestures)} gestures')
 
     def add_django_gesture(self, django_gesture: 'Gesture'):
@@ -523,12 +540,10 @@ if __name__ == '__main__':
     CSV_OUT_PATH = Path('gestures_dataset.csv')
     DATASET_LOCATION = Path('ai_data/vgt-all')
 
-    # UPLOADED_CSV_OUT_PATH = Path('gestures_dataset.csv')
-    # UPLOADED_DATASET_LOCATION = Path('ai_data/vgt-all')
-
-    dataset = GestureDataset()
+    dataset = GestureDataset(single_gesture=False)
     handedness_data = {}
     for gesture_folder in os.listdir(DATASET_LOCATION):
+        gesture_folder_path = DATASET_LOCATION / gesture_folder
         gesture_name, handedness_string = gesture_folder.split('_')
         handedness_data[gesture_name] = (handedness_string[0] == '1', handedness_string[1] == '1')
 
@@ -536,12 +551,13 @@ if __name__ == '__main__':
     # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
     dataset.load_from_csv(CSV_OUT_PATH)
 
-    # dataset = GestureDataset()
-    # handedness_data = {}
-    # for gesture_folder in os.listdir(UPLOADED_DATASET_LOCATION):
-    #     gesture_name, handedness_string = gesture_folder.split('_')
-    #     handedness_data[gesture_name] = (handedness_string[0] == '1', handedness_string[1] == '1')
-    #
-    # dataset.scan_videos(dataset_location=UPLOADED_DATASET_LOCATION, handedness_data=handedness_data)
-    # # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
-    # dataset.load_from_csv(UPLOADED_CSV_OUT_PATH)
+    UPLOADED_GESTURE_LOCATION = Path('ai_data/vgt-uploaded/1/Hond_10')
+    UPLOADED_CSV_OUT_PATH = UPLOADED_GESTURE_LOCATION / 'dataset.csv'
+
+    gesture_dataset = GestureDataset(single_gesture=True)
+    handedness_data = {"Hond_10": (True, False)}
+    gesture_dataset.scan_videos(dataset_location=UPLOADED_GESTURE_LOCATION, handedness_data=handedness_data)
+    gesture_dataset.analyze_videos(csv_out_path=UPLOADED_CSV_OUT_PATH, overwrite=True)
+    gesture_dataset.load_from_csv(UPLOADED_CSV_OUT_PATH)
+
+    dataset.append_dataset(gesture_dataset)

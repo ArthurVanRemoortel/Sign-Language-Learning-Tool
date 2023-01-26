@@ -24,26 +24,35 @@ def retrain_thread(new_gestures: List[Gesture]):
     print("Starting training...")
     csv_out_path = Path('sl_ai/uploaded_gestures_dataset.csv')
     model_path = Path('sl_ai/model.h5')
-    new_dataset = GestureDataset()
-    new_dataset.scan_videos(UPLOADED_GESTURES_ROOT, handedness_data={g.word: (g.left_hand, g.right_hand) for g in new_gestures})
-    new_dataset.analyze_videos(csv_out_path=csv_out_path)
-    if not csv_out_path.exists():
+    # new_dataset = GestureDataset()
+    # new_dataset.scan_videos(UPLOADED_GESTURES_ROOT, handedness_data={g.word: (g.left_hand, g.right_hand) for g in new_gestures})
+    # new_dataset.analyze_videos(csv_out_path=csv_out_path)
+    # if not csv_out_path.exists():
         # Nothing was created.
-        IS_TRAINING = False
-        return
-    new_dataset.load_from_csv(csv_out_path)
+        # IS_TRAINING = False
+        # return
+    # new_dataset.load_from_csv(csv_out_path)
+
     for gesture in new_gestures:
+        if not gesture.creator:
+            print("Gesture has no creator. This should not happen.")
         gesture.status = Gesture.Status.TRAINING
         gesture.save()
+    for gesture in new_gestures:
+        if not gesture.creator:
+            print("Gesture has no creator. This should not happen.")
+        gesture_dataset = GestureDataset(single_gesture=True)
+        gesture_dataset.scan_videos(gesture.videos_location, handedness_data={gesture.word: (gesture.left_hand, gesture.right_hand)})
+        gesture_dataset.analyze_videos(csv_out_path=gesture.videos_location / "dataset.csv")
+        gesture_dataset.load_from_csv(gesture.videos_location / "dataset.csv")
+        Classifier().gesture_classifier.append_dataset(gesture_dataset)
 
-    # TODO: Add methods to Classifier class
-    Classifier().gesture_classifier.append_dataset(new_dataset)
     Classifier().gesture_classifier.train(save_path=model_path)
 
     for gesture in new_gestures:
         gesture.status = Gesture.Status.COMPLETE
         gesture.save()
-        new_dataset.add_django_gesture(gesture)
+        Classifier().gesture_classifier.gesture_dataset.add_django_gesture(gesture)
 
     IS_TRAINING = False
 
@@ -59,8 +68,6 @@ def retrain_model():
         threading.Thread(target=retrain_thread, daemon=False, args=(new_gestures, )).start()
     else:
         print("No new gestures.")
-
-
 
 
 def run_continuously(self, interval=1):

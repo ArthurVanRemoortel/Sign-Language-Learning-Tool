@@ -12,7 +12,7 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
-from learning_site.settings import MEDIA_ROOT, USER_GESTURES_ROOT, UPLOADED_GESTURES_ROOT
+from learning_site.settings import MEDIA_ROOT, USER_GESTURES_ROOT, UPLOADED_GESTURES_ROOT, VGT_GESTURES_ROOT
 
 
 class UserSettings(models.Model):
@@ -58,6 +58,13 @@ class Gesture(models.Model):
          Example: "Hello_01" where 0 indicates that the left hand is not used and 1 that the right hand is used.
          """
         return f"{self.word}_{1 if self.left_hand else 0}{1 if self.right_hand else 0}"
+
+    @property
+    def videos_location(self) -> Path:
+        if self.creator:
+            return Path(UPLOADED_GESTURES_ROOT/str(self.creator.id)/self.handed_string)
+        else:
+            return Path(VGT_GESTURES_ROOT/self.handed_string)
 
     @property
     def reference_video(self):
