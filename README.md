@@ -1,43 +1,58 @@
 # Sign-Language-Learning-Tool
 Bachelor degree final work: An interactive learning tool for Flemish sign language using computer vision and deep learning.
+The easier way to run this project is using docker + docker-compose. 
 
+## Environment Variables
 
-## Run it locally
-The easiest way to run this project is using docker + docker-compose.
-### Using docker (recommended)
-1. Install [Docker](https://docs.docker.com/get-docker/)
-2. Install [Docker-Compose](https://docs.docker.com/compose/install/)
-3. run `docker-compose up -d`
-4. Create admin user: `docker exec -d [container_id] python manage.py createadmin`
-4. [Open a browser on http://localhost:8080/](http://localhost:8080/)
+Configuration and providing credentials is achieved through environment variables. The easiest way to do this is my modifying the provided env.example file. 
 
-### Manually
-This project has been developed and tested using python 3.10, but any version >= 3.5 might work as well.
+1. run `cp env.example .env.docker`
+2. Open `.env.docker`
+3. Fill in all the fields
+4. Save the `.env.docker` file.
 
-1. Install `Python >= 3.10`
-2. Optional: Create a virtual environment for this project.
-3. Install dependencies:
-   - Using pip: `> pip install requirements.txt`
-   - Using [Poetry](https://python-poetry.org/): `> poetry install`
-4. Set up a PostgreSQL database named `learning-site`. Other databases might work depending on the django ORM compatibility.
-5. Set up environment variables.
-   1. `> cp env.example .env`
-   2. Open the `.env` file and fill in your credentials. Tip: You can use [djecrety.ir](https://djecrety.ir/) to generate a `DJANGO_SECRET_KEY`.
-6. run `> python manage.py makemigrations`
-7. run `> python manage.py migrate`
-8. run `> python manage.py runserver`
-9. [Open a browser on http://localhost:8000/](http://localhost:8000/)
+Docker will look for the `.env.docker` file in the root directory of the project and provide all the credentials to the docker containers.
+
+## Running Using Docker
+
+Docker will create PostgreSQL database container and a container for the python application for you.
+
+1. Follow the installation instruction for [Docker](https://docs.docker.com/get-docker/) and [Compose](https://docs.docker.com/compose/install/) here.
+2. run `docker compose up` in the root of this project. 
+3. Add the admin user: `docker exec -d [container_id] python manage.py createadmin`
+4. Optional: Run `docker exec -d [container_id] python manage.py loaddata sign_language_app/fixtures/seed.yaml` to seed the database with some data.
+
+<aside>
+💡 Sometimes the PostgreSQL container takes longer to start the first, resulting in the website container failing to connect. Simply restart the containers if this happens.
+</aside>
+
+The website is now running and should be accessible at [http://localhost:8000](http://localhost:8000)
+
+## Running Manually
+
+This project has only been developed and tested using python 3.10.
+
+1. Install `Python >= 3.10` using any method of choice.
+2. Recommended: Create a virtual environment for this project. 
+3. Install dependencies. This project has been created using the [Poetry package manager](https://python-poetry.org/). Using this package manager is optional but recommended. 
+    1. Using Poetry (recommended): `poetry install`
+    2. Using pip: `pip install requirements.txt` This is untested and might install different versions of packages.
+4. Setup a PostgreSQL database [manually](https://www.postgresql.org/download/) or using [Docker container](https://hub.docker.com/_/postgres).
+5. Create a .env file from the template. `cp env.example .env.docker`.
+6. Configure your PostgreSQL credentials.
+7. Run `python manage.py migrate`
+8. Run `python manage.py runserver`
+9. Run `python manage.py sync_roles`
+10. Optional: Run `python manage.py loaddata sign_language_app/fixtures/seed.yaml` to seed the database with some data.
+
+The website is now running and should be accessible at [http://localhost:8000](http://localhost:8000)
 
 # Running the AI notebooks
 I have included the notebooks that I have been using to develop the AI component of the system to use them.
 Follow these steps. 
-1. Complete steps 1, 2, 3 of the [manual installation section.](#Manually)
-2. `> pip install jupyter`
-3. Some scripts will also require `ffmpeg` to be installed on your system.
+1. Complete steps 1, 2, 3 of the [manual installation section](#Running Manually). Do database or container are required to use the notebooks.
+2. Install jupyter notebooks `pip install notebooks`
+3. Optional: Older notebooks might require `ffmpeg` to be installed on your system.
 
 ## Acquiring data
 Using the notebooks will require some video data to train on. You can provide your own or contact me for the data I have been using. 
-
-## Commands
-- `python manage.py sync_roles` Creates/Sync user roles.
-- `python manage.py loaddata sign_language_app/fixtures/seed.yaml` Seeds the database with some test data.
