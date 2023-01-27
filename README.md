@@ -23,7 +23,7 @@ Docker will create PostgreSQL database container and a container for the python 
 4. Optional: Run `docker exec -d [container_id] python manage.py loaddata sign_language_app/fixtures/seed.yaml` to seed the database with some data.
 
 <aside>
-💡 Sometimes the PostgreSQL container takes longer to start the first, resulting in the website container failing to connect. Simply restart the containers if this happens.
+💡 Sometimes the PostgreSQL container takes longer to start, resulting in the website container failing to connect. Simply restart the containers if this happens.
 </aside>
 
 The website is now running and should be accessible at [http://localhost:8000](http://localhost:8000)
