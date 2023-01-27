@@ -115,7 +115,7 @@ urlpatterns += [
 
 urlpatterns += [
     path(
-        "api/test", api_views.test_auth, name="check_user_input"
+        "api/test", api_views.verify_gesture, name="check_user_input"
     ),  # TODO: Fix this path
     path("api/retrain_model", api_views.trigger_retrain_model),
 ]

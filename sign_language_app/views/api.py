@@ -73,7 +73,7 @@ def trigger_retrain_model(request):
 # @permission_classes([IsAuthenticated])
 # @authentication_classes([])
 @permission_classes([])
-def test_auth(request):
+def verify_gesture(request):
     data = request.data
     hand_frames = data["hand_frames"]
     # gesture_id = data['gesture_id']
