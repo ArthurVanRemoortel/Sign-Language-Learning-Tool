@@ -4,7 +4,7 @@ from django.urls import path, include
 
 from learning_site import settings
 
-handler404 = 'sign_language_app.views.views.error_view'
+handler404 = "sign_language_app.views.views.error_view"
 
 urlpatterns = [
     path("", include("sign_language_app.urls")),

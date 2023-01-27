@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sign_language_app', '0029_gestureattempt_success'),
+        ("sign_language_app", "0029_gestureattempt_success"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='gestureattempt',
-            options={'ordering': ['id', 'attempt']},
+            name="gestureattempt",
+            options={"ordering": ["id", "attempt"]},
         ),
     ]

@@ -1,12 +1,13 @@
 import os
 from pathlib import Path
 from threading import Lock, Thread
+
+from learning_site.settings import UPLOADED_GESTURES_ROOT
 from sl_ai.dataset import GestureDataset
 from sl_ai.gesture_classifier import GestureClassifier
-from learning_site.settings import UPLOADED_GESTURES_ROOT
 
-MAIN_GESTURE_DATASET_PATH = Path('sl_ai/gestures_dataset.csv')
-MODEL_FILE_PATH = Path('sl_ai/model.h5')
+MAIN_GESTURE_DATASET_PATH = Path("sl_ai/gestures_dataset.csv")
+MODEL_FILE_PATH = Path("sl_ai/model.h5")
 
 
 class SingletonMeta(type):
@@ -33,26 +34,55 @@ class Classifier(metaclass=SingletonMeta):
         print("Searching for user uploaded datasets...")
         for user_folder in os.listdir(UPLOADED_GESTURES_ROOT):
             for gesture_folder in os.listdir(UPLOADED_GESTURES_ROOT / user_folder):
-                csv_files = list(filter(lambda file: file.endswith('.csv') , os.listdir(UPLOADED_GESTURES_ROOT / user_folder / gesture_folder)))
+                csv_files = list(
+                    filter(
+                        lambda file: file.endswith(".csv"),
+                        os.listdir(
+                            UPLOADED_GESTURES_ROOT / user_folder / gesture_folder
+                        ),
+                    )
+                )
                 if not csv_files:
-                    print("Warning: Found a uploaded gesture folder without a dataset.csv file.")
+                    print(
+                        "Warning: Found a uploaded gesture folder without a dataset.csv file."
+                    )
                     continue
                 dataset_file = csv_files[0]
-                print(f"Loading dataset from {UPLOADED_GESTURES_ROOT / user_folder / gesture_folder / dataset_file}")
-                *gestures_words, handedness_string = gesture_folder.split('_')
+                print(
+                    f"Loading dataset from {UPLOADED_GESTURES_ROOT / user_folder / gesture_folder / dataset_file}"
+                )
+                *gestures_words, handedness_string = gesture_folder.split("_")
                 gesture_name = "_".join(gestures_words)
                 gesture_dataset = GestureDataset(single_gesture=True)
-                gesture_dataset.scan_videos(dataset_location=UPLOADED_GESTURES_ROOT / user_folder / gesture_folder, handedness_data={gesture_name: (handedness_string[0] == '1', handedness_string[1] == '1')})
-                gesture_dataset.load_from_csv(csv_path=UPLOADED_GESTURES_ROOT / user_folder / gesture_folder / dataset_file)
+                gesture_dataset.scan_videos(
+                    dataset_location=UPLOADED_GESTURES_ROOT
+                    / user_folder
+                    / gesture_folder,
+                    handedness_data={
+                        gesture_name: (
+                            handedness_string[0] == "1",
+                            handedness_string[1] == "1",
+                        )
+                    },
+                )
+                gesture_dataset.load_from_csv(
+                    csv_path=UPLOADED_GESTURES_ROOT
+                    / user_folder
+                    / gesture_folder
+                    / dataset_file
+                )
                 self.gesture_dataset.append_dataset(gesture_dataset)
 
-        self.gesture_classifier: GestureClassifier = GestureClassifier(gesture_dataset=self.gesture_dataset)
+        self.gesture_classifier: GestureClassifier = GestureClassifier(
+            gesture_dataset=self.gesture_dataset
+        )
 
         if MODEL_FILE_PATH.exists():
             self.gesture_classifier.load_saved_model(model_path=MODEL_FILE_PATH)
         else:
-            print('No model file found. Training a new model.')
+            print("No model file found. Training a new model.")
             self.gesture_classifier.train(save_path=MODEL_FILE_PATH)
         self.gesture_classifier.summary()
+
 
 # gesture_classifier = None

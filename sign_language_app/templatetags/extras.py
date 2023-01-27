@@ -5,6 +5,7 @@ from sign_language_app.utils import is_teacher_or_admin
 
 register = template.Library()
 
+
 @register.filter
 def to_columns(iterable, cols):
     """
@@ -14,7 +15,7 @@ def to_columns(iterable, cols):
     d, r = divmod(len(iterable), cols)
     for i in range(cols):
         si = (d + 1) * (i if i < r else r) + d * (0 if i < r else i - r)
-        yield iterable[si:si + (d + 1 if i < r else d)]
+        yield iterable[si : si + (d + 1 if i < r else d)]
 
 
 @register.filter

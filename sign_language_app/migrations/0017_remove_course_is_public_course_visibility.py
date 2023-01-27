@@ -6,17 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sign_language_app', '0016_course_creator'),
+        ("sign_language_app", "0016_course_creator"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='course',
-            name='is_public',
+            model_name="course",
+            name="is_public",
         ),
         migrations.AddField(
-            model_name='course',
-            name='visibility',
-            field=models.CharField(choices=[('1', 'Private'), ('2', 'Students'), ('3', 'Public')], default='3', max_length=2),
+            model_name="course",
+            name="visibility",
+            field=models.CharField(
+                choices=[("1", "Private"), ("2", "Students"), ("3", "Public")],
+                default="3",
+                max_length=2,
+            ),
         ),
     ]

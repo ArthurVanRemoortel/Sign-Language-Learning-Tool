@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sign_language_app', '0017_remove_course_is_public_course_visibility'),
+        ("sign_language_app", "0017_remove_course_is_public_course_visibility"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='course',
-            options={'ordering': ['-id']},
+            name="course",
+            options={"ordering": ["-id"]},
         ),
     ]

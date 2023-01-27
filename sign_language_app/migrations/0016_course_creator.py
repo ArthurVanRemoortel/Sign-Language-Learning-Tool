@@ -9,13 +9,18 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('sign_language_app', '0015_alter_gesture_status'),
+        ("sign_language_app", "0015_alter_gesture_status"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='course',
-            name='creator',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='courses', to=settings.AUTH_USER_MODEL),
+            model_name="course",
+            name="creator",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="courses",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

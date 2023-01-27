@@ -7,21 +7,41 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sign_language_app', '0024_alter_unitattempt_score'),
+        ("sign_language_app", "0024_alter_unitattempt_score"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='unitattempt',
-            name='score',
+            model_name="unitattempt",
+            name="score",
         ),
         migrations.CreateModel(
-            name='GestureAttempt',
+            name="GestureAttempt",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('attempts', models.IntegerField(default=0)),
-                ('gesture', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='sign_language_app.gesture')),
-                ('unit_attempt', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='sign_language_app.unitattempt')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("attempts", models.IntegerField(default=0)),
+                (
+                    "gesture",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="sign_language_app.gesture",
+                    ),
+                ),
+                (
+                    "unit_attempt",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="sign_language_app.unitattempt",
+                    ),
+                ),
             ],
         ),
     ]

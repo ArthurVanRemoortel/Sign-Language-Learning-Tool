@@ -4,7 +4,12 @@ from pathlib import Path
 
 from django import forms
 from django.contrib.auth import authenticate, password_validation
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import (
+    UserCreationForm,
+    AuthenticationForm,
+    PasswordResetForm,
+    SetPasswordForm,
+)
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
@@ -15,21 +20,21 @@ from sign_language_app.models import Course, UserSettings
 
 class NewUserForm(UserCreationForm):
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
-            "class": "input",
-            "id": "emailInput",
-            "placeholder": "Email",
-            "autofocus": True
-        }),
-        required=True
+        widget=forms.EmailInput(
+            attrs={
+                "class": "input",
+                "id": "emailInput",
+                "placeholder": "Email",
+                "autofocus": True,
+            }
+        ),
+        required=True,
     )
 
     username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": "input",
-            "id": "usernameInput",
-            "placeholder": "Username"
-        }),
+        widget=forms.TextInput(
+            attrs={"class": "input", "id": "usernameInput", "placeholder": "Username"}
+        ),
         required=True,
     )
 
@@ -37,11 +42,12 @@ class NewUserForm(UserCreationForm):
         label="Password",
         strip=False,
         widget=forms.PasswordInput(
-            attrs={"class": "input",
-                   "id": "passwordInput",
-                   "placeholder": "Password",
-                   "autocomplete": "new-password"
-                   }
+            attrs={
+                "class": "input",
+                "id": "passwordInput",
+                "placeholder": "Password",
+                "autocomplete": "new-password",
+            }
         ),
         required=True,
     )
@@ -49,11 +55,12 @@ class NewUserForm(UserCreationForm):
         label="Password Confirmation",
         strip=False,
         widget=forms.PasswordInput(
-            attrs={"class": "input",
-                   "id": "passwordInput",
-                   "placeholder": "Password Confirmation",
-                   "autocomplete": "new-password"
-                   }
+            attrs={
+                "class": "input",
+                "id": "passwordInput",
+                "placeholder": "Password Confirmation",
+                "autocomplete": "new-password",
+            }
         ),
         required=True,
     )
@@ -64,7 +71,7 @@ class NewUserForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super(NewUserForm, self).save(commit=False)
-        user.email = self.cleaned_data['email']
+        user.email = self.cleaned_data["email"]
         if commit:
             user.save()
         UserSettings(user=user).save()
@@ -78,12 +85,14 @@ class LoginForm(forms.Form):
     # )
 
     username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": "input",
-            "id": "usernameInput",
-            "placeholder": "Username",
-            "autofocus": True
-        }),
+        widget=forms.TextInput(
+            attrs={
+                "class": "input",
+                "id": "usernameInput",
+                "placeholder": "Username",
+                "autofocus": True,
+            }
+        ),
         required=True,
     )
 
@@ -91,11 +100,12 @@ class LoginForm(forms.Form):
         label="Password",
         strip=False,
         widget=forms.PasswordInput(
-            attrs={"class": "input",
-                   "id": "passwordInput",
-                   "placeholder": "Password",
-                   # "autocomplete": "current-password"
-                   }
+            attrs={
+                "class": "input",
+                "id": "passwordInput",
+                "placeholder": "Password",
+                # "autocomplete": "current-password"
+            }
         ),
         required=True,
     )
@@ -135,24 +145,27 @@ class NewPasswordAuthenticationForm(SetPasswordForm):
 
     new_password1 = forms.CharField(
         label="New password",
-        widget=forms.PasswordInput(attrs={
-            "autocomplete": "new-password",
-            "class": "input",
-            "placeholder": "New Password",
-            "autofocus": True
-
-        }),
+        widget=forms.PasswordInput(
+            attrs={
+                "autocomplete": "new-password",
+                "class": "input",
+                "placeholder": "New Password",
+                "autofocus": True,
+            }
+        ),
         strip=False,
-        help_text=password_validation.password_validators_help_text_html()
+        help_text=password_validation.password_validators_help_text_html(),
     )
     new_password2 = forms.CharField(
         label="New password confirmation",
         strip=False,
-        widget=forms.PasswordInput(attrs={
-            "autocomplete": "new-password",
-            "class": "input",
-            "placeholder": "Confirm Password"
-        }),
+        widget=forms.PasswordInput(
+            attrs={
+                "autocomplete": "new-password",
+                "class": "input",
+                "placeholder": "Confirm Password",
+            }
+        ),
     )
 
 
@@ -162,13 +175,15 @@ class ResetPasswordAuthenticationForm(PasswordResetForm):
 
     email = forms.CharField(
         label="Email",
-        widget=forms.EmailInput(attrs={
-            "autocomplete": "email",
-            "class": "input",
-            "placeholder": "Email",
-            "autofocus": True
-        }),
-        max_length=254
+        widget=forms.EmailInput(
+            attrs={
+                "autocomplete": "email",
+                "class": "input",
+                "placeholder": "Email",
+                "autofocus": True,
+            }
+        ),
+        max_length=254,
     )
 
 
@@ -179,51 +194,61 @@ class CoursesForm(forms.Form):
     )
 
 
-
 class UploadGestureForm(forms.Form):
     word = forms.CharField(
         widget=forms.TextInput(attrs={"class": "input", "id": "wordInput"}),
         required=True,
     )
     left_hand = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={"id": "leftHandInput"}),
-        required=False
+        widget=forms.CheckboxInput(attrs={"id": "leftHandInput"}), required=False
     )
     right_hand = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={"id": "rightHandInput"}),
-        required=False
+        widget=forms.CheckboxInput(attrs={"id": "rightHandInput"}), required=False
     )
-    videos = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'id': 'videosInput', 'class': 'file-input'}))
+    videos = forms.FileField(
+        widget=forms.ClearableFileInput(
+            attrs={"multiple": True, "id": "videosInput", "class": "file-input"}
+        )
+    )
 
     def handle_uploaded_files(self, request, user):
-        """ Saved all the videos files from the POST request to disk. """
+        """Saved all the videos files from the POST request to disk."""
         # TODO: Check for max file size
-        word = self.cleaned_data['word']
-        left_hand = self.cleaned_data['left_hand']
-        right_hand = self.cleaned_data['right_hand']
-        root_path = UPLOADED_GESTURES_ROOT / str(user.id) / f"{word}_{1 if left_hand else 0}{1 if right_hand else 0}"
+        word = self.cleaned_data["word"]
+        left_hand = self.cleaned_data["left_hand"]
+        right_hand = self.cleaned_data["right_hand"]
+        root_path = (
+            UPLOADED_GESTURES_ROOT
+            / str(user.id)
+            / f"{word}_{1 if left_hand else 0}{1 if right_hand else 0}"
+        )
         root_path.mkdir(parents=True, exist_ok=True)
-        for file in request.FILES.getlist('videos'):
-            with open(root_path / file.name, 'wb+') as destination:
+        for file in request.FILES.getlist("videos"):
+            with open(root_path / file.name, "wb+") as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
 
 
 class NewCourseForm(forms.Form):
     title = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": "input",
-            "id": "titleInput",
-        }),
+        widget=forms.TextInput(
+            attrs={
+                "class": "input",
+                "id": "titleInput",
+            }
+        ),
         required=True,
     )
     description = forms.CharField(
-        widget=forms.Textarea(attrs={
-            "class": "textarea",
-            "id": "descriptionInput",
-            'rows': 6, 'cols': 40,
-            "placeholder": "Please explain to the uses what this course is about."
-        }),
+        widget=forms.Textarea(
+            attrs={
+                "class": "textarea",
+                "id": "descriptionInput",
+                "rows": 6,
+                "cols": 40,
+                "placeholder": "Please explain to the uses what this course is about.",
+            }
+        ),
         required=True,
     )
     visibility = forms.ChoiceField(
@@ -239,10 +264,12 @@ class NewCourseForm(forms.Form):
 
 class TeacherCodeForm(forms.Form):
     teacher_code = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": "input",
-            "id": "teacherCodeInput",
-            "placeholder": "Teacher Code",
-        }),
+        widget=forms.TextInput(
+            attrs={
+                "class": "input",
+                "id": "teacherCodeInput",
+                "placeholder": "Teacher Code",
+            }
+        ),
         required=True,
     )

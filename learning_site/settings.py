@@ -15,29 +15,25 @@ from django.template.context_processors import media
 from dotenv import load_dotenv
 from pathlib import Path
 
-if os.path.exists('.env.dev'):
-    load_dotenv(".env.dev")
-elif os.path.exists('.env'):
-    load_dotenv(".env")
-else:
-    raise Exception('Did not find any .env files.')
-
-DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-DEBUG_MODE = os.getenv("DEBUG_MODE", '0').lower() in ('true', '1', 't')
-
-POSTGRES_HOST = os.getenv('POSTGRES_HOST')
-POSTGRES_DB = os.getenv('POSTGRES_DB')
-POSTGRES_USER = os.getenv('POSTGRES_USER')
-POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-BACKGROUND_TRAINING_TIME = int(os.getenv('BACKGROUND_TRAINING_TIME'))
-
-DJANGO_SUPERUSER_EMAIL = os.getenv('DJANGO_SUPERUSER_EMAIL')
-DJANGO_SUPERUSER_USERNAME = os.getenv('DJANGO_SUPERUSER_USERNAME')
-DJANGO_SUPERUSER_PASSWORD = os.getenv('DJANGO_SUPERUSER_PASSWORD')
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if not os.environ.get("DJANGO_SECRET_KEY"):
+    print("Loading environment variables from file.")
+    load_dotenv(BASE_DIR / ".env.dev")
+
+DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+DEBUG_MODE = os.getenv("DEBUG_MODE", "0").lower() in ("true", "1", "t")
+
+POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+BACKGROUND_TRAINING_TIME = int(os.getenv("BACKGROUND_TRAINING_TIME"))
+
+DJANGO_SUPERUSER_EMAIL = os.getenv("DJANGO_SUPERUSER_EMAIL")
+DJANGO_SUPERUSER_USERNAME = os.getenv("DJANGO_SUPERUSER_USERNAME")
+DJANGO_SUPERUSER_PASSWORD = os.getenv("DJANGO_SUPERUSER_PASSWORD")
 
 
 # Quick-start development settings - unsuitable for production
@@ -49,7 +45,7 @@ SECRET_KEY = DJANGO_SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = DEBUG_MODE
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:8000",
@@ -84,8 +80,8 @@ CORS_REPLACE_HTTPS_REFERER = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 
-LOGIN_REDIRECT_URL = '/'
-LOGIN_URL = '/login'
+LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "/login"
 
 # Application definition
 
@@ -96,14 +92,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
     "django_filters",
     "sass_processor",
     "compressor",
     "rolepermissions",
     "corsheaders",
-
     "sign_language_app",
 ]
 
@@ -124,7 +118,7 @@ ROOT_URLCONF = "learning_site.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates'],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -132,7 +126,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'django.template.context_processors.media',
+                "django.template.context_processors.media",
             ],
         },
     },
@@ -145,13 +139,13 @@ WSGI_APPLICATION = "learning_site.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': POSTGRES_DB,
-        'USER': POSTGRES_USER,
-        'PASSWORD': POSTGRES_PASSWORD,
-        'HOST': POSTGRES_HOST,
-        'PORT': 5432,
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": POSTGRES_DB,
+        "USER": POSTGRES_USER,
+        "PASSWORD": POSTGRES_PASSWORD,
+        "HOST": POSTGRES_HOST,
+        "PORT": 5432,
     }
 }
 
@@ -211,25 +205,26 @@ DEBUG_PROPAGATE_EXCEPTIONS = True
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
     ),
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-ROLEPERMISSIONS_MODULE = 'learning_site.roles'
+ROLEPERMISSIONS_MODULE = "learning_site.roles"
 ROLEPERMISSIONS_REGISTER_ADMIN = True
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'sl_ai/ai_data'
-UPLOADED_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-uploaded')
-VGT_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-all')
-USER_GESTURES_ROOT =  Path('sl_ai/ai_data/vgt-users')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "sl_ai/ai_data"
+UPLOADED_GESTURES_ROOT = BASE_DIR / "sl_ai/ai_data/vgt-uploaded"
+VGT_GESTURES_ROOT = BASE_DIR / "sl_ai/ai_data/vgt-all"
+USER_GESTURES_ROOT = BASE_DIR / "sl_ai/ai_data/vgt-users"
+SAVED_MODEL_PATH = BASE_DIR / "sl_ai/model.h5"
 
 # Created the directories if they do not exist.
 MEDIA_ROOT.mkdir(parents=True, exist_ok=True)

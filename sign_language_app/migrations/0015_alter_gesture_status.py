@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sign_language_app', '0014_gesture_creator_gesture_status'),
+        ("sign_language_app", "0014_gesture_creator_gesture_status"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='gesture',
-            name='status',
-            field=models.CharField(choices=[('0', 'Pending'), ('1', 'Training'), ('2', 'Complete')], default='2', max_length=1),
+            model_name="gesture",
+            name="status",
+            field=models.CharField(
+                choices=[("0", "Pending"), ("1", "Training"), ("2", "Complete")],
+                default="2",
+                max_length=1,
+            ),
         ),
     ]
