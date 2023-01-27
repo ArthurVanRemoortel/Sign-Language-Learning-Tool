@@ -8,7 +8,7 @@
 {% block content %}
     <div class="container is-max-desktop mt-5">
         <div class="level">
-            <button class="delete is-large" id="cancelUnitButton"></button>
+            <a href="{% url 'courses_overview' %}" class="delete is-large" id="cancelUnitButton"></a>
             <progress id="unitProgressBar" class="progress is-success ml-5 mb-0 mr-5 is-large" value="0" max="100"></progress>
             <div class="icon-text">
                   <span class="icon has-text-danger" id="livesArea">
@@ -455,7 +455,7 @@
                 maxNumHands: 2,
                 modelComplexity: 1,
                 minDetectionConfidence: 0.6,
-                minTrackingConfidence: 0.5
+                minTrackingConfidence: 0.8
             });
             hands.onResults(function (results) {
                 if (!is_displaying_solution)
