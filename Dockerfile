@@ -22,7 +22,7 @@ ENV YOUR_ENV=${YOUR_ENV} \
 
 # System deps:
 RUN apt-get update
-RUN apt install -y libgl1-mesa-glx
+RUN apt install -y libgl1-mesa-glx ffmpeg
 RUN pip install "poetry==$POETRY_VERSION"
 
 # Copy only requirements to cache them in docker layer
