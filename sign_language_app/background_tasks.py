@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List
 
 import schedule
+from django.db import transaction
 from django.db.models import Q
 
 from learning_site.settings import (
@@ -24,43 +25,49 @@ def retrain_thread(new_gestures: List[Gesture], deleted_gestures: List[Gesture])
     global IS_TRAINING
     if not new_gestures and not deleted_gestures:
         return
-    IS_TRAINING = True
-    print("Starting training...")
-    if deleted_gestures:
-        for deleted_gesture in deleted_gestures:
-            Classifier().gesture_classifier.gesture_dataset.remove_gesture(
-                gesture_name=deleted_gesture.word
-            )
-            deleted_gesture.delete()
+    try:
+        with transaction.atomic():
+            IS_TRAINING = True
+            print("Starting training...")
+            if deleted_gestures:
+                for deleted_gesture in deleted_gestures:
+                    Classifier().gesture_classifier.gesture_dataset.remove_gesture(
+                        gesture_name=deleted_gesture.word
+                    )
+                    deleted_gesture.delete()
 
-    for gesture in new_gestures:
-        if not gesture.creator:
-            print("Gesture has no creator. This should not happen.")
-        gesture.status = Gesture.Status.TRAINING
-        gesture.save()
+            for gesture in new_gestures:
+                if not gesture.creator:
+                    print("Gesture has no creator. This should not happen.")
+                gesture.status = Gesture.Status.TRAINING
+                gesture.save()
 
-    for gesture in new_gestures:
-        if not gesture.creator:
-            print("Gesture has no creator. This should not happen.")
-        gesture_dataset = GestureDataset(single_gesture=True)
-        gesture_dataset.scan_videos(
-            gesture.videos_location,
-            handedness_data={gesture.word: (gesture.left_hand, gesture.right_hand)},
-        )
-        gesture_dataset.analyze_videos(
-            csv_out_path=gesture.videos_location / "dataset.csv"
-        )
-        gesture_dataset.load_from_csv(gesture.videos_location / "dataset.csv")
-        Classifier().gesture_classifier.append_dataset(gesture_dataset)
+            for gesture in new_gestures:
+                if not gesture.creator:
+                    print("Gesture has no creator. This should not happen.")
+                gesture_dataset = GestureDataset(single_gesture=True)
+                gesture_dataset.scan_videos(
+                    gesture.videos_location,
+                    handedness_data={
+                        gesture.word: (gesture.left_hand, gesture.right_hand)
+                    },
+                )
+                gesture_dataset.analyze_videos(
+                    csv_out_path=gesture.videos_location / "dataset.csv"
+                )
+                gesture_dataset.load_from_csv(gesture.videos_location / "dataset.csv")
+                Classifier().gesture_classifier.append_dataset(gesture_dataset)
 
-    Classifier().gesture_classifier.train(save_path=SAVED_MODEL_PATH)
+            Classifier().gesture_classifier.train(save_path=SAVED_MODEL_PATH)
 
-    for gesture in new_gestures:
-        gesture.status = Gesture.Status.COMPLETE
-        gesture.save()
-        # Classifier().gesture_classifier.gesture_dataset.add_django_gesture(gesture)
-
-    IS_TRAINING = False
+            for gesture in new_gestures:
+                gesture.status = Gesture.Status.COMPLETE
+                gesture.save()
+                # Classifier().gesture_classifier.gesture_dataset.add_django_gesture(gesture)
+            IS_TRAINING = False
+    except Exception as e:
+        print(f"ERROR: Failed background training: {e}")
+        IS_TRAINING = False
 
 
 def retrain_model():
