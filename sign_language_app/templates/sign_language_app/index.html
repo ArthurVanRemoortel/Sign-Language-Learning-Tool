@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {% extends 'sign_language_app/base.html'%}
+{% load static %}
 {% block title %}
     Home
 {% endblock %}
@@ -58,17 +59,32 @@
                         <p class="title">Find a School</p>
                         <p>This tool aims to be an easy way to practice sign language at home, but it's not a replacement for sign language courses.</p>
 
-                        <div class="columns is-multiline mt-5">
-                            <div class="column is-one-quarter">
-                                <figure class="image is-fullwidth m-0">
-                                    <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+                        <div class="columns mt-4">
+                            <div class="column is-2">
+                                <figure class="image is-fullwidth m-0 is-1by1">
+                                    <img class="is-rounded" src="{% static 'sign_language_app/images/logos/vgtc.png'%}">
                                 </figure>
                             </div>
-                            <div class="column is-three-quarters">
+                            <div class="column">
                                 <h4 class="title is-4">VGT Courses</h4>
-                                <p>Cursus VGT</p>
+                                <p>VGT (Vlaamse Gebarentaal) is a sign language used in the Flanders region of Belgium. The "<a href="https://www.vgtc.be/cursussen-vlaamse-gebarentaal/">Vlaamse Gebarentaal Centum</a>" is a team of experts and researchers that provides VGT resources and courses.
+                                    They also created the very helpfull <a href="https://woordenboek.vlaamsegebarentaal.be">VGT Dictionary</a>. <a href="https://www.vgtleren.be/">vgtleren.be</a> also offers online courses and learning material.
+                                </p>
                             </div>
                         </div>
+                        <div class="columns mt-4">
+                            <div class="column is-2">
+                                <figure class="image is-fullwidth m-0 is-1by1">
+                                    <img class="is-rounded" src="{% static 'sign_language_app/images/logos/lsfb.png'%}">
+                                </figure>
+                            </div>
+                            <div class="column">
+                                <h4 class="title is-4">LSFB Courses</h4>
+                                <p>LSFB (Langue des Signes de Belgique Francophone) is a sign language used in the Wallonia region of Belgium. <a href="https://www.lsfb.be//">lsfb.be</a> is the go-to resource to find a course in your area.
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
