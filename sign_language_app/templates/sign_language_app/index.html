@@ -60,79 +60,93 @@
                         <p>This tool aims to be an easy way to practice sign language at home, but it's not a replacement for sign language courses.</p>
 
                         <div class="columns mt-4">
-                            <div class="column is-2">
-                                <figure class="image is-fullwidth m-0 is-1by1">
-                                    <img class="is-rounded" src="{% static 'sign_language_app/images/logos/vgtc.png'%}">
-                                </figure>
-                            </div>
                             <div class="column">
                                 <h4 class="title is-4">VGT Courses</h4>
                                 <p>VGT (Vlaamse Gebarentaal) is a sign language used in the Flanders region of Belgium. The "<a href="https://www.vgtc.be/cursussen-vlaamse-gebarentaal/">Vlaamse Gebarentaal Centum</a>" is a team of experts and researchers that provides VGT resources and courses.
                                     They also created the very helpfull <a href="https://woordenboek.vlaamsegebarentaal.be">VGT Dictionary</a>. <a href="https://www.vgtleren.be/">vgtleren.be</a> also offers online courses and learning material.
                                 </p>
                             </div>
-                        </div>
-                        <div class="columns mt-4">
                             <div class="column is-2">
                                 <figure class="image is-fullwidth m-0 is-1by1">
-                                    <img class="is-rounded" src="{% static 'sign_language_app/images/logos/lsfb.png'%}">
+                                    <img class="is-rounded" src="{% static 'sign_language_app/images/logos/vgtc.png'%}">
                                 </figure>
                             </div>
+                        </div>
+                        <div class="columns mt-4">
                             <div class="column">
                                 <h4 class="title is-4">LSFB Courses</h4>
                                 <p>LSFB (Langue des Signes de Belgique Francophone) is a sign language used in the Wallonia region of Belgium. <a href="https://www.lsfb.be//">lsfb.be</a> is the go-to resource to find a course in your area.
                                 </p>
                             </div>
+                            <div class="column is-2">
+                                <figure class="image is-fullwidth m-0 is-1by1">
+                                    <img class="is-rounded" src="{% static 'sign_language_app/images/logos/lsfb.png'%}">
+                                </figure>
+                            </div>
                         </div>
+
 
                     </div>
                 </div>
             </div>
         </div>
-        {#        <div class="row">#}
-        {#            <div class="columns is-desktop is-centered">#}
-        {#                <div class="columns">#}
-        {#                    <div class="column">#}
-        {#                        <div class="card">#}
-        {#                            <div class="card-content">#}
-        {#                                <div class="content has-text-centered">#}
-        {#                                    <p class="title">#}
-        {#                                        Free Courses#}
-        {#                                    </p>#}
-        {#                                    <p>#}
-        {#                                        All courses on this website are free for everyone.#}
-        {#                                    </p>#}
-        {#                                </div>#}
-        {#                            </div>#}
-        {#                        </div>#}
-        {#                    </div>#}
-        {#                    <div class="column">#}
-        {#                        <div class="card">#}
-        {#                            <div class="card-content">#}
-        {#                                <div class="content has-text-centered">#}
-        {#                                    <p class="title">#}
-        {#                                        Free Courses#}
-        {#                                    </p>#}
-        {#                                    <p>#}
-        {#                                        All courses on this website are free for everyone.#}
-        {#                                    </p>#}
-        {#                                </div>#}
-        {#                            </div>#}
-        {#                        </div>#}
-        {#                    </div>#}
-        {##}
-        {#                    <div class="column">#}
-        {#                        <div class="card">#}
-        {#                            <div class="card-content">#}
-        {#                                <div class="content">#}
-        {#                                    Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet fermentum.#}
-        {#                                </div>#}
-        {#                            </div>#}
-        {#                        </div>#}
-        {#                    </div>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </div>#}
+    </div>
+    <div class="container m-5">
+        <h4 class="title is-4">FAQs</h4>
+
+
+
+        <div id="accordion_first">
+            <article class="message">
+                <div class="message-header">
+                    <a href="#collapsible-message-accordion-1" data-action="collapse">What is a sign language?</a>
+                </div>
+                <div id="collapsible-message-accordion-1" class="message-body is-collapsible" data-parent="accordion_first">
+                    <div class="message-body-content">
+                        <p>
+                            Sign languages are languages. They arise naturally through contact between different people, in this case deaf people.
+                            Each sign language has its own grammar. In sign language, you speak with your hands and body, listening is done with your eyes.
+                            Sign languages are gestural-visual languages, spoken languages are oral-auditory languages.
+                        </p>
+                    </div>
+                </div>
+            </article>
+            <article class="message">
+                <div class="message-header">
+                    <a href="#collapsible-message-accordion-2" data-action="collapse">Is sign language universal?</a>
+                </div>
+                <div id="collapsible-message-accordion-2" class="message-body is-collapsible" data-parent="accordion_first">
+                    <div class="message-body-content">
+                        <p>
+                            No. In Spain you have Spanish Sign Language, in Finland you have Finnish and in Wallonia you have Walloon Sign Language.
+                            Just because sign languages, like spoken languages, arose spontaneously, there is no one universal sign language.
+                            For instance, Dutch Sign Language (NGT) is very different from VGT, and then again VGT shows more similarities with Walloon Sign Language (LSFB) than with Dutch.
+                            Sign languages have their own history separate from spoken languages.
+                        </p>
+                    </div>
+                </div>
+            </article>
+            <article class="message">
+                <div class="message-header">
+                    <a href="#collapsible-message-accordion-3" data-action="collapse">How do you sign names?</a>
+                </div>
+                <div id="collapsible-message-accordion-3" class="message-body is-collapsible" data-parent="accordion_first">
+                    <div class="message-body-content">
+                        <p>Usually a sign language alphabet is used to spell the names of individuals.</p>
+                        <p> For people who are part of the Deaf community or who are often the subject of conversation (such as politicians), name gestures exist. Instead of always having to finger-spell a person's name, that person gets one gesture.
+                        You get a name gesture based on a typical (appearance) characteristic, a trait, a hobby, a quirk, or simply on the basis of your first name or family name. Cities and countries also often have name gestures.</p>
+                        <p>You usually get your legal name from your parents, a name gesture is actually rarely given by a parent (except perhaps when the parent is Deaf themselves). You also don't choose your name gesture yourself, you get it from other people.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
     </div>
 {% endblock %}
+
+
+{% block javascript %}
+    <script>
+        const bulmaCollapsibleInstances = bulmaCollapsible.attach('.is-collapsible');
+    </script>
+{% endblock javascript %}
 </html>
