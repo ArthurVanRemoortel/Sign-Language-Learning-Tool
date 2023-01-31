@@ -1,4 +1,5 @@
 import os
+import threading
 from pathlib import Path
 from threading import Lock, Thread
 
@@ -29,6 +30,9 @@ class Classifier(metaclass=SingletonMeta):
 
     def __init__(self):
         print("Created a Classifier instance.")
+        self.load_dataset()
+
+    def load_dataset(self):
         self.gesture_dataset.load_from_csv(MAIN_GESTURE_DATASET_PATH)
 
         print("Searching for user uploaded datasets...")
