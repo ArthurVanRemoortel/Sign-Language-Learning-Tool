@@ -31,7 +31,17 @@ class Classifier(metaclass=SingletonMeta):
 
     def __init__(self):
         print("Created a Classifier instance.")
-        self.load_dataset()
+        # self.load_dataset()
+        self.gesture_classifier: GestureClassifier = GestureClassifier(
+            gesture_dataset=self.gesture_dataset
+        )
+
+        if MODEL_FILE_PATH.exists():
+            self.gesture_classifier.load_saved_model(model_path=MODEL_FILE_PATH)
+        else:
+            print("No model file found. Training a new model.")
+            self.gesture_classifier.train(save_path=MODEL_FILE_PATH)
+        self.gesture_classifier.summary()
 
     def load_dataset(self):
         self.gesture_dataset.load_from_csv(MAIN_GESTURE_DATASET_PATH)
@@ -77,17 +87,6 @@ class Classifier(metaclass=SingletonMeta):
                     / dataset_file
                 )
                 self.gesture_dataset.append_dataset(gesture_dataset)
-
-        self.gesture_classifier: GestureClassifier = GestureClassifier(
-            gesture_dataset=self.gesture_dataset
-        )
-
-        if MODEL_FILE_PATH.exists():
-            self.gesture_classifier.load_saved_model(model_path=MODEL_FILE_PATH)
-        else:
-            print("No model file found. Training a new model.")
-            self.gesture_classifier.train(save_path=MODEL_FILE_PATH)
-        self.gesture_classifier.summary()
 
 
 # gesture_classifier = None
