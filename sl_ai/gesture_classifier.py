@@ -48,9 +48,9 @@ class GestureClassifier:
         self.model = tf.keras.models.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=(TIME_STEPS,)),
-                tf.keras.layers.Dropout(0.4),
+                tf.keras.layers.Dropout(0.5),
                 tf.keras.layers.Dense(24, activation="relu"),
-                tf.keras.layers.Dropout(0.2),
+                # tf.keras.layers.Dropout(0.2),
                 tf.keras.layers.Dense(12, activation="relu"),
                 tf.keras.layers.Dense(NUM_CLASSES, activation="softmax"),
             ]
