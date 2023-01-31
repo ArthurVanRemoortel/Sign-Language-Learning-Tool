@@ -7958,6 +7958,10 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
   border-radius: 6px;
   display: block; }
 
+.feedback-video {
+  border-radius: 6px;
+}
+
 .camera-canvas {
   display: block; }
 

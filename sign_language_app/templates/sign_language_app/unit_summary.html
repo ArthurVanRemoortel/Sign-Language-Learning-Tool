@@ -8,7 +8,7 @@
 
 {% block content %}
     <div class="container mt-5">
-        <h1 class="title">Exercise Summary</h1>
+        <h1 class="title is-3">Exercise Summary</h1>
         <h2 class="subtitle">{{ unit.name }}</h2>
         <div class="card {% if this_attempt.score >= 50 %} summary-card-success {% else %} summary-card-failure {% endif %}">
             <div class="card-content">
@@ -32,31 +32,46 @@
                 {% endwith %}
             </footer>
         </div>
-        <br>
-        <h3 class="title is-3">Gestures</h3>
-        {% for gesture, attempts in attempts_per_gesture.items %}
-            <div class="box">
-                <p class="subtitle"> {{ gesture.word }}</p>
+        <div class="container mt-5">
+            <h3 class="title is-3">Solutions</h3>
+            {% for gesture, attempts in attempts_per_gesture.items %}
+                <h4 class="title is-4">{{ gesture.word }}</h4>
                 <div class="columns">
-                    <div class="column video_preview_solution">
-                        <p>Solution</p>
-                        <video preload="auto" onclick="this.play()" style="height: 200px" class="mirrored" >
-                            <source src='{{ MEDIA_URL }}/{{ gesture.reference_video }}' type="video/mp4">
-                        </video>
+                    <div class="column is-one-quarter">
+                        <div class="card has-background-info">
+                            {#                            <header class="card-header">#}
+                            {#                            </header>#}
+                            <div class="card-content pt-1 pb-5 pl-0 pr-0">
+                                <p class="card-header-title">
+                                    Solution
+                                </p>
+                                <video class="mirrored is-fullwidth" preload="auto" onclick="this.play()" style="height: 200px">
+                                    <source src='{{ MEDIA_URL }}/{{ gesture.reference_video }}' type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
                     </div>
+
                     {% for gesture_attempt in attempts %}
                         {% with video_url=gesture_attempt.get_last_video_url %}
-                            <div class="column {% if gesture_attempt.success %}video_preview_correct{% else %}video_preview_incorrect{% endif %}">
-                                <p>{% if gesture_attempt.success %}Correct{% else %}Incorrect{% endif %}</p>
-                                <video preload="auto" onclick="this.play()" style="height: 200px">
-                                    <source src='{{ MEDIA_URL }}/{{ video_url }}' type="video/mp4">
-                                </video>
+                            <div class="column is-one-quarter">
+                                <div class="card {% if gesture_attempt.success %}has-background-primary{% else %}has-background-danger{% endif %}">
+                                    <div class="card-content pt-1 pb-5 pl-0 pr-0">
+                                        <p class="card-header-title">
+                                            {% if gesture_attempt.success %}Correct{% else %}Wrong{% endif %}
+                                        </p>
+                                        <video preload="auto" onclick="this.play()" style="height: 200px">
+                                            <source src='{{ MEDIA_URL }}/{{ video_url }}' type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
                             </div>
                         {% endwith %}
                     {% endfor %}
                 </div>
-            </div>
-        {% endfor %}
+                <hr>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}
 </html>
