@@ -37,7 +37,11 @@ class Classifier(metaclass=SingletonMeta):
 
         print("Searching for user uploaded datasets...")
         for user_folder in os.listdir(UPLOADED_GESTURES_ROOT):
+            if user_folder.startswith('.'):
+                continue
             for gesture_folder in os.listdir(UPLOADED_GESTURES_ROOT / user_folder):
+                if gesture_folder.startswith('.'):
+                    continue
                 csv_files = list(
                     filter(
                         lambda file: file.endswith(".csv"),

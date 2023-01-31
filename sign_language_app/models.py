@@ -88,7 +88,6 @@ class Gesture(models.Model):
             )
         else:
             videos_location = f"vgt-all/{self.handed_string}"
-
         video_file = random.choice(os.listdir(MEDIA_ROOT / videos_location))
         return f"{videos_location}/{video_file}"
 
