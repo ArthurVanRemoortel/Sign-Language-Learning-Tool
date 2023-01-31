@@ -48,30 +48,25 @@ class GestureClassifier:
         self.model = tf.keras.models.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=(TIME_STEPS,)),
-                tf.keras.layers.Dropout(0.3),
-                tf.keras.layers.Dense(32, activation="relu"),
+                tf.keras.layers.Dropout(0.4),
+                tf.keras.layers.Dense(24, activation="relu"),
                 tf.keras.layers.Dropout(0.2),
-                tf.keras.layers.Dense(32, activation="relu"),
+                tf.keras.layers.Dense(12, activation="relu"),
                 tf.keras.layers.Dense(NUM_CLASSES, activation="softmax"),
             ]
         )
-        # self.model  = tf.keras.models.Sequential([
-        #     tf.keras.layers.Dense(24, activation='relu', input_shape=[self.gesture_dataset.x_data.shape[1]]),
-        #     tf.keras.layers.Dropout(0.1),
-        #     tf.keras.layers.Dense(10, activation='relu'),
-        #     tf.keras.layers.Dropout(0.1),
-        #     tf.keras.layers.Dense(NUM_CLASSES, activation="softmax")
-        # ])
-
-        # self.model = tf.keras.models.Sequential([
-        #     tf.keras.layers.InputLayer(input_shape=(TIME_STEPS, DIMENSION)),
-        #     tf.keras.layers.Reshape((TIME_STEPS, DIMENSION), input_shape=(TIME_STEPS * DIMENSION,)),
-        #     tf.keras.layers.Dropout(0.2),
-        #     tf.keras.layers.LSTM(16, input_shape=[TIME_STEPS, DIMENSION]),
-        #     tf.keras.layers.Dropout(0.5),
-        #     tf.keras.layers.Dense(10, activation='relu'),
-        #     tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
-        # ])
+        # self.model = tf.keras.models.Sequential(
+        #     [
+        #         tf.keras.layers.InputLayer(input_shape=(TIME_STEPS, DIMENSION)),
+        #         tf.keras.layers.Reshape(
+        #             (TIME_STEPS, DIMENSION), input_shape=(TIME_STEPS * DIMENSION,)
+        #         ),
+        #         tf.keras.layers.LSTM(32, input_shape=[TIME_STEPS, DIMENSION]),
+        #         tf.keras.layers.Dropout(0.2),
+        #         tf.keras.layers.Dense(10, activation="relu"),
+        #         tf.keras.layers.Dense(NUM_CLASSES, activation="softmax"),
+        #     ]
+        # )
         self.model.compile(
             optimizer="adam",
             loss="sparse_categorical_crossentropy",  # Experiment using different loss and metric functions.
@@ -82,9 +77,6 @@ class GestureClassifier:
         if len(self.gesture_dataset) == 0:
             raise Exception("Tried to train but the dataset is empty.")
         self.gesture_dataset.summary()
-
-        # if not self.model:
-        self.make_model()
 
         # TODO: Make sure all categories are represented.
         self.x_train, x_test, self.y_train, y_test = train_test_split(
@@ -101,13 +93,15 @@ class GestureClassifier:
             test_size=0.5,
             random_state=42,
             shuffle=True,
-            # stratify=y_test,
+            stratify=y_test,
         )
         self.x_test = x_test
         self.y_test = y_test
 
+        self.make_model()
+
         # cp_callback = tf.keras.callbacks.ModelCheckpoint(MODEL_SAVE_PATH, verbose=1, save_weights_only=True, save_best_only=True)
-        es_callback = tf.keras.callbacks.EarlyStopping(patience=30, verbose=1)
+        es_callback = tf.keras.callbacks.EarlyStopping(patience=25, verbose=1)
         self.train_history = self.model.fit(
             self.x_train,
             self.y_train,

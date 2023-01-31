@@ -18,6 +18,7 @@ from learning_site.settings import (
     UPLOADED_GESTURES_ROOT,
     VGT_GESTURES_ROOT,
 )
+from sl_ai.utils import clean_listdir
 
 
 class UserSettings(models.Model):
@@ -88,7 +89,7 @@ class Gesture(models.Model):
             )
         else:
             videos_location = f"vgt-all/{self.handed_string}"
-        video_file = random.choice(os.listdir(MEDIA_ROOT / videos_location))
+        video_file = random.choice(clean_listdir(MEDIA_ROOT / videos_location))
         return f"{videos_location}/{video_file}"
 
     def delete_videos(self):
@@ -209,7 +210,7 @@ class UnitAttempt(models.Model):
         videos_location: Path = USER_GESTURES_ROOT / self.unit.id / self.user.id
         return [
             videos_location / str(video_file)
-            for video_file in os.listdir(videos_location)
+            for video_file in clean_listdir(videos_location)
         ]
 
     @property

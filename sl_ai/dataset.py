@@ -19,6 +19,8 @@ from tqdm import tqdm
 from sl_ai.config import MAX_VIDEO_FRAMES, ONLY_LANDMARK_ID
 from multiprocessing import Pool
 
+from sl_ai.utils import clean_listdir
+
 # DATASET_LOCATION = Path('sl_ai/ai_data/vgt-all')
 
 
@@ -626,7 +628,7 @@ class GestureDataset:
         # TODO: Refactor this. Some duplicate code.
         self.gestures.clear()
         if not self.single_gesture:
-            gesture_folders = os.listdir(dataset_location)
+            gesture_folders = clean_listdir(dataset_location)
         else:
             gesture_folders = [dataset_location]
         for gesture_folder in gesture_folders:
@@ -641,7 +643,7 @@ class GestureDataset:
             gesture = GestureData(
                 name=gesture_name, left_hand=left_hand, right_hand=right_hand
             )
-            for video_name in os.listdir(gesture_path):
+            for video_name in clean_listdir(gesture_path):
                 video_name = str(video_name)
                 if (
                     video_name.endswith("mp4")
@@ -663,7 +665,7 @@ class GestureDataset:
         if django_gesture.creator:
             gesture_path = gesture_path / str(django_gesture.creator.id)
         gesture_path = gesture_path / django_gesture.handed_string
-        for video_name in os.listdir(gesture_path):
+        for video_name in clean_listdir(gesture_path):
             gesture_data.add_video(gesture_path / str(video_name))
         self.gestures.append(gesture_data)
 
@@ -677,7 +679,7 @@ if __name__ == "__main__":
 
     dataset = GestureDataset(single_gesture=False)
     handedness_data = {}
-    for gesture_folder in os.listdir(DATASET_LOCATION):
+    for gesture_folder in clean_listdir(DATASET_LOCATION):
         gesture_folder_path = DATASET_LOCATION / gesture_folder
         gesture_name, handedness_string = gesture_folder.split("_")
         handedness_data[gesture_name] = (

@@ -6,6 +6,7 @@ from threading import Lock, Thread
 from learning_site.settings import UPLOADED_GESTURES_ROOT
 from sl_ai.dataset import GestureDataset
 from sl_ai.gesture_classifier import GestureClassifier
+from sl_ai.utils import clean_listdir
 
 MAIN_GESTURE_DATASET_PATH = Path("sl_ai/gestures_dataset.csv")
 MODEL_FILE_PATH = Path("sl_ai/model.h5")
@@ -36,16 +37,12 @@ class Classifier(metaclass=SingletonMeta):
         self.gesture_dataset.load_from_csv(MAIN_GESTURE_DATASET_PATH)
 
         print("Searching for user uploaded datasets...")
-        for user_folder in os.listdir(UPLOADED_GESTURES_ROOT):
-            if user_folder.startswith('.'):
-                continue
-            for gesture_folder in os.listdir(UPLOADED_GESTURES_ROOT / user_folder):
-                if gesture_folder.startswith('.'):
-                    continue
+        for user_folder in clean_listdir(UPLOADED_GESTURES_ROOT):
+            for gesture_folder in clean_listdir(UPLOADED_GESTURES_ROOT / user_folder):
                 csv_files = list(
                     filter(
                         lambda file: file.endswith(".csv"),
-                        os.listdir(
+                        clean_listdir(
                             UPLOADED_GESTURES_ROOT / user_folder / gesture_folder
                         ),
                     )
