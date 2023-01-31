@@ -31,7 +31,7 @@ class Classifier(metaclass=SingletonMeta):
 
     def __init__(self):
         print("Created a Classifier instance.")
-        # self.load_dataset()
+        self.load_dataset()
         self.gesture_classifier: GestureClassifier = GestureClassifier(
             gesture_dataset=self.gesture_dataset
         )
