@@ -7,6 +7,23 @@
 
 {% block profile_content %}
     <div class="container">
+        <nav class="breadcrumb" aria-label="breadcrumbs">
+            <ul>
+                <li><a href="{% url 'manage_students' %}">
+                    <span class="icon is-small">
+                        <i class="fa-solid fa-school"></i>
+                    </span>
+                    <span>Students</span>
+                </a></li>
+                <li class="is-active"><a href="#" aria-current="page">
+                    <span class="icon is-small">
+                        <i class="fa-solid fa-user-large"></i>
+                    </span>
+                    <span>{{ student.username }}</span>
+                </a></li>
+            </ul>
+        </nav>
+
         <div class="block">
             <h2 class="title">
                 Manage {{ student.username }}
@@ -43,7 +60,7 @@
                               <span class="icon">
                                 <i class="fa-solid fa-face-{% if unit_attempt.passed %}smile{% else %}frown{% endif %}"></i>
                               </span>
-                              <span>{{ unit_attempt.score }}%</span>
+                                <span>{{ unit_attempt.score }}%</span>
                             </div>
                         </td>
                         <td>{{ unit_attempt.datetime|naturalday }}</td>

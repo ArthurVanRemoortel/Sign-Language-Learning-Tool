@@ -6,6 +6,23 @@
 
 {% block profile_content %}
     <div class="container">
+        <nav class="breadcrumb" aria-label="breadcrumbs">
+            <ul>
+                <li><a href="{% url 'manage_students' %}">
+                    <span class="icon is-small">
+                        <i class="fa-solid fa-school"></i>
+                    </span>
+                    <span>Students</span>
+                </a></li>
+                <li><a href="{% url 'student_details' student.id %}">
+                    <span class="icon is-small">
+                        <i class="fa-solid fa-user-large"></i>
+                    </span>
+                    <span>{{ student.username }}</span>
+                </a></li>
+                <li class="is-active"><a href="#" aria-current="page">{{ unit_attempt.unit.name }}</a></li>
+            </ul>
+        </nav>
         <div class="block">
             <h2 class="title">
                 Unit Attempt for {{ unit_attempt.unit.name }} by {{ student.username }}
