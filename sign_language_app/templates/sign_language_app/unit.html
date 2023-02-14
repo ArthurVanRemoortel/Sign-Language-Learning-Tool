@@ -85,8 +85,10 @@
         let lives_remaining = 3
         let gesture_attempts_remaining = 3
 
+
         let camera_frame_width = null
         let camera_frame_height = null
+        let current_mouth_position = null
 
         unitProgressBar.max = gestures.length
 
@@ -430,7 +432,7 @@
                             {color: color, lineWidth: 5});
                         drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
                     }
-                    hand_frames.push([found_left_hand, found_right_hand])
+                    hand_frames.push([found_left_hand, found_right_hand, current_mouth_position])
                 } else {
                     // No hands detected.
                     if (gestureStart != null) {
@@ -447,17 +449,41 @@
             canvasCtx.restore();
         }
 
+        function onFaceResults(results){
+            let face = results.detections[0]
+            if (face){
+                current_mouth_position = results.detections[0].landmarks[3]
+                {#console.log(current_mouth_position)#}
+            }
+        }
+
         function loadCamera(){
-            const hands = new Hands({locateFile: (file) => {
-                    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-                }});
-            hands.setOptions({
+            const handsDetection = new Hands({locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }});
+
+            const faceDetection = new FaceDetection({locateFile: (file) => {
+              return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
+            }});
+
+            console.log(faceDetection)
+
+
+            faceDetection.setOptions({
+              model: 'short',
+              minDetectionConfidence: 0.5
+            });
+            faceDetection.onResults(function (results) {
+                onFaceResults(results)
+            });
+
+            handsDetection.setOptions({
                 maxNumHands: 2,
                 modelComplexity: 1,
                 minDetectionConfidence: 0.6,
                 minTrackingConfidence: 0.8
             });
-            hands.onResults(function (results) {
+            handsDetection.onResults(function (results) {
                 if (!is_displaying_solution)
                     onResults(results)
             });
@@ -465,7 +491,8 @@
 
             const camera = new Camera(videoElement, {
                 onFrame: async () => {
-                    await hands.send({image: videoElement});
+                    await faceDetection.send({image: videoElement});
+                    await handsDetection.send({image: videoElement});
                     if (!cameraLoaded){
                         cameraLoaded = true
                         startExercise()

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 
+from django.core.exceptions import ImproperlyConfigured
 from django.template.context_processors import media
 from dotenv import load_dotenv
 from pathlib import Path
@@ -23,6 +24,9 @@ if not os.environ.get("DJANGO_SECRET_KEY"):
     load_dotenv(BASE_DIR / ".env.dev")
 
 DJANGO_SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not DJANGO_SECRET_KEY:
+    raise ImproperlyConfigured()
+
 DEBUG_MODE = os.getenv("DEBUG_MODE", "0").lower() in ("true", "1", "t")
 
 POSTGRES_HOST = os.getenv("POSTGRES_HOST")
@@ -47,38 +51,12 @@ DEBUG = DEBUG_MODE
 
 ALLOWED_HOSTS = ["*"]
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:8000",
-#     "http://127.0.0.1:8000",
-# ]
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
+    "http://localhost:8080",
     "http://127.0.0.1:8000",
+    "http://127.0.0.1:8080",
 ]
-CORS_REPLACE_HTTPS_REFERER = True
-
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None
-
 
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/login"
@@ -97,17 +75,14 @@ INSTALLED_APPS = [
     "sass_processor",
     "compressor",
     "rolepermissions",
-    "corsheaders",
     "sign_language_app",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "corsheaders.middleware.CorsPostCsrfMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -184,16 +159,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = "static/"
-
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     "sass_processor.finders.CssFinder",
 ]
 
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "data" / "static"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "sl_ai/ai_data"
+
+
 COMPRESS_ROOT = BASE_DIR / "sign_language_app" / "static"
 
 SASS_PROCESSOR_ROOT = COMPRESS_ROOT
+SASS_PROCESSOR_ENABLED = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -219,8 +200,6 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 ROLEPERMISSIONS_MODULE = "learning_site.roles"
 ROLEPERMISSIONS_REGISTER_ADMIN = True
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "sl_ai/ai_data"
 UPLOADED_GESTURES_ROOT = BASE_DIR / "sl_ai/ai_data/vgt-uploaded"
 VGT_GESTURES_ROOT = BASE_DIR / "sl_ai/ai_data/vgt-all"
 USER_GESTURES_ROOT = BASE_DIR / "sl_ai/ai_data/vgt-users"

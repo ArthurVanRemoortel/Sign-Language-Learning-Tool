@@ -29,6 +29,8 @@ class UserSettings(models.Model):
         related_name="settings",
     )
     allow_video_uploads = models.BooleanField(default=False)
+    can_view_videos = models.BooleanField(default=False)
+    can_train_on_videos = models.BooleanField(default=False)
 
 
 class GestureLocation(models.Model):

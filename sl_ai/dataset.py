@@ -187,8 +187,12 @@ def mirror_landmarks_list(landmarks: List[Tuple[float]]) -> List[Tuple[float]]:
     """
     mirrored_landmarks = []
     for _, landmark in enumerate(landmarks):
-        mirrored_landmarks.append([1 - landmark[0], landmark[1]])
+        mirrored_landmarks.append(mirror_coordinate(landmark[0], landmark[1]))
     return mirrored_landmarks
+
+
+def mirror_coordinate(x, y):
+    return [1 - x, y]
 
 
 def calculate_landmark_list(
@@ -308,9 +312,10 @@ def preprocess_landmarks(
         right_landmarks[landmark_id] = landmarks
 
 
-def make_hands_detector() -> mp.solutions.hands.Hands:
+def make_hands_detector() -> (mp.solutions.hands.Hands, mp.solutions.face_detection.FaceDetection):
     """Creates and instance of the mediapipe hands detector."""
     mp_hands = mp.solutions.hands
+    mp_face = mp.solutions.face_detection
     hands = mp_hands.Hands(
         static_image_mode=USE_STATIC_IMAGE_MODE,
         max_num_hands=2,
@@ -318,7 +323,8 @@ def make_hands_detector() -> mp.solutions.hands.Hands:
         min_tracking_confidence=MIN_TRACKING_CONFIDENCE,
         model_complexity=1,
     )
-    return hands
+    face = mp_face.FaceDetection(model_selection=0, min_detection_confidence=0.3)
+    return hands, face
 
 
 class GestureData:
@@ -345,12 +351,13 @@ class GestureData:
 
 def detect_hands_task(gesture: GestureData, video_path: Path):
     """Detects gesture landmarks from a video file."""
-    mediapipe_hands = make_hands_detector()
+    mediapipe_hands, mediapipe_face = make_hands_detector()
     frame_height = None
     frame_width = None
     # Dictionaries for every hand.
     left_landmarks = {i: [] for i in range(0, 21)}
     right_landmarks = {i: [] for i in range(0, 21)}
+    mouth_positions = []
 
     video_name = video_path.name
     video_data = read_video(video_path)
@@ -364,16 +371,21 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
             frame_height, frame_width, _ = frame.shape
 
         # frame = cv2.flip(frame, 1)
-        frame = cv2.flip(frame, 1)
+        # frame = cv2.flip(frame, 1)
         frame.flags.writeable = False
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.flip(frame, 1)
         results = mediapipe_hands.process(frame)
+        face_results = mediapipe_face.process(frame)
+        frame.flags.writeable = True
 
         if not results.multi_hand_landmarks:
             # Nothing was detected this frame.
-            for landmark_id in left_landmarks.keys():
-                left_landmarks[landmark_id].append([-1, -1])
-            for landmark_id in right_landmarks.keys():
-                right_landmarks[landmark_id].append([-1, -1])
+            # for landmark_id in left_landmarks.keys():
+            #     left_landmarks[landmark_id].append([-1, -1])
+            # for landmark_id in right_landmarks.keys():
+            #     right_landmarks[landmark_id].append([-1, -1])
+            continue
         else:
             # Found some hands.
             found_left = False
@@ -402,6 +414,18 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
                         right_landmarks[landmark_id].append(landmark)
                         # left_landmarks[landmark_id].append([-1, -1])
                         found_right = True
+
+            # Get note:
+            if not face_results.detections:
+                if mouth_positions:
+                    # Repeat the last position
+                    mouth_positions.append(mouth_positions[-1])
+            else:
+                # for detection in face_results.detections:
+                mouth = mp.solutions.face_detection.get_key_point(face_results.detections[0], mp.solutions.face_detection.FaceKeyPoint.MOUTH_CENTER)
+                print("Nose detected:", frame_i, mouth)
+                mouth_positions.append([mouth.x, mouth.y])
+
             if not found_left:
                 for landmark_id in left_landmarks.keys():
                     left_landmarks[landmark_id].append([-1, -1])
@@ -409,7 +433,7 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
                 for landmark_id in right_landmarks.keys():
                     right_landmarks[landmark_id].append([-1, -1])
 
-    return video_name, (frame_width, frame_height), left_landmarks, right_landmarks
+    return video_name, (frame_width, frame_height), left_landmarks, right_landmarks, mouth_positions
 
 
 class GestureDataset:
@@ -547,9 +571,7 @@ class GestureDataset:
                         + right_landmarks[ONLY_LANDMARK_ID]
                     )
                 except IndexError as e:
-                    print(f"Something went wrong while processing {video_name}: {e}")
-                except Exception as e:
-                    print(f"Something went wrong while processing {video_name}: {e}")
+                    print(f"Something went wrong while processing {video_id}: {e}")
 
         self.y_data = np.array(Y_dataset)
         self.x_data = np.array(X_dataset, dtype="float32")
@@ -579,7 +601,7 @@ class GestureDataset:
         start_time = time.time()
         for gesture_i, gesture in enumerate(tqdm(self.gestures)):
             # Loop over all gestures in the dataset.
-            with Pool(processes=8) as pool:
+            with Pool(processes=1) as pool:
                 # Executes the detect_hands_task in parallel.
                 results = pool.imap_unordered(
                     functools.partial(detect_hands_task, gesture),
@@ -593,7 +615,12 @@ class GestureDataset:
                             (frame_width, frame_height),
                             left_landmarks,
                             right_landmarks,
+                            mouth_positions,
                         ) = result
+                        print(video_name)
+                        print(len(left_landmarks[0]))
+                        print(len(right_landmarks[0]))
+                        print(len(mouth_positions), mouth_positions)
                         try:
                             # preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
                             for landmark_id, values in left_landmarks.items():
@@ -674,8 +701,26 @@ class GestureDataset:
 
 
 if __name__ == "__main__":
-    CSV_OUT_PATH = Path("gestures_dataset.csv")
-    DATASET_LOCATION = Path("ai_data/vgt-all")
+    # CSV_OUT_PATH = Path("gestures_dataset.csv")
+    # DATASET_LOCATION = Path("ai_data/vgt-all")
+    #
+    # dataset = GestureDataset(single_gesture=False)
+    # handedness_data = {}
+    # for gesture_folder in clean_listdir(DATASET_LOCATION):
+    #     gesture_folder_path = DATASET_LOCATION / gesture_folder
+    #     gesture_name, handedness_string = gesture_folder.split("_")
+    #     handedness_data[gesture_name] = (
+    #         handedness_string[0] == "1",
+    #         handedness_string[1] == "1",
+    #     )
+    # dataset.scan_videos(
+    #     dataset_location=DATASET_LOCATION, handedness_data=handedness_data
+    # )
+    # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
+    # # dataset.load_from_csv(CSV_OUT_PATH)
+
+    CSV_OUT_PATH = Path("gestures_dataset_small.csv")
+    DATASET_LOCATION = Path("ai_data/vgt-small")
 
     dataset = GestureDataset(single_gesture=False)
     handedness_data = {}
@@ -690,4 +735,4 @@ if __name__ == "__main__":
         dataset_location=DATASET_LOCATION, handedness_data=handedness_data
     )
     dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
-    dataset.load_from_csv(CSV_OUT_PATH)
+    # dataset.load_from_csv(CSV_OUT_PATH)

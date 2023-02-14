@@ -37,7 +37,7 @@ from sl_ai.dataset import (
     trim_landmark_lists,
     calculate_landmark_list,
     pre_process_point_history_center,
-    mirror_landmarks_list,
+    mirror_landmarks_list, mirror_coordinate,
 )
 from sign_language_app.background_tasks import retrain_model
 
@@ -91,7 +91,9 @@ def verify_gesture(request):
     # TODO: Refactor this.
     # TODO: Check if is_landmark_in_active_zone
     for frame in hand_frames:
-        left, right = frame
+        left, right, mouth = frame
+        mouth = mirror_coordinate(mouth['x'], mouth['y'])
+        print("mouth", mouth)
         if left and gesture.left_hand:
             landmark_list_left = calculate_landmark_list(
                 frame_width, frame_height, left

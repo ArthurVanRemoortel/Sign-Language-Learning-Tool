@@ -32,5 +32,8 @@ COPY poetry.lock pyproject.toml /code/
 RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
 
 # Creating folders, and files for a project:
+RUN mkdir -p /code/data/db
 COPY . /code
 
+RUN chmod a+x /code/docker-entrypoint.sh
+ENTRYPOINT ["/code/docker-entrypoint.sh"]
