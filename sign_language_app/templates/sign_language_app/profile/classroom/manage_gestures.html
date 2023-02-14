@@ -23,7 +23,7 @@
                 <th><abbr title="Gesture">Gesture</abbr></th>
                 {#                <th><abbr title="Status">Creator</abbr></th>#}
                 <th><abbr title="Status">Status</abbr></th>
-                <th style="width:30%"></th>
+                <th style="width:100px"></th>
             </tr>
             </thead>
             <tbody>
@@ -34,8 +34,16 @@
                     <td>{{ gesture.get_status_display }}</td>
                     <td>
                         <div class="buttons">
-                            <button class="button is-info is-small">Placeholder</button>
-                            <a href="{% url 'delete_gesture' gesture.id %}" class="button is-danger is-small">Delete</a>
+                            <a href="" class="button is-info is-small">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-pen"></i>
+                                </span>
+                            </a>
+                            <a href="{% url 'delete_gesture' gesture.id %}" class="button is-danger is-small">
+                                <span class="icon is-small">
+                                  <i class="fa-solid fa-trash-can"></i>
+                                </span>
+                            </a>
                         </div>
                     </td>
                 </tr>

@@ -11,7 +11,7 @@
             <ul>
                 <li><a href="{% url 'manage_students' %}">
                     <span class="icon is-small">
-                        <i class="fa-solid fa-school"></i>
+                        <i class="fa-solid fa-people-group"></i>
                     </span>
                     <span>Students</span>
                 </a></li>
@@ -66,9 +66,11 @@
                         <td>{{ unit_attempt.datetime|naturalday }}</td>
                         <td>
                             <div class="buttons">
-                                <div class="buttons">
-                                    <a href="{% url "student_details_unit_attempts_view" student.id unit_attempt.id %}" class="button is-info is-small">View</a>
-                                </div>
+                                <a href="{% url "student_details_unit_attempts_view" student.id unit_attempt.id %}" class="button is-info is-small">
+                                    <span class="icon is-small">
+                                      <i class="fa-solid fa-circle-info"></i>
+                                    </span>
+                                </a>
                             </div>
                         </td>
                     </tr>

@@ -13,8 +13,22 @@
                     General
                 </p>
                 <ul class="menu-list">
-                    <li><a href="{% url 'profile' %}" class="{% if current_section == 'overview' %} is-active {% endif %}">Overview</a></li>
-                    <li><a href="{% url 'profile_settings' %}" class="{% if current_section == 'settings' %} is-active {% endif %}">Settings</a></li>
+                    <li><a href="{% url 'profile' %}" class="{% if current_section == 'overview' %} is-active {% endif %}">
+                        <span class="icon-text">
+                          <span class="icon">
+                            <i class="fa-solid fa-user"></i>
+                          </span>
+                          <span>Profile</span>
+                        </span>
+                    </a></li>
+                    <li><a href="{% url 'profile_settings' %}" class="{% if current_section == 'settings' %} is-active {% endif %}">
+                        <span class="icon-text">
+                          <span class="icon">
+                            <i class="fa-solid fa-gear"></i>
+                          </span>
+                          <span>Settings</span>
+                        </span>
+                    </a></li>
                 </ul>
                 <p class="menu-label">
                     Classroom
@@ -24,16 +38,43 @@
                         <li>
                             <a class="">Manage</a>
                             <ul>
-                                <li><a href="{% url 'manage_courses' %}" class="{% if current_section == 'manage_courses' %} is-active {% endif %}">Courses</a></li>
-                                <li><a href="{% url 'manage_students' %}" class="{% if current_section == 'manage_students' %} is-active {% endif %}">Students</a></li>
-                                <li><a href="{% url 'manage_gestures' %}" class="{% if current_section == 'manage_gestures' %} is-active {% endif %}">Gestures</a></li>
+                                <li><a href="{% url 'manage_courses' %}" class="{% if current_section == 'manage_courses' %} is-active {% endif %}">
+                                    <span class="icon-text">
+                                      <span class="icon">
+                                        <i class="fa-solid fa-book"></i>
+                                      </span>
+                                      <span>Courses</span>
+                                    </span>
+                                </a></li>
+                                <li><a href="{% url 'manage_students' %}" class="{% if current_section == 'manage_students' %} is-active {% endif %}">
+                                    <span class="icon-text">
+                                      <span class="icon">
+                                        <i class="fas fa-people-group"></i>
+                                      </span>
+                                      <span>Students</span>
+                                    </span>
+                                </a></li>
+                                <li><a href="{% url 'manage_gestures' %}" class="{% if current_section == 'manage_gestures' %} is-active {% endif %}">
+                                    <span class="icon-text">
+                                      <span class="icon">
+                                        <i class="fa-solid fa-hands"></i>
+                                      </span>
+                                      <span>Gestures</span>
+                                    </span>
+                                </a></li>
                             </ul>
                         </li>
-                        <li><a href="{% url 'feedback' %}" class="{% if current_section == 'feedback' %} is-active {% endif %}">Feedback</a></li>
                     </ul>
                 {% else %}
                     <ul class="menu-list">
-                        <li><a href="{% url 'manage_teachers' %}" class="{% if current_section == 'manage_teachers' %} is-active {% endif %}">Teachers</a></li>
+                        <li><a href="{% url 'manage_teachers' %}" class="{% if current_section == 'manage_teachers' %} is-active {% endif %}">
+                            <span class="icon-text">
+                              <span class="icon">
+                                <i class="fa-solid fa-person-chalkboard"></i>
+                              </span>
+                              <span>Teachers</span>
+                            </span>
+                        </a></li>
                     </ul>
                 {% endif %}
             </aside>
