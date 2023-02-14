@@ -64,6 +64,21 @@ urlpatterns += [
         name="remove_student_from_classroom",
     ),
     path(
+        "manage_students/<int:student_id>/details",
+        profile_views.student_details_view,
+        name="student_details",
+    ),
+    path(
+        "manage_students/<int:student_id>/details/<int:unit_attempts_id>",
+        profile_views.student_details_unit_attempts_view,
+        name="student_details_unit_attempts_view",
+    ),
+    path(
+        "manage_students/<int:student_id>/details/<int:unit_attempts_id>/overrule/<int:gesture_attempts_id>",
+        profile_views.overrule_gesture_attempt_view,
+        name="overrule_gesture_attempt",
+    ),
+    path(
         "manage_teachers/<int:teacher_id>/remove_teacher",
         profile_views.remove_teacher,
         name="remove_teacher",

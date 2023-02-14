@@ -1,0 +1,65 @@
+{% extends 'sign_language_app/profile/profile_base.html' %}
+{% load humanize %}
+{% load extras %}
+{% block title %}
+    Student Details: {{ student.username }}
+{% endblock %}
+
+{% block profile_content %}
+    <div class="container">
+        <div class="block">
+            <h2 class="title">
+                Manage {{ student.username }}
+            </h2>
+            <p>
+                View this student's recent activity.
+            </p>
+        </div>
+        <div class="block">
+
+        </div>
+
+        <div class="block">
+            <h4 class="title is-4">
+                Activity
+            </h4>
+            <table class="table is-fullwidth">
+                <thead>
+                <tr>
+                    <th><abbr title="Course">Course</abbr></th>
+                    <th><abbr title="Unit">Unit</abbr></th>
+                    <th><abbr title="Score">Score</abbr></th>
+                    <th><abbr title="Date">Date</abbr></th>
+                    <th style="width: 100px"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for unit_attempt in student.unit_attempts.all|dictsortreversed:"datetime" %}
+                    <tr>
+                        <td>{{ unit_attempt.unit.course.name }}</td>
+                        <td>{{ unit_attempt.unit.name }}</td>
+                        <td>
+                            <div class="icon-text has-text-{% if unit_attempt.passed %}primary{% else %}danger{% endif %}">
+                              <span class="icon">
+                                <i class="fa-solid fa-face-{% if unit_attempt.passed %}smile{% else %}frown{% endif %}"></i>
+                              </span>
+                              <span>{{ unit_attempt.score }}%</span>
+                            </div>
+                        </td>
+                        <td>{{ unit_attempt.datetime|naturalday }}</td>
+                        <td>
+                            <div class="buttons">
+                                <div class="buttons">
+                                    <a href="{% url "student_details_unit_attempts_view" student.id unit_attempt.id %}" class="button is-info is-small">View</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+{% endblock %}

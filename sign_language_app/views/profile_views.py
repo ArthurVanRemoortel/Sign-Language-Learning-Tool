@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 import json
 
@@ -13,7 +13,14 @@ from rolepermissions.roles import get_user_roles
 
 from learning_site.roles import Teacher
 from sign_language_app.forms import UploadGestureForm, NewCourseForm, TeacherCodeForm
-from sign_language_app.models import Gesture, Course, Unit, TeacherCode, StudentsAccess
+from sign_language_app.models import (
+    Gesture,
+    Course,
+    Unit,
+    TeacherCode,
+    StudentsAccess,
+    UnitAttempt, GestureAttempt,
+)
 from sign_language_app.utils import (
     teacher_or_admin_required,
     is_teacher_or_admin,
@@ -80,6 +87,96 @@ def manage_students_view(request):
     return render(
         request, "sign_language_app/profile/classroom/manage_students.html", context
     )
+
+
+@login_required
+@teacher_or_admin_required
+def student_details_view(request, student_id: int):
+    teacher = get_user(request)
+    student = get_object_or_404(User, pk=student_id)
+    access = StudentsAccess.objects.filter(Q(student=student, teacher=teacher))
+    if not access.exists():
+        messages.error(
+            request,
+            "You cannot access this students information.",
+        )
+        return redirect("manage_students")
+    context = {
+        "current_section": "manage_students",
+        "teacher": teacher,
+        "student": student,
+    }
+    return render(
+        request, "sign_language_app/profile/classroom/student_details.html", context
+    )
+
+
+@login_required
+@teacher_or_admin_required
+def student_details_unit_attempts_view(request, student_id: int, unit_attempts_id: int):
+    teacher = get_user(request)
+    student = get_object_or_404(User, pk=student_id)
+    access = StudentsAccess.objects.filter(Q(student=student, teacher=teacher))
+    unit_attempt = get_object_or_404(UnitAttempt, pk=unit_attempts_id)
+    if not access.exists():
+        messages.error(
+            request,
+            "You cannot access this students information.",
+        )
+        return redirect("manage_students")
+    context = {
+        "current_section": "manage_students",
+        "teacher": teacher,
+        "student": student,
+        "unit_attempt": unit_attempt,
+        "attempts_per_gesture": {
+            gesture: [
+                gesture_attempt
+                for gesture_attempt in unit_attempt.gesture_attempts.filter(
+                    gesture=gesture
+                )
+            ]
+            for gesture in unit_attempt.unit.gestures.all()
+        },
+    }
+    return render(
+        request,
+        "sign_language_app/profile/classroom/student_details_unit_attempts.html",
+        context,
+    )
+
+
+@login_required
+@teacher_or_admin_required
+def overrule_gesture_attempt_view(
+    request, student_id: int, unit_attempts_id: int, gesture_attempts_id: int
+):
+    if request.method == "GET":
+        return HttpResponseForbidden()
+    gesture_attempt = get_object_or_404(GestureAttempt, pk=gesture_attempts_id)
+    unit_attempt = get_object_or_404(UnitAttempt, pk=unit_attempts_id)
+
+    data_from_post = json.load(request)
+    gesture_attempt.success = data_from_post['correct']
+    gesture_attempt.save()
+
+    points = 0
+    for gesture in unit_attempt.unit.gestures.all():
+        gesture_attempts = unit_attempt.gesture_attempts.filter(Q(gesture=gesture))
+        answers = list(map(lambda attempt: attempt.success, gesture_attempts))
+        if len(answers) >= 1 and answers[0]:
+            points += 1
+        elif len(answers) >= 2 and answers[1]:
+            points += 0.75
+        elif len(answers) >= 3 and answers[2]:
+            # Success with hint.
+            points += 0.5
+        else:
+            # Never success.
+            points += 0
+    unit_attempt.score = int(points / unit_attempt.unit.gestures.count() * 100)
+    unit_attempt.save()
+    return JsonResponse({"status": "ok", "newScore": unit_attempt.score})
 
 
 @login_required
