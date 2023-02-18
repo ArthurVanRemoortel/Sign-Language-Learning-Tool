@@ -102,13 +102,6 @@
     right_hand: true
     locations: [1]
 - model: sign_language_app.gesture
-  pk: 4
-  fields:
-    word: Duidelijk
-    left_hand: true
-    right_hand: true
-    locations: [1]
-- model: sign_language_app.gesture
   pk: 5
   fields:
     word: Gebaar

@@ -36,6 +36,7 @@ def log_csv(
     video_number,
     hand_number,
     landmark_id,
+    mouth_position,
     point_history_list,
     width,
     height,
@@ -50,7 +51,8 @@ def log_csv(
             height,
             hand_number,
             landmark_id,
-            *[p for p in point_history_list],
+            mouth_position,
+            [p for p in point_history_list],
         ]
     )
 
@@ -235,6 +237,23 @@ def pre_process_point_history_center(
     return temp_point_history
 
 
+def pre_process_point_history_mouth_position(
+    mouth_position: Tuple[float, float], point_history: List[Tuple[float]]
+) -> List[float]:
+    """Alternative data representation for the AI model. Converts a list of coordinates to a list of distances relative to the position of the users mouth."""
+    temp_point_history = copy.deepcopy(point_history)
+    base_x, base_y = mouth_position
+    for index, point in enumerate(temp_point_history):
+        if point == [-1, -1]:
+            continue
+        temp_point_history[index][0] = temp_point_history[index][0] - base_x
+        temp_point_history[index][1] = temp_point_history[index][1] - base_y
+    temp_point_history = list(
+        itertools.chain.from_iterable(temp_point_history)
+    )  # [[x, y], [x, y]] => [x, y, x, y] # TODO: Make this a separate function.
+    return temp_point_history
+
+
 def pre_process_point_history_deltas(
     image_width: int, image_height: int, point_history: List[Tuple[float]]
 ) -> List[float]:
@@ -312,7 +331,10 @@ def preprocess_landmarks(
         right_landmarks[landmark_id] = landmarks
 
 
-def make_hands_detector() -> (mp.solutions.hands.Hands, mp.solutions.face_detection.FaceDetection):
+def make_hands_detector() -> (
+    mp.solutions.hands.Hands,
+    mp.solutions.face_detection.FaceDetection,
+):
     """Creates and instance of the mediapipe hands detector."""
     mp_hands = mp.solutions.hands
     mp_face = mp.solutions.face_detection
@@ -352,8 +374,6 @@ class GestureData:
 def detect_hands_task(gesture: GestureData, video_path: Path):
     """Detects gesture landmarks from a video file."""
     mediapipe_hands, mediapipe_face = make_hands_detector()
-    frame_height = None
-    frame_width = None
     # Dictionaries for every hand.
     left_landmarks = {i: [] for i in range(0, 21)}
     right_landmarks = {i: [] for i in range(0, 21)}
@@ -370,22 +390,20 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
         if frame_height is None:
             frame_height, frame_width, _ = frame.shape
 
-        # frame = cv2.flip(frame, 1)
-        # frame = cv2.flip(frame, 1)
-        frame.flags.writeable = False
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.flip(frame, 1)
+        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Ony required when using the webcam, not recorded videos.
+        frame.flags.writeable = False
         results = mediapipe_hands.process(frame)
         face_results = mediapipe_face.process(frame)
         frame.flags.writeable = True
 
         if not results.multi_hand_landmarks:
             # Nothing was detected this frame.
-            # for landmark_id in left_landmarks.keys():
-            #     left_landmarks[landmark_id].append([-1, -1])
-            # for landmark_id in right_landmarks.keys():
-            #     right_landmarks[landmark_id].append([-1, -1])
-            continue
+            for landmark_id in left_landmarks.keys():
+                left_landmarks[landmark_id].append([-1, -1])
+            for landmark_id in right_landmarks.keys():
+                right_landmarks[landmark_id].append([-1, -1])
+            # continue
         else:
             # Found some hands.
             found_left = False
@@ -415,15 +433,16 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
                         # left_landmarks[landmark_id].append([-1, -1])
                         found_right = True
 
-            # Get note:
+            # Get mouth:
             if not face_results.detections:
                 if mouth_positions:
                     # Repeat the last position
                     mouth_positions.append(mouth_positions[-1])
             else:
-                # for detection in face_results.detections:
-                mouth = mp.solutions.face_detection.get_key_point(face_results.detections[0], mp.solutions.face_detection.FaceKeyPoint.MOUTH_CENTER)
-                print("Nose detected:", frame_i, mouth)
+                mouth = mp.solutions.face_detection.get_key_point(
+                    face_results.detections[0],
+                    mp.solutions.face_detection.FaceKeyPoint.MOUTH_CENTER,
+                )
                 mouth_positions.append([mouth.x, mouth.y])
 
             if not found_left:
@@ -433,7 +452,13 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
                 for landmark_id in right_landmarks.keys():
                     right_landmarks[landmark_id].append([-1, -1])
 
-    return video_name, (frame_width, frame_height), left_landmarks, right_landmarks, mouth_positions
+    return (
+        video_name,
+        (frame_width, frame_height),
+        left_landmarks,
+        right_landmarks,
+        mouth_positions,
+    )
 
 
 class GestureDataset:
@@ -454,11 +479,8 @@ class GestureDataset:
             for i, row in enumerate(self.y_data):
                 if row == gesture_id:
                     delete_indexes.append(i)
-            print(self.y_data.shape, self.x_data.shape)
             self.y_data = np.delete(self.y_data, delete_indexes, axis=0)
             self.x_data = np.delete(self.x_data, delete_indexes, axis=0)
-            print("Deleted:", delete_indexes)
-            print(self.y_data.shape, self.x_data.shape)
             del self.lookup_dict[gesture_id]
             del self.reverse_lookup_dict[gesture_name]
         else:
@@ -493,7 +515,8 @@ class GestureDataset:
                     frame_height,
                     hand_number,
                     landmark_id,
-                    *history,
+                    mouth_position,
+                    history,
                 ) = landmark_line
                 frame_height = int(frame_height)
                 frame_width = int(frame_width)
@@ -501,8 +524,8 @@ class GestureDataset:
                 gesture_number = int(gesture_number)
                 video_name = video_name
                 hand_number = int(hand_number)
-
-                history = list(map(lambda coordinate: eval(coordinate), history))
+                history = eval(history)
+                mouth_position = eval(mouth_position)
                 history = list(
                     map(
                         lambda coordinate: [float(coordinate[0]), float(coordinate[1])],
@@ -510,60 +533,64 @@ class GestureDataset:
                     )
                 )
 
+                # if ONLY_LANDMARK_ID and landmark_id != ONLY_LANDMARK_ID:
+                #     print("skipped csv", landmark_id)
+
                 if gesture_number != last_gesture_number:
                     last_gesture_number = gesture_number
                     gesture_id += 1
                     gesture_videos_left_landmarks[gesture_id] = {}
                     gesture_videos_right_landmarks[gesture_id] = {}
-                    print(f"{gesture_name}({gesture_number} -> {gesture_id})")
+                    print(f"{gesture_name} -> {gesture_id}")
                     self.lookup_dict[gesture_id] = gesture_name
                     self.reverse_lookup_dict[gesture_name] = gesture_id
 
                 if video_name != last_video_name:
                     last_video_name = video_name
                     gesture_videos_left_landmarks[gesture_id][video_name] = {
-                        i: [] for i in range(0, 21)
+                        "landmarks": {i: [] for i in range(0, 21)},
+                        "mouth_position": mouth_position,
                     }
                     gesture_videos_right_landmarks[gesture_id][video_name] = {
-                        i: [] for i in range(0, 21)
+                        "landmarks": {i: [] for i in range(0, 21)},
+                        "mouth_position": mouth_position,
                     }
 
                 if last_hand != hand_number:
                     last_hand = hand_number
-                    # plt.close()
-                # if landmark_id != ONLY_LANDMARK_ID:
-                #     gesture_videos_left_landmarks[gesture_id][video_name][landmark_id] = [[0, 0] for _ in range(10)]
-                #     gesture_videos_right_landmarks[gesture_id][video_name][landmark_id] = [[0, 0] for _ in range(10)]
 
                 if hand_number == 0:
-                    gesture_videos_left_landmarks[gesture_id][video_name][
+                    gesture_videos_left_landmarks[gesture_id][video_name]["landmarks"][
                         landmark_id
                     ] = history
                 elif hand_number == 1:
-                    gesture_videos_right_landmarks[gesture_id][video_name][
+                    gesture_videos_right_landmarks[gesture_id][video_name]["landmarks"][
                         landmark_id
                     ] = history
-
+        # pprint(gesture_videos_left_landmarks)
+        # raise Exception()
         for gesture_id, videos in gesture_videos_left_landmarks.items():
-            for video_id, left_landmarks in videos.items():
+            for video_id, video_data in videos.items():
+                left_landmarks = video_data["landmarks"]
                 try:
                     right_landmarks = gesture_videos_right_landmarks[gesture_id][
                         video_id
-                    ]
+                    ]["landmarks"]
+                    mouth_position = video_data["mouth_position"]
                     preprocess_landmarks(
                         left_landmarks, right_landmarks, frame_width, frame_height
                     )
                     for i, landmarks in left_landmarks.items():
                         if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
                             continue
-                        left_landmarks[i] = pre_process_point_history_center(
-                            None, None, landmarks
+                        left_landmarks[i] = pre_process_point_history_mouth_position(
+                            mouth_position, landmarks
                         )
                     for i, landmarks in right_landmarks.items():
                         if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
                             continue
-                        right_landmarks[i] = pre_process_point_history_center(
-                            None, None, landmarks
+                        right_landmarks[i] = pre_process_point_history_mouth_position(
+                            mouth_position, landmarks
                         )
                     Y_dataset.append(gesture_id)
                     X_dataset.append(
@@ -572,6 +599,7 @@ class GestureDataset:
                     )
                 except IndexError as e:
                     print(f"Something went wrong while processing {video_id}: {e}")
+                    # raise e
 
         self.y_data = np.array(Y_dataset)
         self.x_data = np.array(X_dataset, dtype="float32")
@@ -597,11 +625,10 @@ class GestureDataset:
         )
         if csv_out_path and overwrite and csv_out_path.exists():
             os.remove(csv_out_path)
-        print(csv_out_path)
         start_time = time.time()
         for gesture_i, gesture in enumerate(tqdm(self.gestures)):
             # Loop over all gestures in the dataset.
-            with Pool(processes=1) as pool:
+            with Pool(processes=8) as pool:
                 # Executes the detect_hands_task in parallel.
                 results = pool.imap_unordered(
                     functools.partial(detect_hands_task, gesture),
@@ -617,10 +644,15 @@ class GestureDataset:
                             right_landmarks,
                             mouth_positions,
                         ) = result
-                        print(video_name)
-                        print(len(left_landmarks[0]))
-                        print(len(right_landmarks[0]))
-                        print(len(mouth_positions), mouth_positions)
+                        if mouth_positions:
+                            reference_mouth_position = mouth_positions[
+                                int(len(mouth_positions) / 2)
+                            ]
+                        else:
+                            print(
+                                f"Waning: No mouth detected in {gesture_name}/{video_name}. Using default value"
+                            )
+                            reference_mouth_position = [0.5, 0.4]
                         try:
                             # preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
                             for landmark_id, values in left_landmarks.items():
@@ -631,6 +663,7 @@ class GestureDataset:
                                     video_number=video_name,
                                     hand_number=0,
                                     landmark_id=landmark_id,
+                                    mouth_position=reference_mouth_position,
                                     point_history_list=values,
                                     width=frame_width,
                                     height=frame_height,
@@ -643,12 +676,14 @@ class GestureDataset:
                                     video_number=video_name,
                                     hand_number=1,
                                     landmark_id=landmark_id,
+                                    mouth_position=reference_mouth_position,
                                     point_history_list=values,
                                     width=frame_width,
                                     height=frame_height,
                                 )
                         except Exception as e:
                             print(f"Failure on a video for gesture {gesture.name}: {e}")
+                            raise e
         print(f"Completed analyzing videos in {time.time() - start_time}")
 
     def scan_videos(self, dataset_location: Path, handedness_data):
@@ -701,8 +736,26 @@ class GestureDataset:
 
 
 if __name__ == "__main__":
-    # CSV_OUT_PATH = Path("gestures_dataset.csv")
-    # DATASET_LOCATION = Path("ai_data/vgt-all")
+    CSV_OUT_PATH = Path("gestures_dataset.csv")
+    DATASET_LOCATION = Path("ai_data/vgt-all")
+
+    dataset = GestureDataset(single_gesture=False)
+    handedness_data = {}
+    for gesture_folder in clean_listdir(DATASET_LOCATION):
+        gesture_folder_path = DATASET_LOCATION / gesture_folder
+        gesture_name, handedness_string = gesture_folder.split("_")
+        handedness_data[gesture_name] = (
+            handedness_string[0] == "1",
+            handedness_string[1] == "1",
+        )
+    dataset.scan_videos(
+        dataset_location=DATASET_LOCATION, handedness_data=handedness_data
+    )
+    # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
+    dataset.load_from_csv(CSV_OUT_PATH)
+
+    # CSV_OUT_PATH = Path("gestures_dataset_small.csv")
+    # DATASET_LOCATION = Path("ai_data/vgt-small")
     #
     # dataset = GestureDataset(single_gesture=False)
     # handedness_data = {}
@@ -718,21 +771,3 @@ if __name__ == "__main__":
     # )
     # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
     # # dataset.load_from_csv(CSV_OUT_PATH)
-
-    CSV_OUT_PATH = Path("gestures_dataset_small.csv")
-    DATASET_LOCATION = Path("ai_data/vgt-small")
-
-    dataset = GestureDataset(single_gesture=False)
-    handedness_data = {}
-    for gesture_folder in clean_listdir(DATASET_LOCATION):
-        gesture_folder_path = DATASET_LOCATION / gesture_folder
-        gesture_name, handedness_string = gesture_folder.split("_")
-        handedness_data[gesture_name] = (
-            handedness_string[0] == "1",
-            handedness_string[1] == "1",
-        )
-    dataset.scan_videos(
-        dataset_location=DATASET_LOCATION, handedness_data=handedness_data
-    )
-    dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
-    # dataset.load_from_csv(CSV_OUT_PATH)

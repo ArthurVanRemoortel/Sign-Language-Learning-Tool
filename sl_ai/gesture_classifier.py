@@ -101,7 +101,7 @@ class GestureClassifier:
         self.make_model()
 
         # cp_callback = tf.keras.callbacks.ModelCheckpoint(MODEL_SAVE_PATH, verbose=1, save_weights_only=True, save_best_only=True)
-        es_callback = tf.keras.callbacks.EarlyStopping(patience=25, verbose=1)
+        es_callback = tf.keras.callbacks.EarlyStopping(patience=20, verbose=1)
         self.train_history = self.model.fit(
             self.x_train,
             self.y_train,

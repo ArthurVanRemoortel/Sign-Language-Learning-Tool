@@ -38,7 +38,7 @@ from sl_ai.dataset import (
     calculate_landmark_list,
     pre_process_point_history_center,
     mirror_landmarks_list,
-    mirror_coordinate,
+    mirror_coordinate, pre_process_point_history_mouth_position,
 )
 from sign_language_app.background_tasks import retrain_model
 
@@ -88,12 +88,12 @@ def verify_gesture(request):
 
     left_landmarks = {i: [] for i in range(0, 21)}
     right_landmarks = {i: [] for i in range(0, 21)}
-
+    mouth: (float, float) = ()
     # TODO: Refactor this.
     # TODO: Check if is_landmark_in_active_zone
     for frame in hand_frames:
         left, right, mouth = frame
-        mouth = mirror_coordinate(mouth["x"], mouth["y"])
+        mouth = tuple(mirror_coordinate(mouth["x"], mouth["y"]))
         print("mouth", mouth)
         if left and gesture.left_hand:
             landmark_list_left = calculate_landmark_list(
@@ -136,9 +136,9 @@ def verify_gesture(request):
     else:
         preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
         for i, landmarks in left_landmarks.items():
-            left_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
+            left_landmarks[i] = pre_process_point_history_mouth_position(mouth, landmarks)
         for i, landmarks in right_landmarks.items():
-            right_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
+            right_landmarks[i] = pre_process_point_history_mouth_position(mouth, landmarks)
 
         result = Classifier().gesture_classifier.predict(
             left_landmarks, right_landmarks
