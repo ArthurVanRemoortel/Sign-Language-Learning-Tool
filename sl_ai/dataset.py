@@ -4,6 +4,7 @@ import functools
 import itertools
 import os
 import time
+from ast import literal_eval
 from math import sqrt
 from pathlib import Path
 from pprint import pprint
@@ -52,9 +53,30 @@ def log_csv(
             hand_number,
             landmark_id,
             mouth_position,
-            [p for p in point_history_list],
+            point_list_to_string(point_history_list),
         ]
     )
+
+
+def point_list_to_string(lst) -> str:
+    string = ''
+    for i, item in enumerate(lst):
+        if i != 0:
+            string += ', '
+        string += str(item).replace(' ', '')
+    string = f"[{string}]"
+    return string
+
+
+def point_list_from_string(string: str) -> list:
+    result = []
+    for item in string[1:-1].split(", "):
+        item = item[1:-1]
+        numbers = []
+        for number in item.split(','):
+            numbers.append(float(number))
+        result.append(numbers)
+    return result
 
 
 def fill_holes(data_list: List[Tuple[float]], empty_val: Any) -> List[Tuple[float]]:
@@ -216,6 +238,8 @@ def calculate_landmark_list(
     for _, landmark in enumerate(landmarks):
         landmark_x = x_getter(landmark)
         landmark_y = y_getter(landmark)
+        landmark_x = round(landmark_x, 3)
+        landmark_y = round(landmark_y, 3)
         landmark_point.append([landmark_x, landmark_y])
     return landmark_point
 
@@ -227,7 +251,7 @@ def pre_process_point_history_center(
     temp_point_history = copy.deepcopy(point_history)
     base_x, base_y = 0.5, 0.5
     for index, point in enumerate(temp_point_history):
-        if point == [-1, -1]:
+        if point == [-1, -1] or point == [-1.0, -1.0]:
             continue
         temp_point_history[index][0] = temp_point_history[index][0] - base_x
         temp_point_history[index][1] = temp_point_history[index][1] - base_y
@@ -238,13 +262,13 @@ def pre_process_point_history_center(
 
 
 def pre_process_point_history_mouth_position(
-    mouth_position: Tuple[float, float], point_history: List[Tuple[float]]
+    mouth_position: List[float], point_history: List[List[float]]
 ) -> List[float]:
     """Alternative data representation for the AI model. Converts a list of coordinates to a list of distances relative to the position of the users mouth."""
     temp_point_history = copy.deepcopy(point_history)
     base_x, base_y = mouth_position
     for index, point in enumerate(temp_point_history):
-        if point == [-1, -1]:
+        if point == [-1, -1] or point == [-1.0, -1.0]:
             continue
         temp_point_history[index][0] = temp_point_history[index][0] - base_x
         temp_point_history[index][1] = temp_point_history[index][1] - base_y
@@ -317,16 +341,16 @@ def preprocess_landmarks(
     frame_height: int,
 ):
     """Uses the functions above to convert the raw data from mediapipe library in something usable by the AI model."""
-    trim_landmark_lists(left_landmarks, right_landmarks, [-1, -1])
+    trim_landmark_lists(left_landmarks, right_landmarks, [-1.0, -1.0])
     for landmark_id, landmarks in left_landmarks.items():
         landmarks = make_coordinates_list_fixed_length(landmarks, MAX_VIDEO_FRAMES)
-        landmarks = fill_holes(landmarks, [-1, -1])
+        landmarks = fill_holes(landmarks, [-1.0, -1.0])
         # landmarks = pre_process_point_history(frame_width, frame_height, landmarks)
         left_landmarks[landmark_id] = landmarks
 
     for landmark_id, landmarks in right_landmarks.items():
         landmarks = make_coordinates_list_fixed_length(landmarks, MAX_VIDEO_FRAMES)
-        landmarks = fill_holes(landmarks, [-1, -1])
+        landmarks = fill_holes(landmarks, [-1.0, -1.0])
         # landmarks = pre_process_point_history(frame_width, frame_height, landmarks)
         right_landmarks[landmark_id] = landmarks
 
@@ -368,7 +392,7 @@ class GestureData:
         return False
 
     def __str__(self):
-        return f"Gesture: {self.name}"
+        return f"Gesture: {self.name} (left={self.left_hand}, right={self.right_hand})"
 
 
 def detect_hands_task(gesture: GestureData, video_path: Path):
@@ -394,15 +418,16 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
         # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Ony required when using the webcam, not recorded videos.
         frame.flags.writeable = False
         results = mediapipe_hands.process(frame)
+        # print(results.multi_hand_landmarks)
         face_results = mediapipe_face.process(frame)
         frame.flags.writeable = True
 
         if not results.multi_hand_landmarks:
             # Nothing was detected this frame.
             for landmark_id in left_landmarks.keys():
-                left_landmarks[landmark_id].append([-1, -1])
+                left_landmarks[landmark_id].append([-1.0, -1.0])
             for landmark_id in right_landmarks.keys():
-                right_landmarks[landmark_id].append([-1, -1])
+                right_landmarks[landmark_id].append([-1.0, -1.0])
             # continue
         else:
             # Found some hands.
@@ -443,14 +468,14 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
                     face_results.detections[0],
                     mp.solutions.face_detection.FaceKeyPoint.MOUTH_CENTER,
                 )
-                mouth_positions.append([mouth.x, mouth.y])
+                mouth_positions.append([round(mouth.x, 2), round(mouth.y, 2)])
 
             if not found_left:
                 for landmark_id in left_landmarks.keys():
-                    left_landmarks[landmark_id].append([-1, -1])
+                    left_landmarks[landmark_id].append([-1.0, -1.0])
             if not found_right:
                 for landmark_id in right_landmarks.keys():
-                    right_landmarks[landmark_id].append([-1, -1])
+                    right_landmarks[landmark_id].append([-1.0, -1.0])
 
     return (
         video_name,
@@ -524,8 +549,8 @@ class GestureDataset:
                 gesture_number = int(gesture_number)
                 video_name = video_name
                 hand_number = int(hand_number)
-                history = eval(history)
-                mouth_position = eval(mouth_position)
+                history = point_list_from_string(history)
+                mouth_position = eval('lambda: ' + mouth_position)()
                 history = list(
                     map(
                         lambda coordinate: [float(coordinate[0]), float(coordinate[1])],
@@ -533,8 +558,9 @@ class GestureDataset:
                     )
                 )
 
-                # if ONLY_LANDMARK_ID and landmark_id != ONLY_LANDMARK_ID:
-                #     print("skipped csv", landmark_id)
+                if ONLY_LANDMARK_ID and landmark_id != ONLY_LANDMARK_ID:
+                    # print("skipped csv", landmark_id)
+                    continue
 
                 if gesture_number != last_gesture_number:
                     last_gesture_number = gesture_number
@@ -548,11 +574,11 @@ class GestureDataset:
                 if video_name != last_video_name:
                     last_video_name = video_name
                     gesture_videos_left_landmarks[gesture_id][video_name] = {
-                        "landmarks": {i: [] for i in range(0, 21)},
+                        "landmarks": {i: [] for i in range(0, 21) if i == ONLY_LANDMARK_ID},
                         "mouth_position": mouth_position,
                     }
                     gesture_videos_right_landmarks[gesture_id][video_name] = {
-                        "landmarks": {i: [] for i in range(0, 21)},
+                        "landmarks": {i: [] for i in range(0, 21) if i == ONLY_LANDMARK_ID},
                         "mouth_position": mouth_position,
                     }
 
@@ -567,8 +593,7 @@ class GestureDataset:
                     gesture_videos_right_landmarks[gesture_id][video_name]["landmarks"][
                         landmark_id
                     ] = history
-        # pprint(gesture_videos_left_landmarks)
-        # raise Exception()
+
         for gesture_id, videos in gesture_videos_left_landmarks.items():
             for video_id, video_data in videos.items():
                 left_landmarks = video_data["landmarks"]
@@ -598,6 +623,10 @@ class GestureDataset:
                         + right_landmarks[ONLY_LANDMARK_ID]
                     )
                 except IndexError as e:
+                    print(len(left_landmarks[ONLY_LANDMARK_ID]))
+                    print(left_landmarks)
+                    print(len(gesture_videos_right_landmarks[gesture_id][video_id]["landmarks"][ONLY_LANDMARK_ID]))
+                    print(gesture_videos_right_landmarks[gesture_id][video_id]["landmarks"])
                     print(f"Something went wrong while processing {video_id}: {e}")
                     # raise e
 
@@ -701,7 +730,7 @@ class GestureDataset:
                 gesture_name = gesture_folder.name.split("_")[0]
                 gesture_path = dataset_location
 
-            left_hand, right_hand = list(handedness_data.values())[0]
+            left_hand, right_hand = handedness_data[gesture_name]
             gesture = GestureData(
                 name=gesture_name, left_hand=left_hand, right_hand=right_hand
             )
@@ -738,36 +767,22 @@ class GestureDataset:
 if __name__ == "__main__":
     CSV_OUT_PATH = Path("gestures_dataset.csv")
     DATASET_LOCATION = Path("ai_data/vgt-all")
-
     dataset = GestureDataset(single_gesture=False)
     handedness_data = {}
     for gesture_folder in clean_listdir(DATASET_LOCATION):
         gesture_folder_path = DATASET_LOCATION / gesture_folder
-        gesture_name, handedness_string = gesture_folder.split("_")
+        parts = gesture_folder.split("_")
+        gesture_name = '_'.join(parts[:-1])
+        handedness_string = parts[-1]
         handedness_data[gesture_name] = (
             handedness_string[0] == "1",
             handedness_string[1] == "1",
         )
+    pprint(handedness_data)
     dataset.scan_videos(
         dataset_location=DATASET_LOCATION, handedness_data=handedness_data
     )
-    # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
+    dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
     dataset.load_from_csv(CSV_OUT_PATH)
 
-    # CSV_OUT_PATH = Path("gestures_dataset_small.csv")
-    # DATASET_LOCATION = Path("ai_data/vgt-small")
-    #
-    # dataset = GestureDataset(single_gesture=False)
-    # handedness_data = {}
-    # for gesture_folder in clean_listdir(DATASET_LOCATION):
-    #     gesture_folder_path = DATASET_LOCATION / gesture_folder
-    #     gesture_name, handedness_string = gesture_folder.split("_")
-    #     handedness_data[gesture_name] = (
-    #         handedness_string[0] == "1",
-    #         handedness_string[1] == "1",
-    #     )
-    # dataset.scan_videos(
-    #     dataset_location=DATASET_LOCATION, handedness_data=handedness_data
-    # )
-    # dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
-    # # dataset.load_from_csv(CSV_OUT_PATH)
+

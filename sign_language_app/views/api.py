@@ -104,7 +104,7 @@ def verify_gesture(request):
                 left_landmarks[landmark_id].append(landmark)
         else:
             for landmark_id in left_landmarks.keys():
-                left_landmarks[landmark_id].append([-1, -1])
+                left_landmarks[landmark_id].append([-1.0, -1.0])
 
         if right and gesture.right_hand:
             landmark_list_right = calculate_landmark_list(
@@ -115,7 +115,7 @@ def verify_gesture(request):
                 right_landmarks[landmark_id].append(landmark)
         else:
             for landmark_id in right_landmarks.keys():
-                right_landmarks[landmark_id].append([-1, -1])
+                right_landmarks[landmark_id].append([-1.0, -1.0])
 
     # visualize_gesture(
     #     frame_width=frame_width,
@@ -124,11 +124,11 @@ def verify_gesture(request):
     # )
     print(
         "left: ",
-        len(list(filter(lambda p: p != [-1, -1], (left_landmarks[ONLY_LANDMARK_ID])))),
+        len(list(filter(lambda p: p != [-1.0, -1.0], (left_landmarks[ONLY_LANDMARK_ID])))),
     )
     print(
         "right: ",
-        len(list(filter(lambda p: p != [-1, -1], (right_landmarks[ONLY_LANDMARK_ID])))),
+        len(list(filter(lambda p: p != [-1.0, -1.0], (right_landmarks[ONLY_LANDMARK_ID])))),
     )
     if left_landmarks == right_landmarks:
         is_correct = 0
