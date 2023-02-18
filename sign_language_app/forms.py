@@ -273,3 +273,13 @@ class TeacherCodeForm(forms.Form):
         ),
         required=True,
     )
+
+
+class UserSettingsForm(ModelForm):
+    class Meta:
+        model = UserSettings
+        fields = [
+            "allow_video_uploads",
+            "allow_sharing_with_teachers",
+            "allow_video_training",
+        ]

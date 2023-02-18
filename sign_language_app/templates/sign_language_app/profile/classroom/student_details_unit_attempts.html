@@ -1,4 +1,5 @@
 {% extends 'sign_language_app/profile/profile_base.html' %}
+{% load static %}
 {% load extras %}
 {% block title %}
     Unit Attempt of {{ student.username }} for {{ unit_attempt.unit.name }}
@@ -58,43 +59,49 @@
                             </div>
                         </div>
                     </div>
-
-                    {% for gesture_attempt in attempts %}
-                        {% with video_url=gesture_attempt.get_last_video_url %}
-                            <div class="column is-one-quarter">
-                                <div id="gestureAttemptsCard_{{ gesture_attempt.id }}" class="card {% if gesture_attempt.success %}has-background-primary{% else %}has-background-danger{% endif %}">
-                                    <p class="card-header-title">
-                                        {% if gesture_attempt.success %}Correct{% else %}Wrong{% endif %}
-                                    </p>
-                                    <div class="card-content pt-1 pb-5 pl-0 pr-0" >
-                                        <div class="content">
-                                            <video preload="auto" onclick="this.play()">
-                                                <source src='{{ MEDIA_URL }}/{{ video_url }}' type="video/mp4">
-                                            </video>
+                    {% if student_settings.allow_sharing_with_teachers %}
+                        {% for gesture_attempt in attempts %}
+                            {% with video_url=gesture_attempt.attempts_video_url %}
+                                <div class="column is-one-quarter">
+                                    <div id="gestureAttemptsCard_{{ gesture_attempt.id }}" class="card {% if gesture_attempt.success %}has-background-primary{% else %}has-background-danger{% endif %}">
+                                        <p class="card-header-title">
+                                            {% if gesture_attempt.success %}Correct{% else %}Wrong{% endif %}
+                                        </p>
+                                        <div class="card-content pt-1 pb-5 pl-0 pr-0" >
+                                            <div class="content">
+                                                {% if student_settings.allow_video_uploads %}
+                                                    <video preload="auto" onclick="this.play()">
+                                                        <source src='{{ MEDIA_URL }}/{{ video_url }}' type="video/mp4">
+                                                    </video>
+                                                {% else %}
+                                                    <img src="{% static 'sign_language_app/images/no_video_placeholder.svg' %}" alt="Placeholder Image">
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <footer class="card-footer" style="border-top: 1px transparent">
-                                        <button onclick="overruleAttempts({{ gesture_attempt.id }}, true)" class="card-footer-item has-background-primary-dark" style="border-right: 1px transparent">
+                                        <footer class="card-footer" style="border-top: 1px transparent">
+                                            <button onclick="overruleAttempts({{ gesture_attempt.id }}, true)" class="card-footer-item has-background-primary-dark" style="border-right: 1px transparent">
                                             <span class="icon is-small">
                                               <i class="fa-solid fa-check"></i>
                                             </span>
-                                        </button>
-                                        <button onclick="overruleAttempts({{ gesture_attempt.id }}, false)" class="card-footer-item has-background-danger-dark" style="border-right: 1px transparent">
+                                            </button>
+                                            <button onclick="overruleAttempts({{ gesture_attempt.id }}, false)" class="card-footer-item has-background-danger-dark" style="border-right: 1px transparent">
                                             <span class="icon is-small">
                                               <i class="fa-solid fa-xmark"></i>
                                             </span>
-                                        </button>
-                                        <button class="card-footer-item has-background-info">
+                                            </button>
+                                            <button class="card-footer-item has-background-info">
                                             <span class="icon is-small">
                                               <i class="fa-solid fa-robot"></i>
                                             </span>
-                                        </button>
+                                            </button>
 
-                                    </footer>
+                                        </footer>
+                                    </div>
                                 </div>
-                            </div>
-                        {% endwith %}
-                    {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+
+                    {% endif %}
                 </div>
                 <hr>
             {% endfor %}

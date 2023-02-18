@@ -12,14 +12,21 @@ from rolepermissions.checkers import has_role
 from rolepermissions.roles import get_user_roles
 
 from learning_site.roles import Teacher
-from sign_language_app.forms import UploadGestureForm, NewCourseForm, TeacherCodeForm
+from sign_language_app.forms import (
+    UploadGestureForm,
+    NewCourseForm,
+    TeacherCodeForm,
+    UserSettingsForm,
+)
 from sign_language_app.models import (
     Gesture,
     Course,
     Unit,
     TeacherCode,
     StudentsAccess,
-    UnitAttempt, GestureAttempt,
+    UnitAttempt,
+    GestureAttempt,
+    UserSettings,
 )
 from sign_language_app.utils import (
     teacher_or_admin_required,
@@ -39,8 +46,16 @@ def profile_overview(request):
 @login_required
 def profile_settings(request):
     user = get_user(request)
-    context = {"current_section": "settings"}
-    return render(request, "sign_language_app/profile/profile_overview.html", context)
+    settings: UserSettings = user.settings.first()
+    form = UserSettingsForm(
+        request.POST or None, request.FILES or None, instance=settings
+    )
+    if form.is_valid():
+        form.save()
+        if not settings.allow_video_uploads:
+            ...
+    context = {"current_section": "settings", "form": form}
+    return render(request, "sign_language_app/profile/profile_settings.html", context)
 
 
 @login_required
@@ -102,6 +117,7 @@ def student_details_view(request, student_id: int):
         )
         return redirect("manage_students")
     context = {
+        "student_settings": student.settings.first(),
         "current_section": "manage_students",
         "teacher": teacher,
         "student": student,
@@ -125,6 +141,7 @@ def student_details_unit_attempts_view(request, student_id: int, unit_attempts_i
         )
         return redirect("manage_students")
     context = {
+        "student_settings": student.settings.first(),
         "current_section": "manage_students",
         "teacher": teacher,
         "student": student,
@@ -157,7 +174,7 @@ def overrule_gesture_attempt_view(
     unit_attempt = get_object_or_404(UnitAttempt, pk=unit_attempts_id)
 
     data_from_post = json.load(request)
-    gesture_attempt.success = data_from_post['correct']
+    gesture_attempt.success = data_from_post["correct"]
     gesture_attempt.save()
 
     points = 0
@@ -175,6 +192,7 @@ def overrule_gesture_attempt_view(
             # Never success.
             points += 0
     unit_attempt.score = int(points / unit_attempt.unit.gestures.count() * 100)
+    unit_attempt.is_overruled = True
     unit_attempt.save()
     return JsonResponse({"status": "ok", "newScore": unit_attempt.score})
 

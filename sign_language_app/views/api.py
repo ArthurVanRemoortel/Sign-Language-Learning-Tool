@@ -37,7 +37,8 @@ from sl_ai.dataset import (
     trim_landmark_lists,
     calculate_landmark_list,
     pre_process_point_history_center,
-    mirror_landmarks_list, mirror_coordinate,
+    mirror_landmarks_list,
+    mirror_coordinate,
 )
 from sign_language_app.background_tasks import retrain_model
 
@@ -92,7 +93,7 @@ def verify_gesture(request):
     # TODO: Check if is_landmark_in_active_zone
     for frame in hand_frames:
         left, right, mouth = frame
-        mouth = mirror_coordinate(mouth['x'], mouth['y'])
+        mouth = mirror_coordinate(mouth["x"], mouth["y"])
         print("mouth", mouth)
         if left and gesture.left_hand:
             landmark_list_left = calculate_landmark_list(
@@ -133,7 +134,6 @@ def verify_gesture(request):
         is_correct = 0
         print("WARNING: Nothing was detected.")
     else:
-        # TODO: Verify if the js and python coordinate systems are the same.
         preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
         for i, landmarks in left_landmarks.items():
             left_landmarks[i] = pre_process_point_history_center(None, None, landmarks)
@@ -158,13 +158,19 @@ def verify_gesture(request):
                     print(
                         f"Warning: {gesture_id} is present in the model but was probably deleted from the dataset. Retrain the model."
                     )
-            elif prediction > 1:
-                print(f"Other prediction but confidence was low: {Classifier().gesture_classifier.gesture_dataset.lookup_dict[gesture_id]} = {prediction}")
+            elif (
+                prediction > 1
+                and gesture_id
+                in Classifier().gesture_classifier.gesture_dataset.lookup_dict
+            ):
+                print(
+                    f"Other prediction but confidence was low: {Classifier().gesture_classifier.gesture_dataset.lookup_dict[gesture_id]} = {prediction}"
+                )
         is_correct = (
             gesture.word.lower() in predicted_gestures
             or gesture.word in predicted_gestures
         )
-        print(f"Best prediction: {predicted_gestures}")
+        print(f"Best prediction: {predicted_gestures}, is_correct={is_correct}")
     return JsonResponse(
         {"status": "OK", "correct": is_correct}, status=status.HTTP_201_CREATED
     )

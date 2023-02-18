@@ -264,6 +264,9 @@
 
         function beginRecording() {
             gestureStart = performance.now()
+            {#if ('True' !== "{{ user_settings.allow_video_uploads }}"){#}
+            {#    return#}
+            {#}#}
             const stream = canvasElement.captureStream(30);
             mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
             videoBlobs = []
@@ -305,6 +308,9 @@
         }
 
         function uploadGestureVideo(){
+            {#if ('True' !== "{{ user_settings.allow_video_uploads }}"){#}
+            {#    return#}
+            {#}#}
             const blob = new Blob(videoBlobs, {
                 type: "video/webm"
             });
@@ -328,14 +334,6 @@
                 beforeSend: function (xhr) {
                 },
             });
-            {#console.log(blob)#}
-            {#const url = URL.createObjectURL(blob);#}
-            {#const a = document.createElement("a");#}
-            {#a.href = url;#}
-            {#a.download = "recording.webm";#}
-            {#a.click();#}
-            {#URL.revokeObjectURL(url);#}
-            {#resetRecording()#}
         }
 
         const zip = (a, b) => a.map((k, i) => [k, b[i]]);

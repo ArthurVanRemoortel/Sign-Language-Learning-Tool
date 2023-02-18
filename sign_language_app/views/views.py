@@ -16,7 +16,8 @@ from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
 from django.core import serializers as django_serializers
 
-from sign_language_app.utils import get_user, find_course_recommendations
+from sign_language_app.utils import get_user, find_course_recommendations, copy_user_gesture_video, \
+    save_lase_attempts_videos
 from sign_language_app.views.error_views import error_view
 
 
@@ -101,9 +102,11 @@ def courses_overview(request):
 
 @login_required
 def unit_view(request, unit_id):
+    user = get_user(request)
     unit = get_object_or_404(Unit, pk=unit_id)
     context = {
         "unit": unit,
+        "user_settings": user.settings.first(),
         "gestures": json.dumps(
             serializers.GestureSerializer(unit.gestures.all(), many=True).data
         ),
@@ -126,6 +129,7 @@ def unit_summary(request, unit_id, attempt_id):
     context = {
         "unit": unit,
         "this_attempt": this_attempt,
+        "user_settings": user.settings.first(),
         "attempts_per_gesture": {
             gesture: [
                 gesture_attempt
@@ -180,6 +184,8 @@ def save_unit_attempt(request, unit_id):
     unit_attempt.score = int(points / unit.gestures.count() * 100)
     unit_attempt.save()
     print(f"Finished with a score of {unit_attempt.score}")
+    print("Copying videos:")
+    save_lase_attempts_videos(user=user, unit=unit, unit_attempt=unit_attempt)
     return JsonResponse(
         {
             "continue": True,

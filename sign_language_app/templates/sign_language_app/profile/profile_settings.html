@@ -1,8 +1,58 @@
 {% extends 'sign_language_app/profile/profile_base.html'%}
 {% load extras %}
 {% block title %}
-    Settings
+    Privacy Settings
 {% endblock %}
 
 {% block profile_content %}
+    <div class="container">
+        <h2 class="title">
+            Privacy Settings
+        </h2>
+        <form action="{% url 'profile_settings' %}" method="post">
+            {% csrf_token %}
+            <div class="mb-5">
+                <div>
+                    <label class="checkbox is-size-5">
+                        {{ form.allow_video_uploads }}
+                        Allow video recordings
+                    </label>
+                </div>
+                Videos of your gestures are recorded and presented to you at the end of an exercise where you can review them.
+                <div class="icon-text">
+                  <span class="icon has-text-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </span>
+                  <span>Warning: Disabling this option will delete all existing recordings. They cannot be recovered.</span>
+                </div>
+
+            </div>
+            <div class="mb-5">
+                <div>
+                    <label class="checkbox is-size-5">
+                        {{ form.allow_sharing_with_teachers }}
+                        Share recordings with teachers
+                    </label>
+                </div>
+                Allow your teachers to see the recording of your gestures and review them. Also allows teachers to grade your exercises.
+            </div>
+            <div class="mb-5">
+                <div>
+                    <label class="checkbox is-size-5">
+                        {{ form.allow_video_training }}
+                        Allow training on recordings
+                    </label>
+                </div>
+                Allow the system to use your recordings to improve the reliability of the gesture recognition.
+
+
+            </div>
+
+          <div class="control">
+              <button class="button is-link">Save</button>
+          </div>
+
+        </form>
+    </div>
+
 {% endblock %}

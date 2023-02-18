@@ -28,9 +28,9 @@ class UserSettings(models.Model):
         null=False,
         related_name="settings",
     )
-    allow_video_uploads = models.BooleanField(default=False)
-    can_view_videos = models.BooleanField(default=False)
-    can_train_on_videos = models.BooleanField(default=False)
+    allow_video_uploads = models.BooleanField(default=True)
+    allow_sharing_with_teachers = models.BooleanField(default=True)
+    allow_video_training = models.BooleanField(default=False)
 
 
 class GestureLocation(models.Model):
@@ -200,20 +200,21 @@ class UnitAttempt(models.Model):
     )
     datetime = models.DateTimeField(null=False, auto_now_add=True)
     score = models.IntegerField(null=False, default=0)
+    is_overruled = models.BooleanField(default=False, null=False)
 
     def __str__(self):
         return f"{self.unit} by {self.user}"
 
-    def get_user_gesture_videos(self) -> List[Path]:
-        """Returns the videos files for this user and unit."""
-        user_settings: UserSettings = self.user.settings.first()
-        if not user_settings.allow_video_uploads:
-            return list()
-        videos_location: Path = USER_GESTURES_ROOT / self.unit.id / self.user.id
-        return [
-            videos_location / str(video_file)
-            for video_file in clean_listdir(videos_location)
-        ]
+    # def get_user_gesture_videos(self) -> List[Path]:
+    #     """Returns the videos files for this user and unit."""
+    #     user_settings: UserSettings = self.user.settings.first()
+    #     if not user_settings.allow_video_uploads:
+    #         return list()
+    #     videos_location: Path = USER_GESTURES_ROOT / self.unit.id / self.user.id
+    #     return [
+    #         videos_location / str(video_file)
+    #         for video_file in clean_listdir(videos_location)
+    #     ]
 
     @property
     def passed(self) -> bool:
@@ -240,16 +241,16 @@ class GestureAttempt(models.Model):
     success = models.BooleanField(default=False, null=False)
 
     @property
-    def get_last_video_url(self) -> Optional[str]:
+    def attempts_video_url(self) -> Optional[str]:
         """Find the video of the user gesture in the temporary "last" folder."""
-        user_settings: UserSettings = self.unit_attempt.user.settings.first()
+        user_settings: UserSettings = self.user.settings.first()
         if not user_settings.allow_video_uploads:
             return None
         location = (
             Path("vgt-users")
             / str(self.user.id)
             / str(self.unit_attempt.unit.id)
-            / "last"
+            / str(self.unit_attempt.id)
             / f"{self.gesture.id}_{self.attempt}.webm"
         )
         return location.as_posix()

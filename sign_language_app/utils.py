@@ -17,7 +17,7 @@ from rolepermissions.utils import user_is_authenticated
 
 from learning_site.roles import Teacher
 from learning_site.settings import USER_GESTURES_ROOT
-from sign_language_app.models import TeacherCode, Gesture, Unit, Course
+from sign_language_app.models import TeacherCode, Gesture, Unit, Course, UnitAttempt
 
 
 def get_user(request):
@@ -75,12 +75,19 @@ def save_user_gesture_video(
             file_object.write(chunk)
 
 
-def copy_user_gesture_video(user: User, unit: Unit, gesture: Gesture, attempt: int):
+def save_lase_attempts_videos(user: User, unit: Unit, unit_attempt: UnitAttempt):
+    temp_location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / 'last'
+    new_location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / str(unit_attempt.id)
+    shutil.copytree(temp_location, new_location)
+    shutil.rmtree(temp_location)
+
+
+def copy_user_gesture_video(user: User, unit: Unit, gesture: Gesture, attempt: int, unit_attempt: UnitAttempt):
     location = (
         USER_GESTURES_ROOT
         / str(user.id)
         / str(unit.id)
-        / "last"
+        / str(unit_attempt.id)
         / f"{gesture.id}_{attempt}.webm"
     )
     if location.exists():

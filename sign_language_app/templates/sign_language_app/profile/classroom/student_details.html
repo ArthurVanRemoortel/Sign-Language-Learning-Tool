@@ -29,7 +29,7 @@
                 Manage {{ student.username }}
             </h2>
             <p>
-                View this student's recent activity.
+                View this student's recent activity and overrule the system's decisions.
             </p>
         </div>
         <div class="block">
@@ -45,7 +45,7 @@
                 <tr>
                     <th><abbr title="Course">Course</abbr></th>
                     <th><abbr title="Unit">Unit</abbr></th>
-                    <th><abbr title="Score">Score</abbr></th>
+                    <th class="has-text-centered"><abbr title="Score">Score</abbr></th>
                     <th><abbr title="Date">Date</abbr></th>
                     <th style="width: 100px"></th>
                 </tr>
@@ -55,22 +55,28 @@
                     <tr>
                         <td>{{ unit_attempt.unit.course.name }}</td>
                         <td>{{ unit_attempt.unit.name }}</td>
-                        <td>
-                            <div class="icon-text has-text-{% if unit_attempt.passed %}primary{% else %}danger{% endif %}">
-                              <span class="icon">
+                        <td class="has-text-right has-text-{% if unit_attempt.passed %}primary{% else %}danger{% endif %}">
+                            <span>{{ unit_attempt.score }}%</span>
+                            <span class="icon">
                                 <i class="fa-solid fa-face-{% if unit_attempt.passed %}smile{% else %}frown{% endif %}"></i>
-                              </span>
-                                <span>{{ unit_attempt.score }}%</span>
-                            </div>
+                            </span>
+                            <span class="icon">
+                                {% if unit_attempt.is_overruled %}
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                {% endif %}
+                            </span>
                         </td>
                         <td>{{ unit_attempt.datetime|naturalday }}</td>
                         <td>
                             <div class="buttons">
-                                <a href="{% url "student_details_unit_attempts_view" student.id unit_attempt.id %}" class="button is-info is-small">
+                                {% with uploads_enabled=student_settings.allow_video_uploads shared=student_settings.allow_sharing_with_teachers %}
+                                    <a href="{% if uploads_enabled and shared %} {% url "student_details_unit_attempts_view" student.id unit_attempt.id %} {% else %} # {% endif %}"
+                                       class="button is-info is-small" {% if not uploads_enabled or not shared %} disabled {% endif %}>
                                     <span class="icon is-small">
-                                      <i class="fa-solid fa-circle-info"></i>
+                                        <i class="fa-solid fa-pen-to-square"></i>
                                     </span>
-                                </a>
+                                    </a>
+                                {% endwith %}
                             </div>
                         </td>
                     </tr>
