@@ -253,7 +253,7 @@ class GestureAttempt(models.Model):
             / str(self.unit_attempt.id)
             / f"{self.gesture.id}_{self.attempt}.webm"
         )
-        return location.as_posix()
+        return location.as_posix() if (MEDIA_ROOT / location).exists() else None
 
     class Meta:
         ordering = ["id", "attempt"]

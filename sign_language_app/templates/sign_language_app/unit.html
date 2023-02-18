@@ -264,9 +264,9 @@
 
         function beginRecording() {
             gestureStart = performance.now()
-            {#if ('True' !== "{{ user_settings.allow_video_uploads }}"){#}
-            {#    return#}
-            {#}#}
+            if ('True' !== "{{ user_settings.allow_video_uploads }}"){
+                return
+            }
             const stream = canvasElement.captureStream(30);
             mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
             videoBlobs = []
@@ -308,9 +308,9 @@
         }
 
         function uploadGestureVideo(){
-            {#if ('True' !== "{{ user_settings.allow_video_uploads }}"){#}
-            {#    return#}
-            {#}#}
+            if ('True' !== "{{ user_settings.allow_video_uploads }}"){
+                return
+            }
             const blob = new Blob(videoBlobs, {
                 type: "video/webm"
             });

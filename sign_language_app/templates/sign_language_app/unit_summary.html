@@ -61,7 +61,7 @@
                                         <p class="card-header-title">
                                             {% if gesture_attempt.success %}Correct{% else %}Wrong{% endif %}
                                         </p>
-                                        {% if user_settings.allow_video_uploads %}
+                                        {% if user_settings.allow_video_uploads and video_url %}
                                             <div class="text-center">
                                                 <video preload="auto" onclick="this.play()" style="height: 200px">
                                                     <source src='{{ MEDIA_URL }}/{{ video_url }}' type="video/mp4">

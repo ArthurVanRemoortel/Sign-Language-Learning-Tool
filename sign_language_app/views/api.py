@@ -94,7 +94,7 @@ def verify_gesture(request):
     for frame in hand_frames:
         left, right, mouth = frame
         mouth = tuple(mirror_coordinate(mouth["x"], mouth["y"]))
-        print("mouth", mouth)
+        # print("mouth", mouth)
         if left and gesture.left_hand:
             landmark_list_left = calculate_landmark_list(
                 frame_width, frame_height, left

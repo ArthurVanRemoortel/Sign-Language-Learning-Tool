@@ -145,10 +145,11 @@ def unit_summary(request, unit_id, attempt_id):
 
 
 @login_required
-def save_unit_attempt(request, unit_id):
+def save_unit_attempt(request, unit_id: int):
     user = get_user(request)
-    unit = get_object_or_404(Unit, pk=unit_id)
-    unit_attempt = UnitAttempt(user=user, unit=unit, score=0)
+    user_settings: UserSettings = user.settings.first()
+    unit: Unit = get_object_or_404(Unit, pk=unit_id)
+    unit_attempt: UnitAttempt = UnitAttempt(user=user, unit=unit, score=0)
     unit_attempt.save()
     points = 0
     if request.method == "GET":
@@ -184,8 +185,9 @@ def save_unit_attempt(request, unit_id):
     unit_attempt.score = int(points / unit.gestures.count() * 100)
     unit_attempt.save()
     print(f"Finished with a score of {unit_attempt.score}")
-    print("Copying videos:")
-    save_lase_attempts_videos(user=user, unit=unit, unit_attempt=unit_attempt)
+    if user_settings.allow_video_uploads:
+        print("Copying videos:")
+        save_lase_attempts_videos(user=user, unit=unit, unit_attempt=unit_attempt)
     return JsonResponse(
         {
             "continue": True,
