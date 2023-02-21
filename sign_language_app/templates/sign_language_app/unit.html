@@ -67,6 +67,8 @@
 
         const recordingCutoffDelay = 500 // Only end recording if no hands were recorded for 500 milliseconds.
         const minRecordingMilliseconds = 500 // Movements shorted than this were probably accidents and are ignored.
+        const showLandmarks = "{{ show_landmarks }}" === 'True'
+        console.log(showLandmarks)
 
         let gestureStart = null
         let gestureEnd = null
@@ -419,16 +421,16 @@
                         } else if (handedness === "Right"){
                             found_right_hand = landmarks
                         }
-
-                        let color;
-                        if (handedness === "Right")
-                            color = '#518dce'
-                        else
-                            color = '#00FF00'
-
-                        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
-                            {color: color, lineWidth: 5});
-                        drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
+                        if (showLandmarks){
+                            let color;
+                            if (handedness === "Right")
+                                color = '#518dce'
+                            else
+                                color = '#00FF00'
+                            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS,
+                                {color: color, lineWidth: 5});
+                            drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
+                        }
                     }
                     hand_frames.push([found_left_hand, found_right_hand, current_mouth_position])
                 } else {
@@ -440,9 +442,6 @@
                             endRecording()
                     }
                 }
-
-            } else {
-                {#console.log("Nothing detected")#}
             }
             canvasCtx.restore();
         }
@@ -459,19 +458,19 @@
 
         function loadCamera(){
             const handsDetection = new Hands({locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-            }});
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                }});
 
             const faceDetection = new FaceDetection({locateFile: (file) => {
-              return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
-            }});
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
+                }});
 
             console.log(faceDetection)
 
 
             faceDetection.setOptions({
-              model: 'short',
-              minDetectionConfidence: 0.3
+                model: 'short',
+                minDetectionConfidence: 0.3
             });
             faceDetection.onResults(function (results) {
                 onFaceResults(results)
