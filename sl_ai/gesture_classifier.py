@@ -224,12 +224,10 @@ class GestureClassifier:
         y_pred = self.model.predict(self.x_test)
         y_pred = np.argmax(y_pred, axis=1)
         print(classification_report(self.y_test, y_pred))
-
         labels = sorted(list(set(self.y_test)))
+        labels_text = [self.gesture_dataset.lookup_dict[id] for id in labels]
         cmx_data = confusion_matrix(self.y_test, y_pred, labels=labels)
-
-        df_cmx = pd.DataFrame(cmx_data, index=labels, columns=labels)
-
+        df_cmx = pd.DataFrame(cmx_data, index=labels_text, columns=labels_text)
         fig, ax = plt.subplots(figsize=(7, 6))
         sns.heatmap(df_cmx, annot=True, fmt="g", square=False)
         ax.set_ylim(len(set(self.y_test)), 0)
