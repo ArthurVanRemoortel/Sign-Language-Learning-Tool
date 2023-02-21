@@ -43,6 +43,9 @@ class GestureClassifier:
     def append_dataset(self, new_dataset: GestureDataset):
         self.gesture_dataset.append_dataset(new_dataset)
 
+    def update_gesture_dataset(self, new_dataset: GestureDataset):
+        self.gesture_dataset.update_gesture_dataset(new_dataset)
+
     def make_model(self):
         TIME_STEPS = MAX_VIDEO_FRAMES * 2 * 2
         DIMENSION = 1

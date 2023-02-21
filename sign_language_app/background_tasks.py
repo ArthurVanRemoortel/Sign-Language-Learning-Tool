@@ -3,6 +3,7 @@ import random
 import threading
 import time
 from pathlib import Path
+from pprint import pprint
 from typing import List
 
 import schedule
@@ -37,14 +38,11 @@ def retrain_thread(new_gestures: List[Gesture], deleted_gestures: List[Gesture])
                     deleted_gesture.delete()
 
             for gesture in new_gestures:
-                if not gesture.creator:
-                    print("Gesture has no creator. This should not happen.")
                 gesture.status = Gesture.Status.TRAINING
                 gesture.save()
 
             for gesture in new_gestures:
-                if not gesture.creator:
-                    print("Gesture has no creator. This should not happen.")
+                print(f"Training gesture: {gesture}")
                 gesture_dataset = GestureDataset(single_gesture=True)
                 gesture_dataset.scan_videos(
                     gesture.videos_location,
@@ -56,7 +54,12 @@ def retrain_thread(new_gestures: List[Gesture], deleted_gestures: List[Gesture])
                     csv_out_path=gesture.videos_location / "dataset.csv"
                 )
                 gesture_dataset.load_from_csv(gesture.videos_location / "dataset.csv")
-                Classifier().gesture_classifier.append_dataset(gesture_dataset)
+                pprint(Classifier().gesture_classifier.gesture_dataset.reverse_lookup_dict)
+                if gesture.word in Classifier().gesture_classifier.gesture_dataset.reverse_lookup_dict:
+                    print("Gesture already exists. It was probably updated.")
+                    Classifier().gesture_classifier.update_gesture_dataset(gesture_dataset)
+                else:
+                    Classifier().gesture_classifier.append_dataset(gesture_dataset)
 
             Classifier().gesture_classifier.train(save_path=SAVED_MODEL_PATH)
 
@@ -68,6 +71,7 @@ def retrain_thread(new_gestures: List[Gesture], deleted_gestures: List[Gesture])
     except Exception as e:
         print(f"ERROR: Failed background training: {e}")
         IS_TRAINING = False
+        raise e
 
 
 def retrain_model():

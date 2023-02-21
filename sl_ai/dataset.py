@@ -20,7 +20,7 @@ from tqdm import tqdm
 from sl_ai.config import MAX_VIDEO_FRAMES, ONLY_LANDMARK_ID
 from multiprocessing import Pool
 
-from sl_ai.utils import clean_listdir
+from sl_ai.utils import clean_listdir, is_video
 
 # DATASET_LOCATION = Path('sl_ai/ai_data/vgt-all')
 
@@ -500,8 +500,8 @@ class GestureDataset:
 
         self.x_data = np.array([])
         self.y_data = np.array([])
-        self.lookup_dict = {}
-        self.reverse_lookup_dict = {}
+        self.lookup_dict = {}  # id -> gesture
+        self.reverse_lookup_dict = {}  # gesture -> id
 
     def remove_gesture(self, gesture_name):
         """Removed a deleted gesture from the lookup dictionaries and the data arrays"""
@@ -583,7 +583,6 @@ class GestureDataset:
                     gesture_id += 1
                     gesture_videos_left_landmarks[gesture_id] = {}
                     gesture_videos_right_landmarks[gesture_id] = {}
-                    print(f"{gesture_name} -> {gesture_id}")
                     self.lookup_dict[gesture_id] = gesture_name
                     self.reverse_lookup_dict[gesture_name] = gesture_id
 
@@ -611,11 +610,11 @@ class GestureDataset:
                     ] = history
 
         for gesture_id, videos in gesture_videos_left_landmarks.items():
-            for video_id, video_data in videos.items():
+            for video_name, video_data in videos.items():
                 left_landmarks = video_data["landmarks"]
                 try:
                     right_landmarks = gesture_videos_right_landmarks[gesture_id][
-                        video_id
+                        video_name
                     ]["landmarks"]
                     mouth_position = video_data["mouth_position"]
                     preprocess_landmarks(
@@ -644,9 +643,8 @@ class GestureDataset:
                     Y_dataset.append(gesture_id)
                     X_dataset.append(x_data)
                 except IndexError as e:
-                    print(f"Something went wrong while processing {video_id}: {e}")
+                    print(f"Something went wrong while processing {self.lookup_dict[gesture_id]}/{video_name}: {e}")
                     # raise e
-
         self.y_data = np.array(Y_dataset)
         self.x_data = np.array(X_dataset, dtype="float32")
 
@@ -669,12 +667,34 @@ class GestureDataset:
             self.lookup_dict[id + gesture_id_base] = gesture_name
             self.reverse_lookup_dict[gesture_name] = id + gesture_id_base
 
-    def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=False):
+    def update_gesture_dataset(self, other_dataset: "GestureDataset"):
+        """ Adds a dataset to this dataset. """
+        if len(other_dataset.y_data) == 0:
+            return
+        new_y_data = other_dataset.y_data
+        new_x_data = other_dataset.x_data
+        gesture_id = 0
+        gesture_name = None
+        for gesture in other_dataset.gestures:
+            gesture_id = self.reverse_lookup_dict[gesture.name]
+            gesture_name = gesture.name
+            self.remove_gesture(gesture.name)
+        new_y_data.fill(gesture_id)
+        print(f"Updated dataset. Used gesture_id={gesture_id} and new_y_data={new_y_data}")
+        self.x_data = np.concatenate([self.x_data, new_x_data])
+        self.y_data = np.concatenate([self.y_data, new_y_data])
+        self.lookup_dict[gesture_id] = gesture_name
+        self.reverse_lookup_dict[gesture_name] = gesture_id
+        pprint(self.y_data)
+        pprint(self.lookup_dict)
+
+
+    def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=True):
         """
         Use mediapipe to detect hand landmarks in every training video and save this data in a usable format.
         """
         print(
-            f"Analysing video {sum([len(g.reference_videos) for g in self.gestures])} files."
+            f"Analysing {sum([len(g.reference_videos) for g in self.gestures])} video files."
         )
         if csv_out_path and overwrite and csv_out_path.exists():
             os.remove(csv_out_path)
@@ -703,7 +723,7 @@ class GestureDataset:
                             ]
                         else:
                             print(
-                                f"Waning: No mouth detected in {gesture_name}/{video_name}. Using default value"
+                                f"Warning: No mouth detected in {gesture.name}/{video_name}. Using default value"
                             )
                             reference_mouth_position = [0.5, 0.4]
                         try:
@@ -763,11 +783,7 @@ class GestureDataset:
             )
             for video_name in videos:
                 video_name = str(video_name)
-                if (
-                    video_name.endswith("mp4")
-                    or video_name.endswith("mkv")
-                    or video_name.endswith("MOV")
-                ):
+                if is_video(video_name):
                     gesture.add_video(gesture_path / str(video_name))
             self.gestures.append(gesture)
 

@@ -89,7 +89,7 @@
                                               <i class="fa-solid fa-xmark"></i>
                                             </span>
                                             </button>
-                                            <button class="card-footer-item has-background-info">
+                                            <button onclick="trainOnVideo({{ gesture_attempt.id }})" class="card-footer-item has-background-info">
                                             <span class="icon is-small">
                                               <i class="fa-solid fa-robot"></i>
                                             </span>
@@ -113,6 +113,22 @@
 {% block javascript %}
     <script>
         let csrf_token = '{{ csrf_token }}';
+
+        function trainOnVideo(gestureAttemptId){
+            $.ajax({
+                url: "{% url 'add_video_to_dataset' student.id unit_attempt.id 1234 %}".replace('1234', gestureAttemptId),
+                type: "POST",
+                headers: {'X-CSRFToken': csrf_token},
+                contentType: "json",
+                success: function (data) {
+                    console.log(data)
+                },
+                error: function (error) {
+                    console.log("error: ", error)
+                }
+            });
+        }
+
         function overruleAttempts(gestureAttemptId, newValue){
             let card = document.querySelector("#gestureAttemptsCard_"+gestureAttemptId)
             let summaryCard = document.querySelector("#summaryCard")

@@ -79,6 +79,11 @@ urlpatterns += [
         name="overrule_gesture_attempt",
     ),
     path(
+        "manage_students/<int:student_id>/details/<int:unit_attempts_id>/train/<int:gesture_attempts_id>",
+        profile_views.add_video_to_dataset,
+        name="add_video_to_dataset",
+    ),
+    path(
         "manage_teachers/<int:teacher_id>/remove_teacher",
         profile_views.remove_teacher,
         name="remove_teacher",

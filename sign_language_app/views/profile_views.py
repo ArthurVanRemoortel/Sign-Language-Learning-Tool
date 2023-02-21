@@ -1,17 +1,22 @@
+import shutil
 from pprint import pprint
 
+import ffmpeg
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseServerError
+from django.core import exceptions
 from django.shortcuts import render, redirect, get_object_or_404
 import json
 
 from rolepermissions.checkers import has_role
 from rolepermissions.roles import get_user_roles
 
+from learning_site import settings
 from learning_site.roles import Teacher
+from learning_site.settings import MEDIA_ROOT
 from sign_language_app.forms import (
     UploadGestureForm,
     NewCourseForm,
@@ -195,6 +200,43 @@ def overrule_gesture_attempt_view(
     unit_attempt.is_overruled = True
     unit_attempt.save()
     return JsonResponse({"status": "ok", "newScore": unit_attempt.score})
+
+
+@login_required
+@teacher_or_admin_required
+def add_video_to_dataset(
+    request, student_id: int, unit_attempts_id: int, gesture_attempts_id: int
+):
+    if request.method == "GET":
+        return HttpResponseForbidden()
+
+    gesture_attempt = get_object_or_404(GestureAttempt, pk=gesture_attempts_id)
+    unit_attempt = get_object_or_404(UnitAttempt, pk=unit_attempts_id)
+    teacher = get_user(request)
+    student = User.objects.get(pk=student_id)
+    student_settings: UserSettings = student.settings.first()
+
+    if not student_settings.allow_video_training:
+        return HttpResponseForbidden("This student does not allow the usage of their videos for training.")
+    if gesture_attempt.added_to_dataset:
+        return HttpResponseForbidden("This video has already been added to the dataset.")
+    gesture = gesture_attempt.gesture
+    attempts_video_path = settings.USER_GESTURES_ROOT / str(student_id) / str(unit_attempt.unit.id) / str(unit_attempt.id) / f"{gesture.id}_{gesture_attempt.attempt}.webm"
+    new_gesture_path = gesture.videos_location / f"{student_id}_{gesture_attempts_id}_{attempts_video_path.name}"
+    # shutil.copyfile(attempts_video_path, new_gesture_path)
+    stream = ffmpeg.input(str(attempts_video_path))
+    stream = ffmpeg.hflip(stream)
+    stream = ffmpeg.output(stream, str(new_gesture_path))
+    ffmpeg.run(stream)
+
+    gesture.status = Gesture.Status.PENDING
+    gesture.save()
+    # gesture_attempt.added_to_dataset = True
+    # gesture_attempt.save()
+    # print(gesture_attempt.vide)
+    print(attempts_video_path.exists(), attempts_video_path)
+    print(new_gesture_path.exists(), new_gesture_path)
+    return JsonResponse({"status": "ok"})
 
 
 @login_required

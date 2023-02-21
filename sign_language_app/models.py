@@ -239,6 +239,7 @@ class GestureAttempt(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False
     )
     success = models.BooleanField(default=False, null=False)
+    added_to_dataset = models.BooleanField(default=False, null=False)
 
     @property
     def attempts_video_url(self) -> Optional[str]:
