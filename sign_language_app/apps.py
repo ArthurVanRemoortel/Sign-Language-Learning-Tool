@@ -24,12 +24,24 @@ class SignLanguageAppConfig(AppConfig):
 
         import sign_language_app.background_tasks
         from sign_language_app.classifier import Classifier
+        from sign_language_app.models import Gesture
 
         print("Startup...")
+
 
         # TODO: Clean this up. Load the classifier in a background thread to make startup faster.
         def t():
             Classifier().load_dataset()
+            print("Seeding gestures...")
+            for gesture in Classifier().gesture_dataset.gestures:
+                obj, created = Gesture.objects.get_or_create(
+                    word=gesture.name,
+                    left_hand=gesture.left_hand,
+                    right_hand=gesture.right_hand,
+                )
+                if created:
+                    print(f"Created new gesture: {gesture}")
+
             pass
 
         threading.Thread(target=t, daemon=False).start()

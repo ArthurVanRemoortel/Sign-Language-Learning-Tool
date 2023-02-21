@@ -59,11 +59,11 @@ def log_csv(
 
 
 def point_list_to_string(lst) -> str:
-    string = ''
+    string = ""
     for i, item in enumerate(lst):
         if i != 0:
-            string += ', '
-        string += str(item).replace(' ', '')
+            string += ", "
+        string += str(item).replace(" ", "")
     string = f"[{string}]"
     return string
 
@@ -73,7 +73,7 @@ def point_list_from_string(string: str) -> list:
     for item in string[1:-1].split(", "):
         item = item[1:-1]
         numbers = []
-        for number in item.split(','):
+        for number in item.split(","):
             numbers.append(float(number))
         result.append(numbers)
     return result
@@ -375,14 +375,21 @@ def make_hands_detector() -> (
 
 class GestureData:
     # TODO: This class might not be required and is confusing.
-    def __init__(self, name: str, left_hand: bool = True, right_hand: bool = True):
+    def __init__(
+        self, name: str, left_hand: bool, right_hand: bool, dataset_file: Path
+    ):
         self.name: str = name
         self.left_hand: bool = left_hand
         self.right_hand: bool = right_hand
         self.reference_videos: List[Path] = []
+        self.dataset_file: Path = dataset_file
 
     def add_video(self, video_path: Path):
         self.reference_videos.append(video_path)
+
+    @property
+    def get_folder_name(self) -> str:
+        return f"{self.name}_{1 if self.left_hand else 0}{1 if self.right_hand else 0}"
 
     def uses_hand(self, hand_name: str) -> bool:
         if hand_name.lower() == "left":
@@ -491,8 +498,8 @@ class GestureDataset:
         self.single_gesture = single_gesture
         self.gestures: List[GestureData] = []  # No data if loaded from csv file.
 
-        self.x_data = None
-        self.y_data = None
+        self.x_data = np.array([])
+        self.y_data = np.array([])
         self.lookup_dict = {}
         self.reverse_lookup_dict = {}
 
@@ -515,6 +522,15 @@ class GestureDataset:
 
     def summary(self):
         print(f"Dataset contain {len(np.unique(self.y_data))} gestures.")
+
+    def load_gestures_from_csv(self):
+        for gesture in self.gestures:
+            gesture_dataset = GestureDataset(single_gesture=True)
+            gesture_dataset.gestures.append(gesture)
+            gesture_dataset.load_from_csv(gesture.dataset_file)
+            self.append_dataset(gesture_dataset)
+        print("New lookup dict:")
+        pprint(self.lookup_dict)
 
     def load_from_csv(self, csv_path: Path):
         if not csv_path.exists():
@@ -550,7 +566,7 @@ class GestureDataset:
                 video_name = video_name
                 hand_number = int(hand_number)
                 history = point_list_from_string(history)
-                mouth_position = eval('lambda: ' + mouth_position)()
+                mouth_position = eval("lambda: " + mouth_position)()
                 history = list(
                     map(
                         lambda coordinate: [float(coordinate[0]), float(coordinate[1])],
@@ -558,9 +574,9 @@ class GestureDataset:
                     )
                 )
 
-                if ONLY_LANDMARK_ID and landmark_id != ONLY_LANDMARK_ID:
-                    # print("skipped csv", landmark_id)
-                    continue
+                # if ONLY_LANDMARK_ID and landmark_id != ONLY_LANDMARK_ID:
+                # print("skipped csv", landmark_id)
+                # continue
 
                 if gesture_number != last_gesture_number:
                     last_gesture_number = gesture_number
@@ -574,11 +590,11 @@ class GestureDataset:
                 if video_name != last_video_name:
                     last_video_name = video_name
                     gesture_videos_left_landmarks[gesture_id][video_name] = {
-                        "landmarks": {i: [] for i in range(0, 21) if i == ONLY_LANDMARK_ID},
+                        "landmarks": {i: [] for i in range(0, 21)},
                         "mouth_position": mouth_position,
                     }
                     gesture_videos_right_landmarks[gesture_id][video_name] = {
-                        "landmarks": {i: [] for i in range(0, 21) if i == ONLY_LANDMARK_ID},
+                        "landmarks": {i: [] for i in range(0, 21)},
                         "mouth_position": mouth_position,
                     }
 
@@ -606,27 +622,28 @@ class GestureDataset:
                         left_landmarks, right_landmarks, frame_width, frame_height
                     )
                     for i, landmarks in left_landmarks.items():
-                        if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
-                            continue
+                        # if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
+                        #     continue
                         left_landmarks[i] = pre_process_point_history_mouth_position(
                             mouth_position, landmarks
                         )
                     for i, landmarks in right_landmarks.items():
-                        if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
-                            continue
+                        # if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
+                        #     continue
                         right_landmarks[i] = pre_process_point_history_mouth_position(
                             mouth_position, landmarks
                         )
+
+                    landmark_history = [
+                        left_landmarks[id] + right_landmarks[id]
+                        for id in right_landmarks.keys()
+                        if id in [ONLY_LANDMARK_ID, 0]
+                    ]
+                    # landmark_history = left_landmarks[ONLY_LANDMARK_ID] + right_landmarks[ONLY_LANDMARK_ID]
+                    x_data = [*landmark_history]
                     Y_dataset.append(gesture_id)
-                    X_dataset.append(
-                        left_landmarks[ONLY_LANDMARK_ID]
-                        + right_landmarks[ONLY_LANDMARK_ID]
-                    )
+                    X_dataset.append(x_data)
                 except IndexError as e:
-                    print(len(left_landmarks[ONLY_LANDMARK_ID]))
-                    print(left_landmarks)
-                    print(len(gesture_videos_right_landmarks[gesture_id][video_id]["landmarks"][ONLY_LANDMARK_ID]))
-                    print(gesture_videos_right_landmarks[gesture_id][video_id]["landmarks"])
                     print(f"Something went wrong while processing {video_id}: {e}")
                     # raise e
 
@@ -634,16 +651,23 @@ class GestureDataset:
         self.x_data = np.array(X_dataset, dtype="float32")
 
     def append_dataset(self, other_dataset: "GestureDataset"):
+        """ Adds a dataset to this dataset. """
         if len(other_dataset.y_data) == 0:
             return
-        gesture_id_base = np.amax(self.y_data) + 1
-        new_y_data = other_dataset.y_data + gesture_id_base
+        new_y_data = other_dataset.y_data
         new_x_data = other_dataset.x_data
+        if len(self.y_data) > 0:
+            gesture_id_base = np.amax(self.y_data) + 1
+            new_y_data = new_y_data + gesture_id_base
+            self.x_data = np.concatenate([self.x_data, new_x_data])
+            self.y_data = np.concatenate([self.y_data, new_y_data])
+        else:
+            gesture_id_base = 0
+            self.x_data = other_dataset.x_data
+            self.y_data = other_dataset.y_data
         for id, gesture_name in other_dataset.lookup_dict.items():
             self.lookup_dict[id + gesture_id_base] = gesture_name
             self.reverse_lookup_dict[gesture_name] = id + gesture_id_base
-        self.y_data = np.concatenate([self.y_data, new_y_data])
-        self.x_data = np.concatenate([self.x_data, new_x_data])
 
     def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=False):
         """
@@ -655,7 +679,7 @@ class GestureDataset:
         if csv_out_path and overwrite and csv_out_path.exists():
             os.remove(csv_out_path)
         start_time = time.time()
-        for gesture_i, gesture in enumerate(tqdm(self.gestures)):
+        for gesture_i, gesture in enumerate(self.gestures):
             # Loop over all gestures in the dataset.
             with Pool(processes=8) as pool:
                 # Executes the detect_hands_task in parallel.
@@ -729,12 +753,15 @@ class GestureDataset:
             else:
                 gesture_name = gesture_folder.name.split("_")[0]
                 gesture_path = dataset_location
-
+            videos = clean_listdir(gesture_path)
             left_hand, right_hand = handedness_data[gesture_name]
             gesture = GestureData(
-                name=gesture_name, left_hand=left_hand, right_hand=right_hand
+                name=gesture_name,
+                left_hand=left_hand,
+                right_hand=right_hand,
+                dataset_file=dataset_location / gesture_folder / "dataset.csv",
             )
-            for video_name in clean_listdir(gesture_path):
+            for video_name in videos:
                 video_name = str(video_name)
                 if (
                     video_name.endswith("mp4")
@@ -744,22 +771,6 @@ class GestureDataset:
                     gesture.add_video(gesture_path / str(video_name))
             self.gestures.append(gesture)
 
-        print(f"Loaded {len(self.gestures)} gestures")
-
-    def add_django_gesture(self, django_gesture: "Gesture"):
-        gesture_data = GestureData(
-            name=django_gesture.word,
-            left_hand=django_gesture.left_hand,
-            right_hand=django_gesture.right_hand,
-        )
-        gesture_path = Path("sl_ai/ai_data/vgt-uploaded")
-        if django_gesture.creator:
-            gesture_path = gesture_path / str(django_gesture.creator.id)
-        gesture_path = gesture_path / django_gesture.handed_string
-        for video_name in clean_listdir(gesture_path):
-            gesture_data.add_video(gesture_path / str(video_name))
-        self.gestures.append(gesture_data)
-
     def __len__(self):
         return len(np.unique(self.y_data))
 
@@ -767,22 +778,21 @@ class GestureDataset:
 if __name__ == "__main__":
     CSV_OUT_PATH = Path("gestures_dataset.csv")
     DATASET_LOCATION = Path("ai_data/vgt-all")
-    dataset = GestureDataset(single_gesture=False)
-    handedness_data = {}
-    for gesture_folder in clean_listdir(DATASET_LOCATION):
+    # dataset = GestureDataset(single_gesture=False)
+    # handedness_data = {}
+    for gesture_folder in tqdm(clean_listdir(DATASET_LOCATION)):
+        print(f"Creating dataset.csv for {gesture_folder}")
         gesture_folder_path = DATASET_LOCATION / gesture_folder
-        parts = gesture_folder.split("_")
-        gesture_name = '_'.join(parts[:-1])
-        handedness_string = parts[-1]
-        handedness_data[gesture_name] = (
-            handedness_string[0] == "1",
-            handedness_string[1] == "1",
+        *gestures_name_parts, handedness_string = gesture_folder.split("_")
+        gesture_name = "_".join(gestures_name_parts)
+        new_gesture_dataset = GestureDataset(single_gesture=True)
+        new_gesture_dataset.scan_videos(
+            gesture_folder_path,
+            handedness_data={
+                gesture_name: (handedness_string[0] == "1", handedness_string[1] == "1")
+            },
         )
-    pprint(handedness_data)
-    dataset.scan_videos(
-        dataset_location=DATASET_LOCATION, handedness_data=handedness_data
-    )
-    dataset.analyze_videos(csv_out_path=CSV_OUT_PATH, overwrite=True)
-    dataset.load_from_csv(CSV_OUT_PATH)
-
-
+        new_gesture_dataset.analyze_videos(
+            csv_out_path=gesture_folder_path / "dataset.csv"
+        )
+        # gesture_dataset.load_from_csv(gesture_folder_path / "dataset.csv")

@@ -18,9 +18,12 @@ from sl_ai.dataset import (
     make_coordinates_list_fixed_length,
     pre_process_point_history_center,
 )
-from sl_ai.config import MAX_VIDEO_FRAMES
+from sl_ai.config import MAX_VIDEO_FRAMES, ONLY_LANDMARK_ID
 import tensorflow as tf
 from keras.models import load_model, save_model
+import keras.optimizers
+
+from sl_ai.utils import clean_listdir
 
 
 class GestureClassifier:
@@ -45,13 +48,28 @@ class GestureClassifier:
         DIMENSION = 1
         NUM_CLASSES = len(self.gesture_dataset)
         # TODO: Experiment with tensorflow optimisers.
+        print("Training on shape:", self.x_train[0].shape)
+        print("Dateset shape:", self.x_train.shape)
+        # self.model = tf.keras.models.Sequential(
+        #     [
+        #         tf.keras.layers.InputLayer(input_shape=self.x_train[0].shape),
+        #         # tf.keras.layers.Flatten(),
+        #         tf.keras.layers.Dropout(0.5),
+        #         tf.keras.layers.Dense(24, activation="relu"),
+        #         # tf.keras.layers.Dropout(0.2),
+        #         tf.keras.layers.Dense(12, activation="relu"),
+        #         tf.keras.layers.Dense(NUM_CLASSES, activation="softmax"),
+        #     ]
+        # )
         self.model = tf.keras.models.Sequential(
             [
-                tf.keras.layers.InputLayer(input_shape=(TIME_STEPS,)),
+                tf.keras.layers.InputLayer(input_shape=self.x_train[0].shape),
+                tf.keras.layers.Flatten(),
+                # tf.keras.layers.Dense(64, activation="relu", input_shape=self.x_train[0].shape),
                 tf.keras.layers.Dropout(0.5),
-                tf.keras.layers.Dense(24, activation="relu"),
-                # tf.keras.layers.Dropout(0.2),
-                tf.keras.layers.Dense(12, activation="relu"),
+                tf.keras.layers.Dense(128, activation="relu"),
+                tf.keras.layers.Dropout(0.3),
+                tf.keras.layers.Dense(32, activation="relu"),
                 tf.keras.layers.Dense(NUM_CLASSES, activation="softmax"),
             ]
         )
@@ -68,7 +86,7 @@ class GestureClassifier:
         #     ]
         # )
         self.model.compile(
-            optimizer="adam",
+            optimizer=keras.optimizers.Adam(learning_rate=0.001),
             loss="sparse_categorical_crossentropy",  # Experiment using different loss and metric functions.
             metrics=["sparse_categorical_accuracy"],
         )
@@ -135,15 +153,34 @@ class GestureClassifier:
     def predict(self, left_landmarks, right_landmarks):
         if not self.model:
             raise Exception("Cannot make prediction when the model is not loaded yet.")
-
-        left_landmarks = np.array(left_landmarks[12], dtype="float32")
-        right_landmarks = np.array(right_landmarks[12], dtype="float32")
-
-        x_data = np.concatenate(
-            (left_landmarks, right_landmarks), axis=0
-        )  # .astype(dtype='float32')
-        x_data = x_data.reshape((-1, x_data.shape[0]))
-        prediction = self.model.predict(x_data)
+        # print(right_landmarks.keys())
+        # left_landmarks = np.array(left_landmarks[ONLY_LANDMARK_ID], dtype="float32")
+        # right_landmarks = np.array(right_landmarks[ONLY_LANDMARK_ID], dtype="float32")
+        # # left_landmarks0 = np.array(left_landmarks[0], dtype="float32")
+        # # right_landmarks0 = np.array(right_landmarks[0], dtype="float32")
+        # x_data = np.concatenate(
+        #     (left_landmarks, right_landmarks), axis=0
+        # )
+        # x_data = x_data.reshape((-1, x_data.shape[0]))
+        #
+        # other_data = np.concatenate(
+        #     (left_landmarks, right_landmarks), axis=0
+        # )
+        # other_data = other_data.reshape((-1, other_data.shape[0]))
+        # d = [x_data, *other_data]
+        # print("SHAPE", d.shape)
+        # x_data = x_data.reshape((-1, x_data.shape[0]))
+        # other_data = other_data.reshape((-1, other_data.shape[0]))
+        # d = np.array(*d)
+        # print("SHAPE: ", len(d))
+        landmark_history = [
+            left_landmarks[id] + right_landmarks[id]
+            for id in right_landmarks.keys()
+            if id in [ONLY_LANDMARK_ID, 0]
+        ]
+        # x_data = [*landmark_history]
+        # print(len(landmark_history))
+        prediction = self.model.predict([landmark_history])
         return prediction
 
     def visualize_accuracy(self):
@@ -199,11 +236,15 @@ class GestureClassifier:
 if __name__ == "__main__":
     CSV_OUT_PATH = Path("gestures_dataset.csv")
     DATASET_LOCATION = Path("ai_data/vgt-all")
+    handedness_data = {}
+    for gesture_folder in clean_listdir(DATASET_LOCATION):
+        *gestures_name_parts, handedness_string = gesture_folder.split("_")
+        gesture_name = "_".join(gestures_name_parts)
+        handedness_data[gesture_name] = (
+            handedness_string[0] == "1",
+            handedness_string[1] == "1",
+        )
 
     gesture_dataset: GestureDataset = GestureDataset()
-    # gesture_dataset.analyze_videos(CSV_OUT_PATH, overwrite=True)
-    gesture_dataset.load_from_csv(CSV_OUT_PATH)
-
-    classifier: GestureClassifier = GestureClassifier(gesture_dataset=gesture_dataset)
-    classifier.train(save_path=Path("model.h5"))
-    classifier.summary()
+    gesture_dataset.scan_videos(DATASET_LOCATION, handedness_data=handedness_data)
+    gesture_dataset.load_gestures_from_csv()
