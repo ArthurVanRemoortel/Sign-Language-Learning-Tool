@@ -18,7 +18,7 @@ from learning_site.settings import (
     UPLOADED_GESTURES_ROOT,
     VGT_GESTURES_ROOT,
 )
-from sl_ai.utils import clean_listdir
+from sl_ai.utils import clean_listdir, is_video
 
 
 class UserSettings(models.Model):
@@ -91,7 +91,7 @@ class Gesture(models.Model):
             )
         else:
             videos_location = f"vgt-all/{self.handed_string}"
-        video_file = random.choice(clean_listdir(MEDIA_ROOT / videos_location))
+        video_file = random.choice(list(filter(is_video, clean_listdir(MEDIA_ROOT / videos_location))))
         return f"{videos_location}/{video_file}"
 
     def delete_videos(self):
