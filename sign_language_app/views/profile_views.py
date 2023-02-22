@@ -217,25 +217,36 @@ def add_video_to_dataset(
     student_settings: UserSettings = student.settings.first()
 
     if not student_settings.allow_video_training:
-        return HttpResponseForbidden("This student does not allow the usage of their videos for training.")
+        return HttpResponseForbidden(
+            "This student does not allow the usage of their videos for training."
+        )
     if gesture_attempt.added_to_dataset:
-        return HttpResponseForbidden("This video has already been added to the dataset.")
+        return HttpResponseForbidden(
+            "This video has already been added to the dataset."
+        )
     gesture = gesture_attempt.gesture
-    attempts_video_path = settings.USER_GESTURES_ROOT / str(student_id) / str(unit_attempt.unit.id) / str(unit_attempt.id) / f"{gesture.id}_{gesture_attempt.attempt}.webm"
-    new_gesture_path = gesture.videos_location / f"{student_id}_{gesture_attempts_id}_{attempts_video_path.name}"
-    # shutil.copyfile(attempts_video_path, new_gesture_path)
-    stream = ffmpeg.input(str(attempts_video_path))
-    stream = ffmpeg.hflip(stream)
-    stream = ffmpeg.output(stream, str(new_gesture_path))
-    ffmpeg.run(stream)
+    attempts_video_path = (
+        settings.USER_GESTURES_ROOT
+        / str(student_id)
+        / str(unit_attempt.unit.id)
+        / str(unit_attempt.id)
+        / f"{gesture.id}_{gesture_attempt.attempt}.webm"
+    )
+    new_gesture_path = (
+        gesture.videos_location
+        / f"{student_id}_{gesture_attempts_id}_{attempts_video_path.name}"
+    )
 
-    gesture.status = Gesture.Status.PENDING
-    gesture.save()
-    # gesture_attempt.added_to_dataset = True
-    # gesture_attempt.save()
-    # print(gesture_attempt.vide)
-    print(attempts_video_path.exists(), attempts_video_path)
-    print(new_gesture_path.exists(), new_gesture_path)
+    # stream = ffmpeg.input(str(attempts_video_path))
+    # stream = ffmpeg.hflip(stream)
+    # stream = ffmpeg.output(stream, str(new_gesture_path))
+    # ffmpeg.run(stream)
+
+    # gesture.status = Gesture.Status.PENDING
+    # gesture.save()
+
+    gesture_attempt.added_to_dataset = True
+    gesture_attempt.save()
     return JsonResponse({"status": "ok"})
 
 

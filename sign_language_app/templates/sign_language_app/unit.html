@@ -65,7 +65,7 @@
         const livesArea = document.getElementById('livesArea')
         const canvasCtx = canvasElement.getContext('2d');
 
-        const recordingCutoffDelay = 500 // Only end recording if no hands were recorded for 500 milliseconds.
+        const recordingCutoffDelay = 1000 // Only end recording if no hands were recorded for 500 milliseconds.
         const minRecordingMilliseconds = 500 // Movements shorted than this were probably accidents and are ignored.
         const showLandmarks = "{{ show_landmarks }}" === 'True'
         console.log(showLandmarks)

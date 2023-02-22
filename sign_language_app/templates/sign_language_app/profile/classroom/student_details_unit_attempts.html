@@ -65,7 +65,7 @@
                                 <div class="column is-one-quarter">
                                     <div id="gestureAttemptsCard_{{ gesture_attempt.id }}" class="card {% if gesture_attempt.success %}has-background-primary{% else %}has-background-danger{% endif %}">
                                         <p class="card-header-title">
-                                            {% if gesture_attempt.success %}Correct{% else %}Wrong{% endif %}
+                                            {% if gesture_attempt.success %}Correct{% else %}Incorrect{% endif %}
                                         </p>
                                         <div class="card-content pt-1 pb-5 pl-0 pr-0" >
                                             <div class="content">
@@ -78,20 +78,22 @@
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <footer class="card-footer" style="border-top: 1px transparent">
-                                            <button onclick="overruleAttempts({{ gesture_attempt.id }}, true)" class="card-footer-item has-background-primary-dark" style="border-right: 1px transparent">
+                                        <footer class="card-footer" style="border: 1px transparent">
+                                            <button onclick="overruleAttempts({{ gesture_attempt.id }}, true)" class="card-footer-item has-background-primary-dark" style="border: 1px transparent">
                                             <span class="icon is-small">
                                               <i class="fa-solid fa-check"></i>
                                             </span>
                                             </button>
-                                            <button onclick="overruleAttempts({{ gesture_attempt.id }}, false)" class="card-footer-item has-background-danger-dark" style="border-right: 1px transparent">
+                                            <button onclick="overruleAttempts({{ gesture_attempt.id }}, false)" class="card-footer-item has-background-danger-dark" style="border: 1px transparent">
                                             <span class="icon is-small">
                                               <i class="fa-solid fa-xmark"></i>
                                             </span>
                                             </button>
-                                            <button onclick="trainOnVideo({{ gesture_attempt.id }})" class="card-footer-item has-background-info">
+                                            <button onclick="trainOnVideo({{ gesture_attempt.id }})" class="card-footer-item has-background-info"
+                                                    {% if not student_settings.allow_video_training or gesture_attempt.added_to_dataset%}disabled{% endif %}
+                                                    style="border: 1px transparent">
                                             <span class="icon is-small">
-                                              <i class="fa-solid fa-robot"></i>
+                                                <i class="fa-solid fa-robot"></i>
                                             </span>
                                             </button>
 
@@ -122,6 +124,10 @@
                 contentType: "json",
                 success: function (data) {
                     console.log(data)
+                    let card = document.querySelector("#gestureAttemptsCard_"+gestureAttemptId)
+                    let buttons = card.querySelectorAll("button")
+                    let trainButton = buttons[buttons.length-1]
+                    trainButton.disabled = true
                 },
                 error: function (error) {
                     console.log("error: ", error)
@@ -140,7 +146,7 @@
             } else {
                 card.classList.remove('has-background-primary')
                 card.classList.add('has-background-danger')
-                title.innerHTML = "Wrong"
+                title.innerHTML = "Incorrect"
             }
             $.ajax({
                 url: "{% url 'overrule_gesture_attempt' student.id unit_attempt.id 1234 %}".replace('1234', gestureAttemptId),
@@ -153,12 +159,10 @@
                     let newScore = data.newScore
                     summaryCard.querySelector('#scoreElement').innerHTML = newScore
                     if (newScore >= 50){
-                        console.log("passed")
                         summaryCard.classList.remove('summary-card-failure')
                         summaryCard.classList.add('summary-card-success')
                         summaryCard.querySelector('.title').innerHTML = "Student has passed."
                     } else {
-                        console.log("failed")
                         summaryCard.classList.remove('summary-card-success')
                         summaryCard.classList.add('summary-card-failure')
                         summaryCard.querySelector('.title').innerHTML = "Student has failed."

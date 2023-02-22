@@ -59,7 +59,7 @@
                                 <div class="card {% if gesture_attempt.success %}has-background-primary{% else %}has-background-danger{% endif %}">
                                     <div class="card-content pt-1 pb-5 pl-0 pr-0">
                                         <p class="card-header-title">
-                                            {% if gesture_attempt.success %}Correct{% else %}Wrong{% endif %}
+                                            {% if gesture_attempt.success %}Correct{% else %}Incorrect{% endif %}
                                         </p>
                                         {% if user_settings.allow_video_uploads and video_url %}
                                             <div class="text-center">
