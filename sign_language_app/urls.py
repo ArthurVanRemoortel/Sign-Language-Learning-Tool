@@ -69,6 +69,11 @@ urlpatterns += [
         name="student_details",
     ),
     path(
+        "history",
+        profile_views.history_view,
+        name="history",
+    ),
+    path(
         "manage_students/<int:student_id>/details/<int:unit_attempts_id>",
         profile_views.student_details_unit_attempts_view,
         name="student_details_unit_attempts_view",

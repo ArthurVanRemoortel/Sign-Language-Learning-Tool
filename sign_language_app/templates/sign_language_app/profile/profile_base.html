@@ -29,6 +29,14 @@
                           <span>Privacy Settings</span>
                         </span>
                     </a></li>
+                    <li><a href="{% url 'history' %}" class="{% if current_section == 'history' %} is-active {% endif %}">
+                        <span class="icon-text">
+                          <span class="icon">
+                            <i class="fa-solid fa-chart-line"></i>
+                          </span>
+                          <span>History</span>
+                        </span>
+                    </a></li>
                 </ul>
                 <p class="menu-label">
                     Classroom

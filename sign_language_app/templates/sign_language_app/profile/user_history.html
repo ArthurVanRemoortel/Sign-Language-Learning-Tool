@@ -1,0 +1,95 @@
+{% extends 'sign_language_app/profile/profile_base.html' %}
+{% load humanize %}
+{% load extras %}
+{% block title %}
+    Activity
+{% endblock %}
+
+{% block profile_content %}
+    <div class="container">
+        <div class="block">
+            <h2 class="title">
+                History
+            </h2>
+            <p>
+
+            </p>
+        </div>
+        <div class="block mb-6">
+            {% for course in courses %}
+                <article class="panel is-primary">
+                    <header class="panel-heading modal-card-head is-primary">
+                        <h4 class="modal-card-title is-4">{{ course.name }}</h4>
+                        <button class="delete" aria-label="close"></button>
+                    </header>
+                    <div class="panel-block pb-0">
+                        <table class="table is-fullwidth">
+                            <tbody>
+                            {% for unit in course.units.all %}
+                                {% with last_attempt=last_unit_attempts|get_value:unit.id  %}
+                                    {% if last_attempt %}
+                                        <tr>
+                                            <td>{{ unit.name }}</td>
+                                            <td class="has-text-right has-text-{% if last_attempt.passed %}primary{% else %}danger{% endif %}">
+                                                <span>{{ last_attempt.score }}%</span>
+                                                <span class="icon">
+                                                <i class="fa-solid fa-face-{% if last_attempt.passed %}smile{% else %}frown{% endif %}"></i>
+                                                </span>
+                                                <span class="icon">
+                                                    {% if last_attempt.is_overruled %}
+                                                        <i class="fa-solid fa-clipboard-check"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td style="width: 50px">
+                                                <button class="button is-info is-small">
+                                                    <span class="icon">
+                                                    <i class="fa-solid fa-chart-line"></i>
+                                                  </span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                        {#                        <table class="table is-fullwidth is-hovered">#}
+                        {#                            <thead>#}
+                        {#                            <tr>#}
+                        {#                                <th><abbr title="Course">Course</abbr></th>#}
+                        {#                                <th><abbr title="Unit">Unit</abbr></th>#}
+                        {#                                <th class="has-text-centered"><abbr title="Score">Score</abbr></th>#}
+                        {#                                <th><abbr title="Date">Date</abbr></th>#}
+                        {#                            </tr>#}
+                        {#                            </thead>#}
+                        {#                            <tbody>#}
+                        {#                            {% for unit_attempt in user.unit_attempts.all|dictsortreversed:"datetime" %}#}
+                        {#                                <tr>#}
+                        {#                                    <td>{{ unit_attempt.unit.course.name }}</td>#}
+                        {#                                    <td>{{ unit_attempt.unit.name }}</td>#}
+                        {#                                    <td class="has-text-right has-text-{% if unit_attempt.passed %}primary{% else %}danger{% endif %}">#}
+                        {#                                        <span>{{ unit_attempt.score }}%</span>#}
+                        {#                                        <span class="icon">#}
+                        {#                                                <i class="fa-solid fa-face-{% if unit_attempt.passed %}smile{% else %}frown{% endif %}"></i>#}
+                        {#                                            </span>#}
+                        {#                                        <span class="icon">#}
+                        {#                                        {% if unit_attempt.is_overruled %}#}
+                        {#                                            <i class="fa-solid fa-clipboard-check"></i>#}
+                        {#                                        {% endif %}#}
+                        {#                                        </span>#}
+                        {#                                    </td>#}
+                        {#                                    <td>{{ unit_attempt.datetime|naturalday }}</td>#}
+                        {#                                </tr>#}
+                        {#                            {% endfor %}#}
+                        {#                            </tbody>#}
+                        {##}
+                        {#                        </table>#}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

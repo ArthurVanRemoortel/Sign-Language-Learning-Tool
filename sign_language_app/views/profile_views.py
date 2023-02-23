@@ -133,6 +133,26 @@ def student_details_view(request, student_id: int):
 
 
 @login_required
+def history_view(request):
+    user = get_user(request)
+    courses = Course.objects.filter(Q(units__unit_attempts__user=user)).distinct()
+    units = Unit.objects.filter(Q(course__in=courses))
+    context = {
+        "courses": courses,
+        "last_unit_attempts": {
+            unit.id: unit.unit_attempts.filter(Q(user=user))
+            .order_by("-datetime")
+            .last()
+            for unit in units
+        },
+        "user_settings": user.settings.first(),
+        "current_section": "history",
+        "user": user,
+    }
+    return render(request, "sign_language_app/profile/user_history.html", context)
+
+
+@login_required
 @teacher_or_admin_required
 def student_details_unit_attempts_view(request, student_id: int, unit_attempts_id: int):
     teacher = get_user(request)
@@ -237,13 +257,13 @@ def add_video_to_dataset(
         / f"{student_id}_{gesture_attempts_id}_{attempts_video_path.name}"
     )
 
-    # stream = ffmpeg.input(str(attempts_video_path))
-    # stream = ffmpeg.hflip(stream)
-    # stream = ffmpeg.output(stream, str(new_gesture_path))
-    # ffmpeg.run(stream)
+    stream = ffmpeg.input(str(attempts_video_path))
+    stream = ffmpeg.hflip(stream)
+    stream = ffmpeg.output(stream, str(new_gesture_path))
+    ffmpeg.run(stream)
 
-    # gesture.status = Gesture.Status.PENDING
-    # gesture.save()
+    gesture.status = Gesture.Status.PENDING
+    gesture.save()
 
     gesture_attempt.added_to_dataset = True
     gesture_attempt.save()

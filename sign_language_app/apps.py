@@ -28,7 +28,6 @@ class SignLanguageAppConfig(AppConfig):
 
         print("Startup...")
 
-
         # TODO: Clean this up. Load the classifier in a background thread to make startup faster.
         def t():
             Classifier().load_dataset()
