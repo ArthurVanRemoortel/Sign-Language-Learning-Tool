@@ -38,7 +38,7 @@ from sl_ai.dataset import (
     calculate_landmark_list,
     pre_process_point_history_center,
     mirror_landmarks_list,
-    mirror_coordinate, pre_process_point_history_mouth_position,
+    mirror_coordinate, pre_process_point_history_mouth_position, process_orientation, hand_openness,
 )
 from sign_language_app.background_tasks import retrain_model
 
@@ -88,12 +88,12 @@ def verify_gesture(request):
 
     left_landmarks = {i: [] for i in range(0, 21)}
     right_landmarks = {i: [] for i in range(0, 21)}
-    mouth: (float, float) = ()
+    mouth: [float, float] = []
     # TODO: Refactor this.
     # TODO: Check if is_landmark_in_active_zone
     for frame in hand_frames:
         left, right, mouth = frame
-        mouth = tuple(mirror_coordinate(mouth["x"], mouth["y"]))
+        mouth = mirror_coordinate(mouth["x"], mouth["y"])
         # print("mouth", mouth)
         if left and gesture.left_hand:
             landmark_list_left = calculate_landmark_list(
@@ -135,13 +135,26 @@ def verify_gesture(request):
         print("WARNING: Nothing was detected.")
     else:
         preprocess_landmarks(left_landmarks, right_landmarks, frame_width, frame_height)
+
+        left_angles = process_orientation(left_landmarks)
+        right_angles = process_orientation(right_landmarks)
+        left_hand_openness = hand_openness(landmarks=left_landmarks)
+        right_hand_openness = hand_openness(landmarks=right_landmarks)
+
         for i, landmarks in left_landmarks.items():
             left_landmarks[i] = pre_process_point_history_mouth_position(mouth, landmarks)
         for i, landmarks in right_landmarks.items():
             right_landmarks[i] = pre_process_point_history_mouth_position(mouth, landmarks)
 
         result = Classifier().gesture_classifier.predict(
-            left_landmarks, right_landmarks
+            left_x=left_landmarks[ONLY_LANDMARK_ID][0],
+            left_y=left_landmarks[ONLY_LANDMARK_ID][1],
+            right_x=right_landmarks[ONLY_LANDMARK_ID][0],
+            right_y=right_landmarks[ONLY_LANDMARK_ID][1],
+            left_angles=left_angles,
+            right_angles=right_angles,
+            left_openness=left_hand_openness,
+            right_openness=right_hand_openness
         )
         print(f"Predictions for {gesture}")
         predicted_gestures = {}

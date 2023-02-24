@@ -2,17 +2,19 @@ import copy
 import csv
 import functools
 import itertools
+import math
 import os
 import time
 from ast import literal_eval
 from math import sqrt
 from pathlib import Path
 from pprint import pprint
-from typing import List, Union, Optional, Tuple, Dict, Any
+from typing import List, Union, Optional, Tuple, Dict, Any, Callable
 
 import cv2
 import mediapipe as mp
 import numpy as np
+import pandas as pd
 import skvideo.io
 from matplotlib import pyplot as plt
 from tqdm import tqdm
@@ -110,30 +112,61 @@ def fill_holes(data_list: List[Tuple[float]], empty_val: Any) -> List[Tuple[floa
     return result
 
 
-def shrink_coordinates_list(
-    lst: List[Tuple[float]], new_size: int
-) -> List[Tuple[float]]:
+def shrink_list(lst: [], new_size: int, combine_function: Callable) -> []:
     """
-    Shrink a list of numbers (coordinates) to a fixed length.
+    Shrink a list of numbers (or any oject) to a fixed length.
     When shrinking a list some values will need to be discarded because they will want to end up at the same location.
     Instead of completely discarding these values, insert a number inbetween the 2 numbers when they would end up at the same index.
+    combine_function determines how a value is calculated when they overlap. (e.g take the average of the 2 numbers.)
     Example: [1, 2, 4, 5] -> [1, 3, 5]
     """
     if len(lst) <= new_size:
         return copy.deepcopy(lst)
-
     skip_step = new_size / len(lst)
     result = [None for _ in range(new_size)]
-
     for i, value in enumerate(lst):
         insert_index = int(i * skip_step)
         existing_at_index = result[insert_index]
         if existing_at_index:
-            existing_x, existing_y = existing_at_index
-            x, y = value
-            result[insert_index] = [(existing_x + x) / 2, (existing_y + y) / 2]
+            existing_value = existing_at_index
+            new_value = combine_function(existing_value, value)
+            result[insert_index] = new_value
         else:
             result[insert_index] = value
+    return result
+
+
+def extend_list(lst: [], new_size: int, create_function: Callable) -> []:
+    """
+    Extends a list. This will create empty values that will need to filled up using the average of its neighbors.
+    Example: [1, 5] -> [1, 3, 5]
+    """
+    if len(lst) >= new_size:
+        return copy.deepcopy(lst)
+    skip_step = new_size / len(lst)
+    result = [None for _ in range(new_size)]
+    for i, value in enumerate(lst):
+        insert_index = int(i * skip_step)
+        result[insert_index] = value
+    check_end_i = -1
+    while result[check_end_i] is None:
+        result[check_end_i] = lst[-1]
+        check_end_i -= 1
+
+    prev_value = 0
+    for i, item in enumerate(result):
+        if not item:
+            rest = [v for v in result[i + 1 :]]
+            while len(rest) > 0 and rest[0] is None:
+                rest = rest[1:]
+            if not rest:
+                next_value = prev_value
+            else:
+                next_value = rest[0]
+            new_value = create_function(prev_value, next_value)
+            result[i] = new_value
+        else:
+            prev_value = item
     return result
 
 
@@ -177,15 +210,39 @@ def extend_coordinates_list(
 
 def make_coordinates_list_fixed_length(lst: List[Tuple[float]], new_size: int) -> List:
     """
-    Uses extend_coordinates_list and shrink_coordinates_list to resize a list to a specific size.
+    Uses extend_list and shrink_list to resize a list to a specific size.
     """
+    return make_list_fixed_length(
+        lst,
+        new_size,
+        combine_function=lambda existing, value: [
+            (existing[0] + value[0]) / 2,
+            (existing[1] + value[1]) / 2,
+        ],
+        create_function=lambda prev_value, next_value: [
+            (prev_value[0] + next_value[0]) / 2,
+            (prev_value[1] + next_value[1]) / 2,
+        ],
+    )
+
+
+def make_list_fixed_length(
+    lst: List[Tuple[float]],
+    new_size: int,
+    combine_function: Callable,
+    create_function: Callable,
+) -> List:
     lst_len = len(lst)
     if lst_len == new_size:
         return copy.deepcopy(lst)
     elif lst_len > new_size:
-        return shrink_coordinates_list(lst, new_size)
+        return shrink_list(lst, new_size, combine_function=combine_function)
     else:
-        return extend_coordinates_list(lst, new_size)
+        return extend_list(
+            lst,
+            new_size,
+            create_function=create_function,
+        )
 
 
 def read_video(file_path: Union[str, Path], as_grey=False) -> List:
@@ -204,7 +261,7 @@ def is_landmark_in_active_zone(landmarks):
     return min(ys) <= 0.85
 
 
-def mirror_landmarks_list(landmarks: List[Tuple[float]]) -> List[Tuple[float]]:
+def mirror_landmarks_list(landmarks: List[List[float]]) -> List[List[float]]:
     """
     Mirrors the x coordinates of all landmarks.
     Data coming in from the webcam/browser is mirrored and will not match the dataset videos.
@@ -263,7 +320,7 @@ def pre_process_point_history_center(
 
 def pre_process_point_history_mouth_position(
     mouth_position: List[float], point_history: List[List[float]]
-) -> List[float]:
+) -> (List[float], List[float]):
     """Alternative data representation for the AI model. Converts a list of coordinates to a list of distances relative to the position of the users mouth."""
     temp_point_history = copy.deepcopy(point_history)
     base_x, base_y = mouth_position
@@ -272,10 +329,16 @@ def pre_process_point_history_mouth_position(
             continue
         temp_point_history[index][0] = temp_point_history[index][0] - base_x
         temp_point_history[index][1] = temp_point_history[index][1] - base_y
-    temp_point_history = list(
-        itertools.chain.from_iterable(temp_point_history)
-    )  # [[x, y], [x, y]] => [x, y, x, y] # TODO: Make this a separate function.
-    return temp_point_history
+    # temp_point_history = list(
+    #     itertools.chain.from_iterable(temp_point_history)
+    # )  # [[x, y], [x, y]] => [x, y, x, y] # TODO: Make this a separate function.
+    x_coordinates = []
+    y_coordinates = []
+    for coordinate in temp_point_history:
+        x_coordinates.append(coordinate[0])
+        y_coordinates.append(coordinate[1])
+    return x_coordinates, y_coordinates
+    # return temp_point_history
 
 
 def pre_process_point_history_deltas(
@@ -353,6 +416,91 @@ def preprocess_landmarks(
         landmarks = fill_holes(landmarks, [-1.0, -1.0])
         # landmarks = pre_process_point_history(frame_width, frame_height, landmarks)
         right_landmarks[landmark_id] = landmarks
+
+
+def process_orientation(landmarks) -> [float]:
+    hand_base = landmarks[0]
+    hand_center_knuckle = landmarks[9]
+    angles = []
+    for coordinates in zip(hand_base, hand_center_knuckle):
+        base = coordinates[0]
+        tip = coordinates[1]
+        if (
+            tip == [-1, -1]
+            or tip == [-1.0, -1.0]
+            or base == [-1, -1]
+            or base == [-1.0, -1.0]
+        ):
+            angles.append(0)
+            continue
+        angle = calculate_angle(*base, *tip)
+        angles.append(angle)
+    return angles
+
+
+def calculate_distance(x0, y0, x1, y1):
+    return math.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
+
+
+def calculate_angle(x0, y0, x1, y1):
+    angle = math.atan2(y0 - y1, x0 - x1)
+    return np.degrees(angle) % 360.0
+
+
+def calculate_center(x0, y0, x1, y1) -> [float, float]:
+    center_x = (x0 + x1) / 2
+    center_y = (y0 + y1) / 2
+    return [center_x, center_y]
+
+
+def scale_number(number, number_min, number_max, new_min=0, new_max=1):
+    number_range = number_max - number_min
+    new_range = new_max - new_min
+    return (((number - number_min) * new_range) / number_range) + new_min
+
+
+def is_angle_horizontal(angle):
+    return 315 < angle < 360 or 0 < angle < 45 or 150 < angle < 210
+
+
+def hand_openness(landmarks, fingers_tips=None) -> [float]:
+    """Not completed"""
+    if fingers_tips is None:
+        fingers_tips = [8, 12, 16]
+    hand_center_landmarks = landmarks[9]
+    hand_base_landmarks = landmarks[0]
+    finger_landmarks = [
+        (landmarks[i], landmarks[j], landmarks[k])
+        for i, j, k in [(tip - 3, tip - 2, tip) for tip in fingers_tips]
+    ]
+    openness = [[] for _ in fingers_tips]
+    for frame, center_top_pos in enumerate(hand_center_landmarks):
+        if (
+                center_top_pos == [-1, -1]
+                or center_top_pos == [-1.0, -1.0]
+        ):
+            for finger_n, _ in enumerate(fingers_tips):
+                openness[finger_n].append(0)
+            continue
+
+        hand_base_pos = hand_base_landmarks[frame]
+        palm_size = calculate_distance(*hand_base_pos, *center_top_pos)
+        hand_size = palm_size + calculate_distance(
+            *landmarks[9][frame], *landmarks[10][frame]
+        )
+        frame_fingers_openness = []
+        for finger_base, finger_first_knuckle, finger_tip in finger_landmarks:
+            finger_tip_pos = finger_tip[frame]
+            finger_base_pos = finger_base[frame]
+            distance = calculate_distance(*finger_base_pos, *finger_tip_pos)
+            relative_distance = distance / hand_size
+            scaled_distance = scale_number(relative_distance, 0.1, 0.6)
+            scaled_distance = max(0.0, min(scaled_distance, 1.0))
+            frame_fingers_openness.append(scaled_distance)
+            # print(distance)
+        for finger_n, value in enumerate(frame_fingers_openness):
+            openness[finger_n].append(value)
+    return openness
 
 
 def make_hands_detector() -> (
@@ -495,6 +643,7 @@ def detect_hands_task(gesture: GestureData, video_path: Path):
 
 class GestureDataset:
     def __init__(self, single_gesture=False):
+        # self.X_dataset = []
         self.single_gesture = single_gesture
         self.gestures: List[GestureData] = []  # No data if loaded from csv file.
 
@@ -544,6 +693,13 @@ class GestureDataset:
 
         gesture_videos_left_landmarks = {}
         gesture_videos_right_landmarks = {}
+
+        dataset_left_x = []
+        dataset_right_x = []
+        dataset_left_y = []
+        dataset_right_y = []
+        dataset_left_angles = []
+        dataset_right_angles = []
 
         with open(csv_path, "r", encoding="latin-1") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=";")
@@ -620,6 +776,30 @@ class GestureDataset:
                     preprocess_landmarks(
                         left_landmarks, right_landmarks, frame_width, frame_height
                     )
+                    left_angles = process_orientation(left_landmarks)
+                    right_angles = process_orientation(right_landmarks)
+                    # left_angles = make_list_fixed_length(
+                    #     left_angles,
+                    #     MAX_VIDEO_FRAMES,
+                    #     combine_function=lambda existing, value: (existing + value) / 2,
+                    #     create_function=lambda prev_value, next_value: (
+                    #         prev_value + next_value
+                    #     )
+                    #     / 2,
+                    # )
+                    # right_angles = make_list_fixed_length(
+                    #     right_angles,
+                    #     MAX_VIDEO_FRAMES,
+                    #     combine_function=lambda existing, value: (existing + value) / 2,
+                    #     create_function=lambda prev_value, next_value: (
+                    #         prev_value + next_value
+                    #     )
+                    #     / 2,
+                    # )
+
+                    left_hand_openness = hand_openness(landmarks=left_landmarks)
+                    right_hand_openness = hand_openness(landmarks=right_landmarks)
+
                     for i, landmarks in left_landmarks.items():
                         # if ONLY_LANDMARK_ID and i != ONLY_LANDMARK_ID:
                         #     continue
@@ -633,23 +813,30 @@ class GestureDataset:
                             mouth_position, landmarks
                         )
 
-                    landmark_history = [
-                        left_landmarks[id] + right_landmarks[id]
-                        for id in right_landmarks.keys()
-                        if id in [ONLY_LANDMARK_ID, 0]
+                    x_data = [
+                        left_landmarks[ONLY_LANDMARK_ID][0],
+                        left_landmarks[ONLY_LANDMARK_ID][1],
+                        right_landmarks[ONLY_LANDMARK_ID][0],
+                        right_landmarks[ONLY_LANDMARK_ID][1],
+                        left_angles,
+                        right_angles,
+                        *left_hand_openness,
+                        *right_hand_openness
                     ]
-                    # landmark_history = left_landmarks[ONLY_LANDMARK_ID] + right_landmarks[ONLY_LANDMARK_ID]
-                    x_data = [*landmark_history]
                     Y_dataset.append(gesture_id)
                     X_dataset.append(x_data)
                 except IndexError as e:
-                    print(f"Something went wrong while processing {self.lookup_dict[gesture_id]}/{video_name}: {e}")
+                    print(
+                        f"Something went wrong while processing {self.lookup_dict[gesture_id]}/{video_name}: {e}"
+                    )
                     # raise e
+        # self.X_dataset = copy.deepcopy(X_dataset)
+
         self.y_data = np.array(Y_dataset)
-        self.x_data = np.array(X_dataset, dtype="float32")
+        self.x_data = np.array(X_dataset, dtype=np.float)
 
     def append_dataset(self, other_dataset: "GestureDataset"):
-        """ Adds a dataset to this dataset. """
+        """Adds a dataset to this dataset."""
         if len(other_dataset.y_data) == 0:
             return
         new_y_data = other_dataset.y_data
@@ -666,9 +853,10 @@ class GestureDataset:
         for id, gesture_name in other_dataset.lookup_dict.items():
             self.lookup_dict[id + gesture_id_base] = gesture_name
             self.reverse_lookup_dict[gesture_name] = id + gesture_id_base
+        # self.X_dataset += other_dataset.X_dataset
 
     def update_gesture_dataset(self, other_dataset: "GestureDataset"):
-        """ Adds a dataset to this dataset. """
+        """Adds a dataset to this dataset."""
         if len(other_dataset.y_data) == 0:
             return
         new_y_data = other_dataset.y_data
@@ -680,14 +868,15 @@ class GestureDataset:
             gesture_name = gesture.name
             self.remove_gesture(gesture.name)
         new_y_data.fill(gesture_id)
-        print(f"Updated dataset. Used gesture_id={gesture_id} and new_y_data={new_y_data}")
+        print(
+            f"Updated dataset. Used gesture_id={gesture_id} and new_y_data={new_y_data}"
+        )
         self.x_data = np.concatenate([self.x_data, new_x_data])
         self.y_data = np.concatenate([self.y_data, new_y_data])
         self.lookup_dict[gesture_id] = gesture_name
         self.reverse_lookup_dict[gesture_name] = gesture_id
         pprint(self.y_data)
         pprint(self.lookup_dict)
-
 
     def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=True):
         """
@@ -796,11 +985,17 @@ if __name__ == "__main__":
     DATASET_LOCATION = Path("ai_data/vgt-all")
     # dataset = GestureDataset(single_gesture=False)
     # handedness_data = {}
+    only_gestures = []
+    ONLY_NEW = True
     for gesture_folder in tqdm(clean_listdir(DATASET_LOCATION)):
-        print(f"Creating dataset.csv for {gesture_folder}")
+        # print(f"Creating dataset.csv for {gesture_folder}")
         gesture_folder_path = DATASET_LOCATION / gesture_folder
         *gestures_name_parts, handedness_string = gesture_folder.split("_")
         gesture_name = "_".join(gestures_name_parts)
+        if only_gestures and gesture_name.lower() not in only_gestures:
+            continue
+        if ONLY_NEW and "dataset.csv" in clean_listdir(gesture_folder_path):
+            continue
         new_gesture_dataset = GestureDataset(single_gesture=True)
         new_gesture_dataset.scan_videos(
             gesture_folder_path,
@@ -808,7 +1003,8 @@ if __name__ == "__main__":
                 gesture_name: (handedness_string[0] == "1", handedness_string[1] == "1")
             },
         )
+        print(f"Gesture: {gesture_name}")
         new_gesture_dataset.analyze_videos(
             csv_out_path=gesture_folder_path / "dataset.csv"
         )
-        # gesture_dataset.load_from_csv(gesture_folder_path / "dataset.csv")
+        # new_gesture_dataset.load_from_csv(gesture_folder_path / "dataset.csv")
