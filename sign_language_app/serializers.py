@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
-from sign_language_app.models import Gesture
+from sign_language_app.models import Gesture, UnitAttempt
 
 
 class GestureSerializer(serializers.HyperlinkedModelSerializer):
@@ -36,3 +36,12 @@ class GestureSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_location_ids(self, obj: Gesture):
         return [l.id for l in obj.locations.all()]
+
+
+class UnitAttemptsSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    unit = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = UnitAttempt
+        fields = ["id", "datetime", "score", "is_overruled", "unit", "user"]

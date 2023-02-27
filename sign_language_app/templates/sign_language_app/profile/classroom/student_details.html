@@ -6,6 +6,8 @@
 {% endblock %}
 
 {% block profile_content %}
+    {% include 'sign_language_app/snippets/score_chart_popup.html' with student=student teacher_view=True %}
+
     <div class="container">
         <nav class="breadcrumb" aria-label="breadcrumbs">
             <ul>
@@ -54,7 +56,9 @@
                 {% for unit_attempt in student.unit_attempts.all|dictsortreversed:"datetime" %}
                     <tr>
                         <td>{{ unit_attempt.unit.course.name }}</td>
-                        <td>{{ unit_attempt.unit.name }}</td>
+                        <td>
+                            {{ unit_attempt.unit.name }}
+                        </td>
                         <td class="has-text-right has-text-{% if unit_attempt.passed %}primary{% else %}danger{% endif %}">
                             <span>{{ unit_attempt.score }}%</span>
                             <span class="icon">
@@ -77,6 +81,11 @@
                                     </span>
                                     </a>
                                 {% endwith %}
+                                <button class="button is-info is-small js-modal-trigger" data-target="chartModal" data-unit="{{ unit_attempt.unit.id }}">
+                                    <span class="icon">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                  </span>
+                                </button>
                             </div>
                         </td>
                     </tr>

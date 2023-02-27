@@ -11,6 +11,9 @@ API_PREFIX = "api/"
 
 router = routers.DefaultRouter()
 router.register("gestures", api_views.GestureViewSet, basename="api-gestures")
+router.register(
+    "unitattempts", api_views.UnitAttemptsViewSet, basename="api-unitattempts"
+)
 
 # general patters
 urlpatterns = [

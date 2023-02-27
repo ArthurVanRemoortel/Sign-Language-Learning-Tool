@@ -1,0 +1,121 @@
+{% load static %}
+{% load extras %}
+
+<div class="modal" id="chartModal" style="">
+    <div class="modal-background"></div>
+    <div class="modal-card" style="width: 1000px">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Score History </p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <canvas id="scoreChart"></canvas>
+        </section>
+    </div>
+</div>
+
+{% block javascript %}
+    <script>
+        const chartCtx = document.getElementById('scoreChart');
+        let chart = null
+        let userId = "{{ student.id }}"
+        let isTeacherView = "{{ teacher_view }}" === "True"
+
+        function makeScoreGraph(data){
+            console.log(data)
+            if (chart !== null){
+                chart.destroy();
+            }
+            chart = new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: [...Array(data.length).keys()],
+                    datasets: [{
+                        data: data,
+                        label: "Africa",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }],
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        },
+                        y: {
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: false
+                    }
+                },
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Functions to open and close a modal
+            let url = "{% url 'api-unitattempts-list' %}"
+            function openModal($el, unitId) {
+                if (chart !== null){
+                    chart.destroy();
+                }
+                $.ajax({
+                    url: url + `?unit=${unitId}&user=${userId}`,
+                    type: "GET",
+                    dataType: 'json',
+                    headers: {'X-CSRFToken': getCsrfToken()},
+                    success: function (data) {
+                        let graphData = []
+                        data.forEach(function (attempt, i) {
+                            {#graphData.push({ x: i, y: attempt.score })#}
+                            graphData.push(attempt.score)
+                        });
+                        makeScoreGraph(graphData)
+                    },
+                    error: function (data) {
+                        console.log("error", data);
+                    }
+                });
+                $el.classList.add('is-active');
+            }
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+            // Add a click event on buttons to open a specific modal
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const unitId = $trigger.dataset.unit;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                    openModal($target, unitId);
+                });
+            });
+            // Add a click event on various child elements to close the parent modal
+            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button:not(.is-success)') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+            // Add a keyboard event to close all modals
+            document.addEventListener('keydown', (event) => {
+                const e = event || window.event;
+
+                if (e.keyCode === 27) { // Escape key
+                    closeAllModals();
+                }
+            });
+
+            $(document).ready(function(){
+            })
+        });
+    </script>
+{% endblock %}

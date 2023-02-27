@@ -140,9 +140,7 @@ def history_view(request):
     context = {
         "courses": courses,
         "last_unit_attempts": {
-            unit.id: unit.unit_attempts.filter(Q(user=user))
-            .order_by("-datetime")
-            .last()
+            unit.id: unit.unit_attempts.filter(Q(user=user)).order_by("datetime").last()
             for unit in units
         },
         "user_settings": user.settings.first(),

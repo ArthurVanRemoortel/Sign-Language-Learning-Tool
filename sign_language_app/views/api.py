@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -38,7 +38,10 @@ from sl_ai.dataset import (
     calculate_landmark_list,
     pre_process_point_history_center,
     mirror_landmarks_list,
-    mirror_coordinate, pre_process_point_history_mouth_position, process_orientation, hand_openness,
+    mirror_coordinate,
+    pre_process_point_history_mouth_position,
+    process_orientation,
+    hand_openness,
 )
 from sign_language_app.background_tasks import retrain_model
 
@@ -124,11 +127,19 @@ def verify_gesture(request):
     # )
     print(
         "left: ",
-        len(list(filter(lambda p: p != [-1.0, -1.0], (left_landmarks[ONLY_LANDMARK_ID])))),
+        len(
+            list(
+                filter(lambda p: p != [-1.0, -1.0], (left_landmarks[ONLY_LANDMARK_ID]))
+            )
+        ),
     )
     print(
         "right: ",
-        len(list(filter(lambda p: p != [-1.0, -1.0], (right_landmarks[ONLY_LANDMARK_ID])))),
+        len(
+            list(
+                filter(lambda p: p != [-1.0, -1.0], (right_landmarks[ONLY_LANDMARK_ID]))
+            )
+        ),
     )
     if left_landmarks == right_landmarks:
         is_correct = 0
@@ -142,9 +153,13 @@ def verify_gesture(request):
         right_hand_openness = hand_openness(landmarks=right_landmarks)
 
         for i, landmarks in left_landmarks.items():
-            left_landmarks[i] = pre_process_point_history_mouth_position(mouth, landmarks)
+            left_landmarks[i] = pre_process_point_history_mouth_position(
+                mouth, landmarks
+            )
         for i, landmarks in right_landmarks.items():
-            right_landmarks[i] = pre_process_point_history_mouth_position(mouth, landmarks)
+            right_landmarks[i] = pre_process_point_history_mouth_position(
+                mouth, landmarks
+            )
 
         result = Classifier().gesture_classifier.predict(
             left_x=left_landmarks[ONLY_LANDMARK_ID][0],
@@ -154,7 +169,7 @@ def verify_gesture(request):
             left_angles=left_angles,
             right_angles=right_angles,
             left_openness=left_hand_openness,
-            right_openness=right_hand_openness
+            right_openness=right_hand_openness,
         )
         print(f"Predictions for {gesture}")
         predicted_gestures = {}
@@ -198,4 +213,19 @@ class GestureViewSet(viewsets.ModelViewSet):
         word_like = self.request.query_params.get("name_like")
         if word_like:
             qs = qs.filter(Q(word__icontains=word_like))
+        return qs.all()
+
+
+class UnitAttemptsViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.UnitAttemptsSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = UnitAttempt.objects.order_by("datetime")
+        unit_id = self.request.query_params.get("unit")
+        user_id = self.request.query_params.get("user")
+        if unit_id:
+            qs = qs.filter(Q(unit=unit_id))
+        if user_id:
+            qs = qs.filter(Q(user=user_id))
         return qs.all()
