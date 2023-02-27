@@ -890,7 +890,7 @@ class GestureDataset:
         start_time = time.time()
         for gesture_i, gesture in enumerate(self.gestures):
             # Loop over all gestures in the dataset.
-            with Pool(processes=8) as pool:
+            with Pool(processes=6) as pool:
                 # Executes the detect_hands_task in parallel.
                 results = pool.imap_unordered(
                     functools.partial(detect_hands_task, gesture),
