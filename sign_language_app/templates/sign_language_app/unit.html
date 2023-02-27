@@ -269,7 +269,7 @@
             if ('True' !== "{{ user_settings.allow_video_uploads }}"){
                 return
             }
-            const stream = canvasElement.captureStream(30);
+            const stream = canvasElement.captureStream(60);
             mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
             videoBlobs = []
             mediaRecorder.addEventListener('dataavailable', function(e) {
