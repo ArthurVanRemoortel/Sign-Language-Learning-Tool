@@ -28,7 +28,6 @@ if not DJANGO_SECRET_KEY:
     raise ImproperlyConfigured()
 
 DEBUG_MODE = os.getenv("DEBUG_MODE", "0").lower() in ("true", "1", "t")
-SHOW_LANDMARKS = os.getenv("SHOW_LANDMARKS", "0").lower() in ("true", "1", "t")
 
 POSTGRES_HOST = os.getenv("POSTGRES_HOST")
 POSTGRES_DB = os.getenv("POSTGRES_DB")

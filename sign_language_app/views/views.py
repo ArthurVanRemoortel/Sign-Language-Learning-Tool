@@ -11,14 +11,13 @@ from django.core.paginator import Paginator, EmptyPage
 from django.urls import reverse
 from django.views.defaults import page_not_found
 
-from learning_site.settings import SHOW_LANDMARKS
 from sign_language_app import serializers, utils
 from sign_language_app.forms import CoursesForm
 from sign_language_app.models import *
 from django.core import serializers as django_serializers
 
 from sign_language_app.utils import get_user, find_course_recommendations, copy_user_gesture_video, \
-    save_lase_attempts_videos
+    save_lase_attempts_videos, is_admin
 from sign_language_app.views.error_views import error_view
 
 
@@ -111,7 +110,7 @@ def unit_view(request, unit_id):
         "gestures": json.dumps(
             serializers.GestureSerializer(unit.gestures.all(), many=True).data
         ),
-        "show_landmarks": SHOW_LANDMARKS
+        "show_landmarks": is_admin(user)
     }
     return render(request, "sign_language_app/unit.html", context)
 
