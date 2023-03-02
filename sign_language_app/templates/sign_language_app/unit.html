@@ -15,36 +15,31 @@
                   </span>
             </div>
         </div>
-
-        <br>
-        <br>
-
-        <h1 id="gestureLabel" class="title is-1 has-text-centered ml11">
+        <h1 id="gestureLabel mt-4" class="title is-1 has-text-centered ml11">
             <span class="text-wrapper">
             <span class="line line1"></span>
             <span class="letters"></span>
           </span>
         </h1>
 
-        <div class="level">
+{#        <div class="level">#}
             <div class="level-item has-text-centered" id="hintsSection" style="height: 64px;">
 
             </div>
-        </div>
+{#        </div>#}
 
-        <div class="level camera-box" id="cameraAreaBox">
+        <div class="level camera-box mt-4 border" id="cameraAreaBox">
             <div class="level-item has-text-centered mt-6" id="cameraLoader">
                 <div class="loader-1"></div>
             </div>
             <video class="input_video" hidden></video>
-            <canvas class="output_canvas camera-canvas" width="1280px" height="720px" style="width:100%;border-radius:6px"></canvas>
+            <canvas class="output_canvas camera-canvas" width="1280px" height="720px" style="width:100%"></canvas>
             <video class="mirrored" preload="auto" id="solutionVideo" hidden style="height: 0;">
                 <source src="" type="video/mp4"></source>
             </video>
         </div>
     </div>
 {% endblock %}
-
 
 {% block javascript %}
     <script defer
@@ -363,6 +358,7 @@
 
         function showSolution(){
             setTimeout(function (){
+                cameraAreaBox.classList.add('solution_border')
                 solutionVideo.src = '{{ MEDIA_URL }}' + current_gesture.reference_video
                 is_displaying_solution = true
                 solutionVideo.play()
@@ -372,6 +368,7 @@
 
         function solutionEnded(e){
             is_displaying_solution = false
+            cameraAreaBox.classList.remove('solution_border')
             if (lives_remaining <= 0 || current_gesture_i >= gestures.length) {
                 endUnit()
                 return
