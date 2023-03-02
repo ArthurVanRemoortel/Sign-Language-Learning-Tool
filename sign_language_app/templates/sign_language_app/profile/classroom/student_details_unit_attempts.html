@@ -117,17 +117,16 @@
         let csrf_token = '{{ csrf_token }}';
 
         function trainOnVideo(gestureAttemptId){
+            let card = document.querySelector("#gestureAttemptsCard_"+gestureAttemptId)
+            let buttons = card.querySelectorAll("button")
+            let trainButton = buttons[buttons.length-1]
+            trainButton.disabled = true
             $.ajax({
                 url: "{% url 'add_video_to_dataset' student.id unit_attempt.id 1234 %}".replace('1234', gestureAttemptId),
                 type: "POST",
                 headers: {'X-CSRFToken': csrf_token},
                 contentType: "json",
                 success: function (data) {
-                    console.log(data)
-                    let card = document.querySelector("#gestureAttemptsCard_"+gestureAttemptId)
-                    let buttons = card.querySelectorAll("button")
-                    let trainButton = buttons[buttons.length-1]
-                    trainButton.disabled = true
                 },
                 error: function (error) {
                     console.log("error: ", error)

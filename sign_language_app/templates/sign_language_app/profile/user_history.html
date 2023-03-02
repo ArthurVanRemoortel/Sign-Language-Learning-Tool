@@ -32,7 +32,11 @@
                                 {% with last_attempt=last_unit_attempts|get_value:unit.id  %}
                                     {% if last_attempt %}
                                         <tr>
-                                            <td>{{ unit.name }}</td>
+                                            <td>
+                                                <a href="{% url "unit" unit.id %}" class="has-text-info">
+                                                    <span>{{ unit.name }}</span><span class="icon is-small"><i class="fa-solid fa-angle-right"></i></span>
+                                                </a>
+                                            </td>
                                             <td class="has-text-right has-text-{% if last_attempt.passed %}primary{% else %}danger{% endif %}">
                                                 <span>{{ last_attempt.score }}%</span>
                                                 <span class="icon">
