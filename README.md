@@ -56,3 +56,17 @@ Follow these steps.
 
 ## Acquiring data
 Using the notebooks will require some video data to train on. You can provide your own or contact me for the data I have been using. 
+
+```
+dataset
+└───Hallo_01
+│   │   video1.mp4
+│   │   file02.mp4
+│   │   dataset.csv
+│   
+└───Verenigde_Staten_11
+│   │   video1.mp4
+│   │   file02.mp4
+│   │   dataset.csv
+│ 
+```
