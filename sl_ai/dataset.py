@@ -475,10 +475,7 @@ def hand_openness(landmarks, fingers_tips=None) -> [float]:
     ]
     openness = [[] for _ in fingers_tips]
     for frame, center_top_pos in enumerate(hand_center_landmarks):
-        if (
-                center_top_pos == [-1, -1]
-                or center_top_pos == [-1.0, -1.0]
-        ):
+        if center_top_pos == [-1, -1] or center_top_pos == [-1.0, -1.0]:
             for finger_n, _ in enumerate(fingers_tips):
                 openness[finger_n].append(0)
             continue
@@ -782,8 +779,7 @@ class GestureDataset:
                     #     left_angles,
                     #     MAX_VIDEO_FRAMES,
                     #     combine_function=lambda existing, value: (existing + value) / 2,
-                    #     create_function=lambda prev_value, next_value: (
-                    #         prev_value + next_value
+                    #     create_function=lambda prev_value, next_value: ( prev_value + next_value
                     #     )
                     #     / 2,
                     # )
@@ -821,7 +817,7 @@ class GestureDataset:
                         left_angles,
                         right_angles,
                         *left_hand_openness,
-                        *right_hand_openness
+                        *right_hand_openness,
                     ]
                     Y_dataset.append(gesture_id)
                     X_dataset.append(x_data)
@@ -875,7 +871,6 @@ class GestureDataset:
         self.y_data = np.concatenate([self.y_data, new_y_data])
         self.lookup_dict[gesture_id] = gesture_name
         self.reverse_lookup_dict[gesture_name] = gesture_id
-        pprint(self.y_data)
         pprint(self.lookup_dict)
 
     def analyze_videos(self, csv_out_path: Optional[Path] = None, overwrite=True):

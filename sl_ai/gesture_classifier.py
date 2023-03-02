@@ -57,12 +57,16 @@ class GestureClassifier:
         if type == "lstm":
             self.model = tf.keras.models.Sequential(
                 [
-                    # tf.keras.layers.InputLayer(
-                    #     input_shape=(self.x_train.shape[1], self.x_train.shape[2])
-                    # ),
-                    tf.keras.layers.LSTM(64, input_shape=(self.x_train.shape[1], self.x_train.shape[2]), return_sequences=True, kernel_regularizer=L2(0.001)),
+                    tf.keras.layers.LSTM(
+                        64,
+                        input_shape=(self.x_train.shape[1], self.x_train.shape[2]),
+                        return_sequences=True,
+                        kernel_regularizer=L2(0.001),
+                    ),
                     tf.keras.layers.Dropout(0.2),
-                    tf.keras.layers.LSTM(32, return_sequences=False, kernel_regularizer=L2(0.001)),
+                    tf.keras.layers.LSTM(
+                        32, return_sequences=False, kernel_regularizer=L2(0.001)
+                    ),
                     tf.keras.layers.Dropout(0.2),
                     tf.keras.layers.Dense(NUM_CLASSES, activation="softmax"),
                 ]
@@ -89,7 +93,7 @@ class GestureClassifier:
             metrics=["sparse_categorical_accuracy"],
         )
 
-    def train(self, save_path: Optional[Path] = None, train_size=0.5, type="lstm"):
+    def train(self, save_path: Optional[Path] = None, train_size=0.65, type="lstm"):
         if len(self.gesture_dataset) == 0:
             raise Exception("Tried to train but the dataset is empty.")
         self.gesture_dataset.summary()
@@ -97,9 +101,8 @@ class GestureClassifier:
         # TODO: Make sure all categories are represented.
         x = []
         if type == "standard":
-            print(len(self.gesture_dataset.x_data[0]))
             for row in self.gesture_dataset.x_data:
-                new_row = [row[0]+row[1], row[2]+row[3]]
+                new_row = [row[0] + row[1], row[2] + row[3]]
                 # for n in range(0, 4, 2):
                 #     print(f"Selecting feature {n}")
                 #     new_row.append(row[n] + row[n+1])
@@ -164,29 +167,19 @@ class GestureClassifier:
             raise Exception("Cannot make summary of model when it not created yet.")
         return self.model.summary()
 
-    def predict(self, left_x, left_y, right_x, right_y, left_angles, right_angles, left_openness, right_openness):
+    def predict(
+        self,
+        left_x,
+        left_y,
+        right_x,
+        right_y,
+        left_angles,
+        right_angles,
+        left_openness,
+        right_openness,
+    ):
         if not self.model:
             raise Exception("Cannot make prediction when the model is not loaded yet.")
-        # print(right_landmarks.keys())
-        # left_landmarks = np.array(left_landmarks[ONLY_LANDMARK_ID], dtype="float32")
-        # right_landmarks = np.array(right_landmarks[ONLY_LANDMARK_ID], dtype="float32")
-        # # left_landmarks0 = np.array(left_landmarks[0], dtype="float32")
-        # # right_landmarks0 = np.array(right_landmarks[0], dtype="float32")
-        # x_data = np.concatenate(
-        #     (left_landmarks, right_landmarks), axis=0
-        # )
-        # x_data = x_data.reshape((-1, x_data.shape[0]))
-        #
-        # other_data = np.concatenate(
-        #     (left_landmarks, right_landmarks), axis=0
-        # )
-        # other_data = other_data.reshape((-1, other_data.shape[0]))
-        # d = [x_data, *other_data]
-        # print("SHAPE", d.shape)
-        # x_data = x_data.reshape((-1, x_data.shape[0]))
-        # other_data = other_data.reshape((-1, other_data.shape[0]))
-        # d = np.array(*d)
-        # print("SHAPE: ", len(d))
         x_data = [
             left_x,
             left_y,
@@ -195,12 +188,8 @@ class GestureClassifier:
             left_angles,
             right_angles,
             *left_openness,
-            *right_openness
+            *right_openness,
         ]
-        for item in x_data:
-            print(len(item), type(item))
-        # x_data = [*landmark_history]
-        # print(len(landmark_history))
         prediction = self.model.predict([x_data])
         return prediction
 

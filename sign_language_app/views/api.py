@@ -175,7 +175,7 @@ def verify_gesture(request):
         predicted_gestures = {}
         for gesture_id, prediction in enumerate(result[0]):
             prediction = int(prediction * 100)
-            if prediction > 10:
+            if prediction > 5:
                 try:
                     predicted_gestures[
                         Classifier().gesture_classifier.gesture_dataset.lookup_dict[
