@@ -698,7 +698,7 @@ class GestureDataset:
         dataset_left_angles = []
         dataset_right_angles = []
 
-        with open(csv_path, "r", encoding="latin-1") as csv_file:
+        with open(csv_path, "r", encoding="utf-8") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=";")
             for landmark_line in csv_reader:
                 (
