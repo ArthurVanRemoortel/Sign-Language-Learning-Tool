@@ -264,7 +264,7 @@
             if ('True' !== "{{ user_settings.allow_video_uploads }}"){
                 return
             }
-            const stream = canvasElement.captureStream(60);
+            const stream = canvasElement.captureStream(30);
             mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm;codecs=vp8'});
             videoBlobs = []
             mediaRecorder.addEventListener('dataavailable', function(e) {
@@ -484,15 +484,19 @@
                     onResults(results)
             });
 
-
+            let frameCounter = 0
             const camera = new Camera(videoElement, {
                 onFrame: async () => {
-                    await faceDetection.send({image: videoElement});
+                    if (frameCounter % 5){
+                        await faceDetection.send({image: videoElement});
+                    } else {
+                    }
                     await handsDetection.send({image: videoElement});
                     if (!cameraLoaded){
                         cameraLoaded = true
                         startExercise()
                     }
+                    frameCounter += 1
                 },
                 width: 1280,
                 height: 720
