@@ -27,56 +27,56 @@
     name: 'Unit 2: Navigation'
     course: 1
     ordering_number: 2
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 3
   fields:
     name: 'Unit 3: Adjectives'
     course: 1
     ordering_number: 3
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 4
   fields:
     name: 'Unit 4: Verbs'
     course: 1
     ordering_number: 4
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 5
   fields:
     name: 'Unit 5: Express dates and times'
     course: 1
     ordering_number: 5
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 6
   fields:
-    name: 'Unit 1: Discuss spirituality'
+    name: 'Unit 1: All Gestures'
     course: 2
     ordering_number: 1
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 7
   fields:
-    name: 'Unit 2: Discuss politics'
+    name: 'Unit 2: Demo'
     course: 2
     ordering_number: 2
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 8
   fields:
     name: 'Unit 3: Give directions'
     course: 2
     ordering_number: 3
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 - model: sign_language_app.unit
   pk: 9
   fields:
     name: 'Unit 4: Express feelings'
     course: 2
     ordering_number: 4
-    gestures: [1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12]
+    gestures: [1, 2, 3, 5, 6,7, 8, 9, 10, 11, 12]
 
 
 # Gestures
