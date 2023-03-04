@@ -224,7 +224,7 @@
   pk: 41
   fields:
     word: Arbeider
-    left_hand: false
+    left_hand: true
     right_hand: true
     locations: [1]
 - model: sign_language_app.gesture
