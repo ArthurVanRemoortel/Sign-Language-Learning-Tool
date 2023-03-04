@@ -76,13 +76,17 @@ def save_user_gesture_video(
 
 
 def save_lase_attempts_videos(user: User, unit: Unit, unit_attempt: UnitAttempt):
-    temp_location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / 'last'
-    new_location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / str(unit_attempt.id)
+    temp_location = USER_GESTURES_ROOT / str(user.id) / str(unit.id) / "last"
+    new_location = (
+        USER_GESTURES_ROOT / str(user.id) / str(unit.id) / str(unit_attempt.id)
+    )
     shutil.copytree(temp_location, new_location)
     shutil.rmtree(temp_location)
 
 
-def copy_user_gesture_video(user: User, unit: Unit, gesture: Gesture, attempt: int, unit_attempt: UnitAttempt):
+def copy_user_gesture_video(
+    user: User, unit: Unit, gesture: Gesture, attempt: int, unit_attempt: UnitAttempt
+):
     location = (
         USER_GESTURES_ROOT
         / str(user.id)
@@ -100,7 +104,7 @@ def copy_user_gesture_video(user: User, unit: Unit, gesture: Gesture, attempt: i
 def find_course_recommendations(
     user, max_courses=4
 ) -> (str, List[Tuple[Course, Unit]]):
-    if not user:
+    if not user or not UnitAttempt.objects.filter(Q(user=user)).exists():
         # User is not logged in. Select some beginner courses.
         return "Courses for beginners", [
             (c, c.units.first())
