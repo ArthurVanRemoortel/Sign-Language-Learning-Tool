@@ -1,3 +1,4 @@
+import os
 import shutil
 from pprint import pprint
 
@@ -16,12 +17,14 @@ from rolepermissions.roles import get_user_roles
 
 from learning_site import settings
 from learning_site.roles import Teacher
-from learning_site.settings import MEDIA_ROOT
+from learning_site.settings import MEDIA_ROOT, USER_GESTURES_ROOT
+from sign_language_app import forms
 from sign_language_app.forms import (
     UploadGestureForm,
     NewCourseForm,
     TeacherCodeForm,
     UserSettingsForm,
+    UserProfileForm,
 )
 from sign_language_app.models import (
     Gesture,
@@ -43,8 +46,35 @@ from sign_language_app.utils import (
 
 @login_required
 def profile_overview(request):
-    user = get_user(request)
-    context = {"current_section": "overview"}
+    user: User = get_user(request)
+    user_settings: UserSettings = user.settings.first()
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            username = form.cleaned_data.get("username", None)
+            avatar_file = form.cleaned_data.get('avatar', None)
+            if User.objects.filter(Q(username=username) & ~Q(pk=user.id)).exists():
+                messages.error(
+                    request,
+                    f"Username {username} is already in use.",
+                )
+                return redirect("profile")
+            user = User.objects.get(pk=user.id)
+            user.username = username
+            if avatar_file:
+                print(avatar_file, avatar_file.name)
+                root_path = USER_GESTURES_ROOT / 'avatars'
+                os.makedirs(root_path, exist_ok=True)
+                with open(root_path / avatar_file.name, "wb+") as destination:
+                    for chunk in avatar_file.chunks():
+                        destination.write(chunk)
+                user_settings.avatar = avatar_file.name
+                user_settings.save()
+            user.save()
+    else:
+        form = UserProfileForm()
+        form.initial['username'] = user.username
+    context = {"current_section": "overview", "form": form, "user_settings": user_settings}
     return render(request, "sign_language_app/profile/profile_overview.html", context)
 
 

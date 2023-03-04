@@ -39,8 +39,15 @@
                 </thead>
                 <tbody>
                 {% for student in students %}
-                    <tr>
-                        <td>{{ student.username }}</td>
+                    <tr style="height: 20px">
+                        <td>
+                            <figure class="image" style="display: inline-block; height: 16px; width: 20px">
+                                <img class="is-rounded" src="{{ student.settings.first.avatar_or_default}}">
+                            </figure>
+                            <span>
+                                {{ student.username }}
+                            </span>
+                        </td>
                         <td>
                             <div class="buttons">
                                 <div class="buttons">

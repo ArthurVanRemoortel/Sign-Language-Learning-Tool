@@ -5,4 +5,63 @@
 {% endblock %}
 
 {% block profile_content %}
+    <div class="container is-max-desktop mt-5">
+        <h2 class="title">
+            Profile
+        </h2>
+        <div class="columns">
+            <div class="column is-one-fifth">
+                <figure class="image is-1by1">
+                    <img class="is-rounded" src="{{ user_settings.avatar_or_default}}">
+                </figure>
+            </div>
+            <div class="column">
+                <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="field">
+                        <label class="label">Username</label>
+                        <div class="control">
+                            {{ form.username }}
+                        </div>
+                    </div>
+                    <div class="field" id="avatarField">
+                        <label class="label">Avatar</label>
+                        <div id="file-js-example" class="file has-name">
+                            <label class="file-label">
+                                {{ form.avatar }}
+                                <span class="file-cta">
+                                <span class="file-icon">
+                                    <i class="fas fa-upload"></i>
+                                  </span>
+                                  <span class="file-label">
+                                    Choose a file…
+                                  </span>
+                                </span>
+                                <span class="file-name">
+                                No file selected
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field mt-4">
+                        <div class="control">
+                            <button type="submit" class="button is-success">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        const avatarInput = document.querySelector('#avatarField input[type=file]');
+        avatarInput.onchange = () => {
+            if (avatarInput.files.length > 0) {
+                const fileName = document.querySelector('#avatarField .file-name');
+                fileName.textContent = avatarInput.files[0].name
+            }
+        }
+    </script>
 {% endblock %}

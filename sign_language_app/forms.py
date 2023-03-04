@@ -283,3 +283,18 @@ class UserSettingsForm(ModelForm):
             "allow_sharing_with_teachers",
             "allow_video_training",
         ]
+
+
+class UserProfileForm(forms.Form):
+    avatar = forms.ImageField(
+        widget=forms.ClearableFileInput(
+            attrs={"multiple": False, "id": "avatarInput", "class": "file-input"}
+        ),
+        required=False,
+    )
+    username = forms.CharField(
+        widget=forms.TextInput(
+            attrs={"class": "input", "id": "usernameInput", "placeholder": "Username"}
+        ),
+        required=True,
+    )

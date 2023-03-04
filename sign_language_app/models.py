@@ -16,7 +16,7 @@ from learning_site.settings import (
     MEDIA_ROOT,
     USER_GESTURES_ROOT,
     UPLOADED_GESTURES_ROOT,
-    VGT_GESTURES_ROOT,
+    VGT_GESTURES_ROOT, MEDIA_URL,
 )
 from sl_ai.utils import clean_listdir, is_video
 
@@ -28,9 +28,17 @@ class UserSettings(models.Model):
         null=False,
         related_name="settings",
     )
+    avatar = models.ImageField(upload_to="avatars", null=True, default=None)
     allow_video_uploads = models.BooleanField(default=True)
     allow_sharing_with_teachers = models.BooleanField(default=True)
     allow_video_training = models.BooleanField(default=False)
+
+    @property
+    def avatar_or_default(self):
+        if self.avatar:
+            return f"{MEDIA_URL}/vgt-users/avatars/{self.avatar}"
+        else:
+            return "static/sign_language_app/images/avatar.png"
 
 
 class GestureLocation(models.Model):
@@ -91,7 +99,9 @@ class Gesture(models.Model):
             )
         else:
             videos_location = f"vgt-all/{self.handed_string}"
-        video_file = random.choice(list(filter(is_video, clean_listdir(MEDIA_ROOT / videos_location))))
+        video_file = random.choice(
+            list(filter(is_video, clean_listdir(MEDIA_ROOT / videos_location)))
+        )
         return f"{videos_location}/{video_file}"
 
     def delete_videos(self):
