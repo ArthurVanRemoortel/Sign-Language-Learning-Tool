@@ -157,6 +157,125 @@
     left_hand: false
     right_hand: true
     locations: [15]
+- model: sign_language_app.gesture
+  pk: 32
+  fields:
+    word: Salamander
+    left_hand: true
+    right_hand: true
+    locations: [7]
+- model: sign_language_app.gesture
+  pk: 33
+  fields:
+    word: Bij
+    left_hand: false
+    right_hand: true
+    locations: [16]
+- model: sign_language_app.gesture
+  pk: 34
+  fields:
+    word: Giraf
+    left_hand: true
+    right_hand: false
+    locations: [2, 11]
+- model: sign_language_app.gesture
+  pk: 35
+  fields:
+    word: Egel
+    left_hand: true
+    right_hand: true
+    locations: [11]
+- model: sign_language_app.gesture
+  pk: 36
+  fields:
+    word: Eekhoorn
+    left_hand: true
+    right_hand: true
+    locations: [14]
+- model: sign_language_app.gesture
+  pk: 37
+  fields:
+    word: Spin
+    left_hand: true
+    right_hand: true
+    locations: [7]
+- model: sign_language_app.gesture
+  pk: 38
+  fields:
+    word: Vlieg
+    left_hand: true
+    right_hand: false
+    locations: [16]
+- model: sign_language_app.gesture
+  pk: 39
+  fields:
+    word: Kat
+    left_hand: true
+    right_hand: true
+    locations: [16]
+- model: sign_language_app.gesture
+  pk: 40
+  fields:
+    word: Hond
+    left_hand: false
+    right_hand: true
+    locations: [15]
+- model: sign_language_app.gesture
+  pk: 41
+  fields:
+    word: Arbeider
+    left_hand: false
+    right_hand: true
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 42
+  fields:
+    word: Mus
+    left_hand: false
+    right_hand: true
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 43
+  fields:
+    word: Duidelijk
+    left_hand: true
+    right_hand: true
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 44
+  fields:
+    word: Kalf
+    left_hand: true
+    right_hand: false
+    locations: [2]
+- model: sign_language_app.gesture
+  pk: 45
+  fields:
+    word: Tijger
+    left_hand: true
+    right_hand: true
+    locations: [1]
+- model: sign_language_app.gesture
+  pk: 46
+  fields:
+    word: Uil
+    left_hand: true
+    right_hand: false
+    locations: [12]
+- model: sign_language_app.gesture
+  pk: 47
+  fields:
+    word: Buffel
+    left_hand: true
+    right_hand: true
+    locations: [11]
+- model: sign_language_app.gesture
+  pk: 48
+  fields:
+    word: Varken
+    left_hand: true
+    right_hand: false
+    locations: [14]
 
 # Unit Attempts
 - model: sign_language_app.unitattempt
