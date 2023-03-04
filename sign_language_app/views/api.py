@@ -119,28 +119,6 @@ def verify_gesture(request):
         else:
             for landmark_id in right_landmarks.keys():
                 right_landmarks[landmark_id].append([-1.0, -1.0])
-
-    # visualize_gesture(
-    #     frame_width=frame_width,
-    #     frame_height=frame_height,
-    #     coordinates=right_landmarks[ONLY_LANDMARK_ID],
-    # )
-    print(
-        "left: ",
-        len(
-            list(
-                filter(lambda p: p != [-1.0, -1.0], (left_landmarks[ONLY_LANDMARK_ID]))
-            )
-        ),
-    )
-    print(
-        "right: ",
-        len(
-            list(
-                filter(lambda p: p != [-1.0, -1.0], (right_landmarks[ONLY_LANDMARK_ID]))
-            )
-        ),
-    )
     if left_landmarks == right_landmarks:
         is_correct = 0
         print("WARNING: Nothing was detected.")
@@ -175,7 +153,7 @@ def verify_gesture(request):
         predicted_gestures = {}
         for gesture_id, prediction in enumerate(result[0]):
             prediction = int(prediction * 100)
-            if prediction > 5:
+            if prediction > 10:
                 try:
                     predicted_gestures[
                         Classifier().gesture_classifier.gesture_dataset.lookup_dict[
