@@ -16,7 +16,8 @@ from learning_site.settings import (
     MEDIA_ROOT,
     USER_GESTURES_ROOT,
     UPLOADED_GESTURES_ROOT,
-    VGT_GESTURES_ROOT, MEDIA_URL,
+    VGT_GESTURES_ROOT,
+    MEDIA_URL,
 )
 from sl_ai.utils import clean_listdir, is_video
 
@@ -214,17 +215,6 @@ class UnitAttempt(models.Model):
 
     def __str__(self):
         return f"{self.unit} by {self.user}"
-
-    # def get_user_gesture_videos(self) -> List[Path]:
-    #     """Returns the videos files for this user and unit."""
-    #     user_settings: UserSettings = self.user.settings.first()
-    #     if not user_settings.allow_video_uploads:
-    #         return list()
-    #     videos_location: Path = USER_GESTURES_ROOT / self.unit.id / self.user.id
-    #     return [
-    #         videos_location / str(video_file)
-    #         for video_file in clean_listdir(videos_location)
-    #     ]
 
     @property
     def passed(self) -> bool:

@@ -32,8 +32,6 @@ services:
 
   web:
     build: .
-#    command: python manage.py runserver 0.0.0.0:8000 --insecure --noreload
-#    restart: always
     volumes:
       - .:/code
       - static_volume:/code/data/static
@@ -51,4 +49,4 @@ volumes:
   redis_data:
   # Django copies/compiles the static files and shares them with the nginx container using a volume.
   static_volume:
-#  media_volume:
+  media_volume:

@@ -41,8 +41,6 @@ class SignLanguageAppConfig(AppConfig):
                 if created:
                     print(f"Created new gesture: {gesture}")
 
-            pass
-
         threading.Thread(target=t, daemon=False).start()
 
         if BACKGROUND_TRAINING_TIME != -1:

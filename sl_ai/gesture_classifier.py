@@ -51,7 +51,6 @@ class GestureClassifier:
         TIME_STEPS = MAX_VIDEO_FRAMES * 2 * 2
         DIMENSION = 1
         NUM_CLASSES = len(self.gesture_dataset)
-        # TODO: Experiment with tensorflow optimisers.
         print("Training on shape:", self.x_train[0].shape)
         print("Dateset shape:", self.x_train.shape)
         if type == "lstm":
@@ -72,6 +71,7 @@ class GestureClassifier:
                 ]
             )
         elif type == "standard":
+            # Old model. I kept to easily compare it to the new implementation.
             self.model = tf.keras.models.Sequential(
                 [
                     tf.keras.layers.InputLayer(input_shape=self.x_train[0].shape),
