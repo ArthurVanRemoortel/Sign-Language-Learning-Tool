@@ -37,6 +37,7 @@ urlpatterns = [
 # Profile Patterns
 urlpatterns += [
     path("profile", profile_views.profile_overview, name="profile"),
+    path("profile/delete_data/<int:delete_account>", profile_views.delete_data, name="delete_data"),
     path("profile_settings", profile_views.profile_settings, name="profile_settings"),
     path("manage_students", profile_views.manage_students_view, name="manage_students"),
     path("manage_courses", profile_views.manage_courses_view, name="manage_courses"),

@@ -4,6 +4,7 @@ from pprint import pprint
 
 import ffmpeg
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -17,7 +18,7 @@ from rolepermissions.roles import get_user_roles
 
 from learning_site import settings
 from learning_site.roles import Teacher
-from learning_site.settings import MEDIA_ROOT, USER_GESTURES_ROOT
+from learning_site.settings import MEDIA_ROOT, USER_GESTURES_ROOT, UPLOADED_GESTURES_ROOT
 from sign_language_app import forms
 from sign_language_app.forms import (
     UploadGestureForm,
@@ -42,6 +43,7 @@ from sign_language_app.utils import (
     get_user,
     generate_teacher_code,
 )
+from sl_ai.utils import clean_listdir
 
 
 @login_required
@@ -81,16 +83,45 @@ def profile_overview(request):
 @login_required
 def profile_settings(request):
     user = get_user(request)
-    settings: UserSettings = user.settings.first()
+    user_settings: UserSettings = user.settings.first()
     form = UserSettingsForm(
-        request.POST or None, request.FILES or None, instance=settings
+        request.POST or None, request.FILES or None, instance=user_settings
     )
     if form.is_valid():
         form.save()
-        if not settings.allow_video_uploads:
+        if not user_settings.allow_video_uploads:
             ...
     context = {"current_section": "settings", "form": form}
     return render(request, "sign_language_app/profile/profile_settings.html", context)
+
+
+@login_required
+def delete_data(request, delete_account):
+    user: User = get_user(request)
+    user = User.objects.get(id=user.id)
+    user_settings: UserSettings = user.settings.first()
+    for user_directory in clean_listdir(UPLOADED_GESTURES_ROOT):
+        if user_directory == str(user.id):
+            os.remove(UPLOADED_GESTURES_ROOT / user_directory)
+    for gesture in Gesture.objects.filter(Q(creator=user)):
+        gesture.status = Gesture.Status.DELETED
+        gesture.save()
+        # The gesture will be deleted later.
+    if delete_account:
+        user_settings.delete()
+        # All related object are deleted using SQL Cascade.
+        logout(request)
+        user.delete()
+        messages.success(request, message="Completely deleted you account and associated data.")
+        return redirect('index')
+    else:
+        user_settings.save()
+        GestureAttempt.objects.filter(Q(user=user)).all().delete()
+        UnitAttempt.objects.filter(Q(user=user)).all().delete()
+        Course.objects.filter(Q(creator=user)).all().delete()
+        StudentsAccess.objects.filter(Q(student=user) | Q(teacher=user)).all().delete()
+        messages.success(request, message="Deleted all data associated with you.")
+        return redirect('profile')
 
 
 @login_required
